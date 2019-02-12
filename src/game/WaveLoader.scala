@@ -45,10 +45,6 @@ object WaveLoader {
       // Calculate starting parameters for all enemies
       val (x, y, target) = (path.pos.x, path.pos.y, path.next)
       
-      // Debug messages
-      print(s"Loaded wave $wave: ")
-      println((wavedata \\ "enemies" \ "enemy").map(e => (e \@ "id")).mkString(", "))
-      
       // Create an empty buffer for the enemies
       val enemies = Buffer[Enemy]()
       

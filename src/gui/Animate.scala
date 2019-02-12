@@ -26,12 +26,12 @@ object Animate {
    * @param	 The graphics context used for drawing
    */
   
-  def animate(id: String, canvasX: Double, canvasY: Double,
-              gridW: Double, gridH: Double, gfx: GraphicsContext) = {
+  def animate(id: String, x: Double, y: Double,
+              w: Double, h: Double, gfx: GraphicsContext) = {
     
     val animation = this.animations(id)
     val frame = this.currentFrame(animation.length)
-    gfx.drawImage(animation(frame), canvasX, canvasY, gridW, gridH)
+    gfx.drawImage(animation(frame), x, y, w, h)
     
   }
   
@@ -56,9 +56,8 @@ object Animate {
   
   // Gets the animation frame for the given id of frames length animation
   private def frame(id: String, frame: Int): Image = {
-    val filepath = "assets/sprites/" + id + "-" + frame + ".png"
-    val inputFile = new File(filepath)
-    val inputStream = new FileInputStream(inputFile)
+    val filepath = "assets/gfx/" + id + "-" + frame + ".png"
+    val inputStream = new FileInputStream(filepath)
     val image = new Image(inputStream)
     inputStream.close
     image

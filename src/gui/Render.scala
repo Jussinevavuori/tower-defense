@@ -124,22 +124,16 @@ object Render {
     this.sideH = side.height.value
     this.gridW = mainW / game.cols
     this.gridH = mainH / game.rows
-
-    // Rendering the gridded background
+    
+    // Rendering the background
     for {
       i <- 0 until game.cols
       j <- 0 until game.rows
     } {
       val (x, y) = canvasCoords(i, j)
-      mainGfx.fill = { (i + j) % 2 } match { // Choose correct alternating fill
-        case 0 => Color(0.15, 0.15, 0.15, 1.0)
-        case _ => Color(0.20, 0.20, 0.20, 1.0)
-      }
-      mainGfx.fillRect(x, y, this.gridW, this.gridH)
+      val sprite = this.loadRandomImage("grasstile", Array(10, 10, 10, 1))
+      mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
     }
-
-    // Translating to center of squares
-    mainGfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
 
     // Rendering the path
     mainGfx.fill = Color(1.0, 0.0, 0.0, 1.0) // Red color for path markers
@@ -147,12 +141,10 @@ object Render {
     var path: Option[Path] = Some(game.path) // The current path starting with the initial game path
     while (path.isDefined) { // Going through the path chain and drawing a circle for each one
       val (x, y) = this.canvasCoords(path.get.pos.x, path.get.pos.y)
-      mainGfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry) // Drawing the circle for tha path segment
+      val sprite = this.loadRandomImage("pathtile", Array(1, 5))
+      mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
       path = path.get.next // Loading the next path as the current path
     }
-
-    // Translating back
-    mainGfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
 
     // Rendering the sidebar graphics to side canvas
     val sidebarImage = this.loadImage("sidebar")
@@ -281,7 +273,26 @@ object Render {
    */
   
   def loadImage(filename: String): Image = {
-    val filepath = "assets/sprites/" + filename + ".png"
+    val filepath = "assets/gfx/" + filename + ".png"
+    val inputStream = new FileInputStream(filepath)
+    val image = new Image(inputStream)
+    inputStream.close()
+    image
+  }
+  
+  /* Loads a random image
+   */
+  
+  def loadRandomImage(filename: String, chances: Array[Int]): Image = {
+    val randomInt = scala.util.Random.nextInt(chances.sum) + 1
+    var filepath = ""
+    for (i <- 1 to chances.length) {
+      val lowerbound = chances.take(i - 1).sum
+      val upperbound = chances.take(i).sum
+      if (randomInt <= upperbound && randomInt > lowerbound) {
+        filepath = s"assets/gfx/$filename${i-1}.png"
+      }
+    }
     val inputStream = new FileInputStream(filepath)
     val image = new Image(inputStream)
     inputStream.close()

@@ -38,6 +38,7 @@ object Main extends JFXApp {
       // Canvas for the game and sidebar and prerendering
       val mainCanvas = new Canvas(1920, 840)
       val sideCanvas = new Canvas(1920, 1080)
+      val titleCanvas = new Canvas(1920, 1080)
       mainCanvas.requestFocus()
       Render.prerender(mainCanvas, sideCanvas, currentGame)
       
@@ -52,8 +53,34 @@ object Main extends JFXApp {
       // The previous time stamp for calculation of elapsed time
       var previousTime: Long = -1
       
+      // Show title screen at startup
+      
+      val titleScreenTimer: AnimationTimer = AnimationTimer { now =>
+        
+        // Calculate the elapsed time in seconds and reset previous
+        if (this.previousTime < 0) this.previousTime = now
+        val elapsedTime: Double = (now - previousTime) / 1000000000.0 
+        previousTime = now
+        
+        Titlescreen.advance(this.titleCanvas, elapsedTime)
+        
+        // When completed hide title canvas and start game
+        titleCanvas.opacity = Titlescreen.opacity
+        var started = false
+        if (Titlescreen.fading && !started) {
+          mainTimer.start()
+          Music.startLoop()
+        }
+        if (Titlescreen.completed) {
+          titleCanvas.visible = false
+          titleScreenTimer.stop()
+          mainTimer.start()
+        }
+      }
+      titleScreenTimer.start()
+      
       // Creating the animation timer
-      val timer = AnimationTimer { now =>
+      val mainTimer = AnimationTimer { now =>
         
         // Calculate the elapsed time in seconds and reset previous
         val elapsedTime: Double = (now - previousTime) / 1000000000.0 
@@ -61,19 +88,18 @@ object Main extends JFXApp {
                 
         // Each frame update game, render and animate
         currentGame.update(elapsedTime)
-        Render.renderGame(currentGame, mainCanvas)
-        Render.renderSide(currentGame, sideCanvas)
+        Render.renderGame(currentGame, this.mainCanvas)
+        Render.renderSide(currentGame, this.sideCanvas)
         Animate.advance()
         if (currentGame.shop.active) {
-          Render.renderActiveTower(mainCanvas, currentGame, mouseX, mouseY)
+          Render.renderActiveTower(this.mainCanvas, currentGame, mouseX, mouseY)
         }
         
         // Render the FPS
         if (this.showFPS) Render.fps(elapsedTime, mainCanvas)
         
       }
-      timer.start()
-      
+
       
       // Creating the menubar
       val menuBar   = new MenuBar
@@ -86,14 +112,15 @@ object Main extends JFXApp {
       val gmNew        = new MenuItem("New game")
       val gmLoad       = new MenuItem("Load game")
       val gmExit       = new MenuItem("Exit")
-      val dmNextWave   = new MenuItem("Summon next wave")
       val dmShowFPS    = new MenuItem("Show FPS")
       val dmSave       = new MenuItem("Save")
       val dmGodmode    = new MenuItem("Godmode")
       val dmBuyBasic   = new MenuItem("Buy basic tower ($500)")
       val dmBuyLaser   = new MenuItem("Buy laser tower ($800)")
       val dmBuyHoming  = new MenuItem("Buy homing tower ($1000)")
-      
+      val dmMute       = new MenuItem("Mute music")
+      val dmStartMusic = new MenuItem("Start music")
+      val dmStopMusic  = new MenuItem("Stop music")
       
       // Assigning the menu items to the menus
       gameMenu.items  = List(
@@ -101,40 +128,78 @@ object Main extends JFXApp {
           gmLoad, new SeparatorMenuItem,
           gmExit)
       debugMenu.items = List(
-          dmNextWave,   new SeparatorMenuItem,
           dmShowFPS,    new SeparatorMenuItem,
           dmSave,       new SeparatorMenuItem,
           dmGodmode,    new SeparatorMenuItem,
           dmBuyBasic,   new SeparatorMenuItem,
           dmBuyLaser,   new SeparatorMenuItem,
-          dmBuyHoming)
+          dmBuyHoming,  new SeparatorMenuItem,
+          dmMute,       new SeparatorMenuItem,
+          dmStartMusic, new SeparatorMenuItem,
+          dmStopMusic)
       
       
       // Assigning the menu button actions
-      gmNew.onAction       = (e: ActionEvent) => {
+      gmNew.onAction        = (e: ActionEvent) => {
         currentGame = GameLoader("data/defaultdata.xml")
         Render.prerender(mainCanvas, sideCanvas, currentGame)
+        Audio.play("iosfx.wav")
       }
-      gmLoad.onAction      = (e: ActionEvent) => {
+      gmLoad.onAction       = (e: ActionEvent) => {
         currentGame = GameLoader("data/savedata.xml")
         Render.prerender(mainCanvas, sideCanvas, currentGame)
+        Audio.play("iosfx.wav")
       }
-      dmGodmode.onAction   = (e: ActionEvent) => {
+      dmGodmode.onAction    = (e: ActionEvent) => {
         currentGame.player.reward(10000000)
         currentGame.player.heal(100000)
+        Audio.play("fanfare.wav")
       }
-      gmExit.onAction      = (e: ActionEvent) => sys.exit(0)
-      dmShowFPS.onAction   = (e: ActionEvent) => this.showFPS = !this.showFPS
-      dmNextWave.onAction  = (e: ActionEvent) => currentGame.loadNextWave()
-      dmSave.onAction      = (e: ActionEvent) => GameSaver.save(currentGame)
-      dmBuyBasic.onAction  = (e: ActionEvent) => currentGame.shop.choose("basic", currentGame)
-      dmBuyLaser.onAction  = (e: ActionEvent) => currentGame.shop.choose("laser", currentGame)
-      dmBuyHoming.onAction = (e: ActionEvent) => currentGame.shop.choose("homing", currentGame)
+      gmExit.onAction       = (e: ActionEvent) => {
+        sys.exit(0)
+      }
+      dmShowFPS.onAction    = (e: ActionEvent) => {
+        this.showFPS = !this.showFPS
+      }
+      dmSave.onAction       = (e: ActionEvent) => {
+        GameSaver.save(currentGame)
+        Audio.play("iosfx.wav")
+      }
+      dmBuyBasic.onAction   = (e: ActionEvent) => {
+        currentGame.shop.choose("basic", currentGame)
+        if (currentGame.shop.active) 
+          Audio.play("coin.wav")
+        else
+          Audio.play("error.wav")
+      }
+      dmBuyLaser.onAction   = (e: ActionEvent) => {
+        currentGame.shop.choose("laser", currentGame)
+        if (currentGame.shop.active) 
+          Audio.play("coin.wav")
+        else
+          Audio.play("error.wav")      
+      }
+      dmBuyHoming.onAction  = (e: ActionEvent) => {
+        currentGame.shop.choose("homing", currentGame)
+        if (currentGame.shop.active) 
+          Audio.play("coin.wav")
+        else
+          Audio.play("error.wav")
+      }
+      dmMute.onAction       = (e: ActionEvent) => {
+        Music.mute()
+      }
+      dmStartMusic.onAction = (e: ActionEvent) => {
+        Music.startLoop()
+      }
+      dmStopMusic.onAction  = (e: ActionEvent) => {
+        Music.stopLoop()
+      }
       
       // Creating the panes and organizing them
       val stack = new StackPane()
       stack.setAlignment(Pos.TopCenter)
-      stack.children = List(sideCanvas, mainCanvas, menuBar)
+      stack.children = List(sideCanvas, mainCanvas, menuBar, titleCanvas)
       menuBar.visible = false
       root = stack
 
@@ -160,6 +225,7 @@ object Main extends JFXApp {
         def handle(me: MouseEvent) = {
           if (currentGame.shop.active) {
             currentGame.shop.purchase(currentGame, mouseX / Render.gridW, mouseY / Render.gridH)
+            Audio.play("impact.wav")
           }
         }
       })
@@ -168,7 +234,10 @@ object Main extends JFXApp {
       this.onKeyPressed = new EventHandler[KeyEvent] {
         def handle(ke: KeyEvent) = {
           ke.getCode() match {
-            case KeyCode.SPACE => currentGame.loadNextWave()
+            case KeyCode.SPACE => {
+              currentGame.loadNextWave()
+              Audio.play("newwave.wav")
+            }
             case _ =>
           }
         }
