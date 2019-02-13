@@ -46,7 +46,9 @@ object Titlescreen {
   private val sfxPlayTime = 1.0
   
   // Advance animation
-  def advance(canvas: Canvas, elapsedTime: Double) = {
+  def advance(canvas: Canvas, elapsedTime: Double): Unit = {
+
+    if (this.completed) return 
 
     this.time += elapsedTime
     this.completed = this.time > (this.endTime + this.fadeTime)
@@ -80,6 +82,10 @@ object Titlescreen {
       this.sfxPlayed = true
       Audio.play(this.sfx)
     }
+  }
+  def skip() = {
+    this.completed = true
+    this.fading = true
   }
 }
 

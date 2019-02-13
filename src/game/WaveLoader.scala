@@ -20,8 +20,8 @@ object WaveLoader {
   
   def loadWave(wave: Int, path: Path): Wave = {
     
-    var finalWave = new Wave(-1, Array[Enemy]())
-    
+    var finalWave = new Wave(-1, Buffer[Enemy]())
+  
     try {
     
       // Loading the waves.xml file
@@ -69,7 +69,8 @@ object WaveLoader {
         }        
       })
       
-      finalWave = new Wave(wave, enemies.toArray)
+      scala.util.Random.shuffle(enemies)
+      finalWave = new Wave(wave, scala.util.Random.shuffle(enemies))
       
     } catch {
       

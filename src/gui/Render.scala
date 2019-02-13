@@ -27,7 +27,7 @@ object Render {
    * @return	Unit
    */
 
-  def renderGame(game: Game, canvas: Canvas): Unit = {
+  def renderGame(game: Game, canvas: Canvas, selectedTower: Option[Tower]): Unit = {
 
     if (this.mainBg == null) throw new RenderingException(
       "Main background is null. Prerender must be performed before rendering")
@@ -40,10 +40,12 @@ object Render {
     gfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
 
     // Render all the dynamic elements
-    this.renderTowerRadii(gfx, game.towers)
     this.renderEnemies(gfx, game.enemies)
     this.renderProjectiles(gfx, game.projectiles)
-
+    if (selectedTower.isDefined) {
+      this.renderSelectedTower(gfx, selectedTower.get)
+    }
+    
     // Translating back
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
 
@@ -167,8 +169,25 @@ object Render {
     mainGfx.font = gamegirlFont 
     sideGfx.font = gamegirlFont 
   }
+  
+  
+  
+  /* Renders the selected tower
+   */
+  
+  private def renderSelectedTower(gfx: GraphicsContext, tower: Tower): Unit = {
+    gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
+    gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
+    gfx.lineWidth = 10
+    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
+    val rx = tower.radius * gridW
+    val ry = tower.radius * gridH
+    gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
+    gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+  }
 
-  /* Renders the towers as blue circles
+  
+  /* Renders the towers
    */
 
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
@@ -178,39 +197,7 @@ object Render {
     }
   }
   
-  /* Renders the radii of the towers
-   */
-  
-  private def renderTowerRadii(gfx: GraphicsContext, towers: Buffer[Tower]) = {
-    gfx.fill   = Color(0.0, 0.8, 0.2, 0.10)
-    gfx.stroke = Color(0.0, 0.8, 0.2, 0.20)
-    for (t <- towers) {
-      val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
-      val r = t.radius
-      gfx.fillOval(x - r, y - r, 2 * r, 2 * r)
-      gfx.strokeOval(x - r, y - r, 2 * r, 2 * r)
-    }
 
-  }
-
-  /* Renders the towers targets with white lines pointing from the
-   * tower to the towers target if the tower has a target.
-   */
-
-  private def renderTowerTargets(gfx: GraphicsContext, towers: Buffer[Tower]) = {
-    gfx.lineWidth = 3.0
-    gfx.stroke = Color(1.0, 1.0, 1.0, 1.0)
-    for (t <- towers) {
-      if (t.target.isDefined && t.hasShot) {
-        val trgP = t.target.get.pos // Target pos
-        val towP = t.pos // Tower pos
-        val (trgX, trgY) = this.canvasCoords(trgP.x, trgP.y)
-        val (towX, towY) = this.canvasCoords(towP.x, towP.y)
-        gfx.strokeLine(trgX, trgY, towX, towY)
-      }
-    }
-  }
-  
   /* Renders the projectiles
    */
   
@@ -221,6 +208,7 @@ object Render {
       gfx.fillOval(x - 3, y - 3, 6, 6)
     }
   }
+
 
   /* Renders the enemies as purple circles of the correct size.
    */
@@ -242,8 +230,8 @@ object Render {
       val (rx, ry) = (e.size * this.gridW, e.size * this.gridH)
       gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
     }
-
   }
+  
 
   /* Converts any grid position to a coordinate position on the
    * canvas, given a game and a canvas and a pair of coordinates.
@@ -252,6 +240,7 @@ object Render {
   private def canvasCoords(x: Double, y: Double): (Double, Double) = {
     (x * this.gridW, y * this.gridH)
   }
+
 
   /* Renders the FPS in the top corner of the canvas
    */
@@ -280,6 +269,7 @@ object Render {
     image
   }
   
+
   /* Loads a random image
    */
   
@@ -300,6 +290,7 @@ object Render {
   }
 
 }
+
 
 // An exception class for rendering expections if needed
 class RenderingException(msg: String) extends Exception(msg)

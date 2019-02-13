@@ -12,14 +12,12 @@ import java.io.File
 object Audio {
   
   def play(filename: String, loudness: Double = 0.5) = {
-    
     val filepath = "assets/sfx/" + filename
     val file = new File(filepath).toURI().toString()
     val media = new Media(file)
     val player = new MediaPlayer(media)
     player.volume = loudness
     player.play()
-    
   }
   
 }
@@ -39,4 +37,5 @@ object Music {
   def stopLoop() = this.player.pause()
   
   def mute() = this.player.mute = !this.player.mute.value
+
 }

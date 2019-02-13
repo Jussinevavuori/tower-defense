@@ -1,5 +1,7 @@
 package game
 
+import scala.collection.mutable.Buffer
+
 
 /* A wave is a container for enemies. The game holds a single wave at
  * a time. A wave holds a list of enemies, which are to be spawned into
@@ -11,7 +13,7 @@ package game
  * 
  */
 
-class Wave(val number: Int, val enemies: Array[Enemy]) {
+class Wave(val number: Int, val enemies: Buffer[Enemy]) {
   
   private var timer = 0        // How many frames have passed
   private val frequency = 30   // Frequency of enemy spawns in frames

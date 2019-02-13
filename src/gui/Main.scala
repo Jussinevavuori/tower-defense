@@ -30,9 +30,9 @@ object Main extends JFXApp {
   stage = new JFXApp.PrimaryStage {
     
     title = "Tower Defense"
-    
+        
     fullScreen = true
-    
+
     scene = new Scene {
       
       // Canvas for the game and sidebar and prerendering
@@ -68,36 +68,39 @@ object Main extends JFXApp {
         titleCanvas.opacity = Titlescreen.opacity
         var started = false
         if (Titlescreen.fading && !started) {
-          mainTimer.start()
+          started = true
+          renderTimer.start()
+          gameTimer.start()
           Music.startLoop()
         }
         if (Titlescreen.completed) {
           titleCanvas.visible = false
           titleScreenTimer.stop()
-          mainTimer.start()
         }
       }
       titleScreenTimer.start()
       
       // Creating the animation timer
-      val mainTimer = AnimationTimer { now =>
+      val renderTimer = AnimationTimer { now =>
         
-        // Calculate the elapsed time in seconds and reset previous
-        val elapsedTime: Double = (now - previousTime) / 1000000000.0 
-        previousTime = now
-                
-        // Each frame update game, render and animate
-        currentGame.update(elapsedTime)
-        Render.renderGame(currentGame, this.mainCanvas)
+        Render.renderGame(currentGame, this.mainCanvas, selectedTower)
         Render.renderSide(currentGame, this.sideCanvas)
         Animate.advance()
         if (currentGame.shop.active) {
           Render.renderActiveTower(this.mainCanvas, currentGame, mouseX, mouseY)
         }
         
-        // Render the FPS
-        if (this.showFPS) Render.fps(elapsedTime, mainCanvas)
+      }
+      
+      val gameTimer = AnimationTimer { now => 
         
+        // Calculate the elapsed time in seconds and reset previous
+        val elapsedTime: Double = (now - previousTime) / 1000000000.0 
+        previousTime = now
+        
+        currentGame.update(elapsedTime)
+        
+        if (this.showFPS) Render.fps(elapsedTime, mainCanvas)
       }
 
       
@@ -115,9 +118,9 @@ object Main extends JFXApp {
       val dmShowFPS    = new MenuItem("Show FPS")
       val dmSave       = new MenuItem("Save")
       val dmGodmode    = new MenuItem("Godmode")
-      val dmBuyBasic   = new MenuItem("Buy basic tower ($500)")
-      val dmBuyLaser   = new MenuItem("Buy laser tower ($800)")
-      val dmBuyHoming  = new MenuItem("Buy homing tower ($1000)")
+      val dmBuyBasic   = new MenuItem("Buy basic tower")
+      val dmBuyLaser   = new MenuItem("Buy laser tower")
+      val dmBuyHoming  = new MenuItem("Buy homing tower")
       val dmMute       = new MenuItem("Mute music")
       val dmStartMusic = new MenuItem("Start music")
       val dmStopMusic  = new MenuItem("Stop music")
@@ -211,6 +214,7 @@ object Main extends JFXApp {
         def handle(me: MouseEvent) = fullScreen = true
       }
 
+      
       // MenuBar only visible when mouse is hovering above 
       mainCanvas.setOnMouseMoved(new EventHandler[MouseEvent] {
         def handle(me: MouseEvent) = {
@@ -220,12 +224,27 @@ object Main extends JFXApp {
         }
       })
       
+
+      private var selectedTower: Option[Tower] = None
+      
       // Purchase on click
       mainCanvas.setOnMouseClicked(new EventHandler[MouseEvent] {
-        def handle(me: MouseEvent) = {
+        def handle(me: MouseEvent): Unit = {
+          // Handle shop purchases
           if (currentGame.shop.active) {
             currentGame.shop.purchase(currentGame, mouseX / Render.gridW, mouseY / Render.gridH)
             Audio.play("impact.wav")
+          }
+          // Handle tower selection
+          else {
+            val mouseVec = Vec(mouseX / Render.gridW - 0.5, mouseY / Render.gridH - 0.5)
+            for (t <- currentGame.towers) {
+              if (mouseVec.distance(t.pos) < 0.6) {
+                selectedTower = Some(t)
+                return
+              }
+            }
+            selectedTower = None
           }
         }
       })
@@ -234,17 +253,26 @@ object Main extends JFXApp {
       this.onKeyPressed = new EventHandler[KeyEvent] {
         def handle(ke: KeyEvent) = {
           ke.getCode() match {
+     
+            // Spacebar skips titlescreen
+            case KeyCode.SPACE if (!Titlescreen.completed) => {
+              Titlescreen.skip()
+            }
+            
+            // Spacebar summons next wave
             case KeyCode.SPACE => {
               currentGame.loadNextWave()
               Audio.play("newwave.wav")
+            }
+            
+            // Enter upgrades selected tower
+            case KeyCode.ENTER if (selectedTower.isDefined) => {
+              selectedTower = currentGame.shop.upgrade(currentGame, selectedTower.get)
             }
             case _ =>
           }
         }
       }
-      
-    }
-  
+    }  
   }
-  
 }

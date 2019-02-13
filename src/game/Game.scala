@@ -60,9 +60,15 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
     // Delete dead and finished enemies from the game
     this.enemies = this.enemies.filterNot(e => e.dead || e.finished)
     
-    // Update each tower's target and shoot
-    this.towers.foreach(_.updateTarget(this.enemies))
-    this.towers.foreach(this.projectiles ++= _.shoot(elapsedTime))
+   // Update each tower's target and shoot and upgrade
+    for (i <- 0 until this.towers.length reverse) {
+      if (towers(i).upgraded) {
+        this.towers.remove(i)
+      }
+      val tower = this.towers(i)
+      tower.updateTarget(this.enemies)
+      this.projectiles ++= tower.shoot(elapsedTime)
+    }
     
     // Update and remove projectiles
     for (i <- this.projectiles.indices.reverse) {

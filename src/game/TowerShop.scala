@@ -11,9 +11,9 @@ class TowerShop {
   // Function to choose a tower to be the active tower by its id
   def choose(id: String, game: Game) = {
     val choice = id match {
-        case "basic"  => new BasicTower(-1, -1)
-        case "laser"  => new LaserTower(-1, -1)
-        case "homing" => new HomingTower(-1, -1)
+        case "basic"  => new CannonTower1(-1, -1)
+        case "laser"  => new RapidTower1(-1, -1)
+        case "homing" => new HomingTower1(-1, -1)
         case _ => throw new IllegalArgumentException("Unrecognized tower id")
     }
     if (this.activeTower.isEmpty && game.player.canAfford(choice.price)) {
@@ -31,6 +31,19 @@ class TowerShop {
       purchased.pos.moveTo(Vec(x, y))
       game.player.charge(purchased.price)
       game.towers += purchased
+    }
+  }
+  
+  // Function to upgrade the chosen tower
+  def upgrade(game: Game, tower: Tower): Option[Tower] = {
+    if (tower.upgrade.isDefined && game.player.canAfford(tower.upgrade.get.price)) {
+      tower.upgraded = true
+      game.towers += tower.upgrade.get
+      tower.upgrade.get.pos.moveTo(tower.pos)
+      game.player.charge(tower.upgrade.get.price)
+      tower.upgrade
+    } else {
+      None
     }
   }
   

@@ -32,13 +32,13 @@ import scala.util.Random.nextDouble
 
 // Normal first: smallest normal unit, does not spawn any units
 class EnemyN1(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n1", 10.0, Speed(0.06, 0.005), 0.30, 20, _x, _y, _target) {
+  extends Enemy("n1", 10.0, Speed(0.03, 0.005), 0.30, 20, _x, _y, _target) {
   def death = Array[Enemy]()  
 }
 
 // Normal second: spawns two smaller units
 class EnemyN2(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n2", 15.0, Speed(0.08, 0.005), 0.35, 50, _x, _y, _target) {
+  extends Enemy("n2", 15.0, Speed(0.05, 0.005), 0.35, 50, _x, _y, _target) {
   def death = Array[Enemy](
       new EnemyN1(this.pos.x, this.pos.y, this.target),
       new EnemyN1(this.pos.x, this.pos.y, this.target)
@@ -47,7 +47,7 @@ class EnemyN2(_x: Double, _y: Double, _target: Option[Path])
 
 // Normal third: spawns two smaller units
 class EnemyN3(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n3", 25.0, Speed(0.10, 0.005), 0.40, 80, _x, _y, _target) {
+  extends Enemy("n3", 25.0, Speed(0.8, 0.005), 0.40, 80, _x, _y, _target) {
   def death = Array[Enemy](
       new EnemyN2(this.pos.x, this.pos.y, this.target),
       new EnemyN2(this.pos.x, this.pos.y, this.target)

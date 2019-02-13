@@ -15,7 +15,8 @@ abstract class Tower(_x: Double, _y: Double,
                      val strength: Double,
                      val radius:   Double,
                      val cooldown: Double,
-                     val price:    Int) {
+                     val price:    Int,
+                     val upgrade:  Option[Tower]) {
   
   
   /* The position of a tower
@@ -38,7 +39,13 @@ abstract class Tower(_x: Double, _y: Double,
   def hasTarget: Boolean = this.target.isDefined
   
   
-  /* The method the tower uses to find its targets
+  /* Flag that is set to true when the tower will is upgraded
+   * to delete the tower
+   */
+  
+  var upgraded = false
+  
+ /* The method the tower uses to find its targets
    * if it doesnt already have one.
    */
   
