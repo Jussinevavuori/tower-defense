@@ -1,7 +1,8 @@
 package game
 
-class BulletProjectile(_x: Double, _y: Double, strength: Double, target: Enemy)
-  extends Projectile(_x, _y, strength) {
+class BulletProjectile(_x: Double, _y: Double,
+    strength: Double, range: Double, target: Enemy)
+  extends Projectile(_x, _y, strength, range) {
   
   val velocity = (target.pos - this.pos)
   velocity.scaleTo(0.4)
@@ -10,14 +11,18 @@ class BulletProjectile(_x: Double, _y: Double, strength: Double, target: Enemy)
   
 }
 
-class HomingProjectile(_x: Double, _y: Double, strength: Double, val target: Enemy)
-  extends Projectile(_x, _y, strength) {
+class HomingProjectile(_x: Double, _y: Double,
+    strength: Double, range: Double, val target: Enemy,
+    val maxSpeed: Double, val acceleration: Double)
+  extends Projectile(_x, _y, strength, range) {
   
+  var speed = 0.02
   var latestTargetPos = target.pos
   def velocity = {
     if (this.target.alive) this.latestTargetPos = target.pos
     val vel = this.latestTargetPos - this.pos
-    vel.scaleTo(0.3)
+    vel.scaleTo(this.speed)
+    this.speed += math.min(this.speed + this.acceleration, this.maxSpeed)
     vel
   }
   

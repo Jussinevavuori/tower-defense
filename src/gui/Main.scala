@@ -31,7 +31,7 @@ object Main extends JFXApp {
     
     title = "Tower Defense"
     
-    fullScreen_=(true)
+    fullScreen = true
     
     scene = new Scene {
       

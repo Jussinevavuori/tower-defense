@@ -25,12 +25,12 @@ import scala.collection.mutable.Buffer
   * 	upon shooting
   */
 
-class BasicTower(_x: Double, _y: Double)
+class CannonTower(_x: Double, _y: Double)
   extends Tower(_x, _y, "basic", 10.0, 5.5, 0.8, 500) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
-    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, target))
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
 
@@ -39,7 +39,7 @@ class LaserTower(_x: Double, _y: Double)
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot3.wav", 0.2)
-    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, target))
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius,target))
   }
 }
 
@@ -48,6 +48,6 @@ class HomingTower(_x: Double, _y: Double)
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
-    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, target))
+    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, target, 0.3, 0.0001))
   }
 }
