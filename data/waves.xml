@@ -1,0 +1,61 @@
+<?xml version= "1.0"?>
+
+<waves>
+	<wave>
+		<enemies> </enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="3" id="n1"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="6" id="n1"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="6" id="n1"/>
+			<enemy count="1" id="n2"/>
+		</enemies>
+	</wave>
+ 	<wave>
+  		<enemies>
+			<enemy count="10" id="n1"/>
+			<enemy count="2" id="n2"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="15" id="n1"/>
+			<enemy count="4" id="n2"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="10" id="n1"/>
+			<enemy count="8" id="n2"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="6" id="n1"/>
+			<enemy count="2" id="n2"/>
+			<enemy count="1" id="n3"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="2" id="n1"/>
+			<enemy count="5" id="n2"/>
+			<enemy count="3" id="n3"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="8" id="n2"/>
+			<enemy count="6" id="n3"/>
+		</enemies>
+	</wave>
+</waves>
