@@ -15,6 +15,7 @@ import scalafx.scene.image.Image
 import scalafx.scene.image.WritableImage
 import scalafx.scene.paint.Color
 import scalafx.scene.text.Font
+import scalafx.scene.text.TextAlignment
 
 object Render {
 
@@ -45,6 +46,7 @@ object Render {
     if (selectedTower.isDefined) {
       this.renderSelectedTower(gfx, selectedTower.get)
     }
+    this.renderEffects(gfx)
     
     // Translating back
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
@@ -71,16 +73,31 @@ object Render {
     // Loading the graphics of the canvas and drawing background
     val gfx = canvas.graphicsContext2D
     gfx.drawImage(this.sideBg, 0, 0)
-
+    
     // Translate to bottom of main canvas
     gfx.translate(0, this.mainH)
-
-    // Draw information
+    
+    // Draw player and wave information
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
-    gfx.fillText(s"${game.player.health.toInt}/100", 73, 97)
-    gfx.fillText(s"${game.player.money}", 73, 177)
-    //gfx.fillText(s"Wave ${game.wave.number}/${WaveLoader.maxWave}", 20, 150)
-
+    gfx.font = this.bigFont
+    gfx.fillText(s"${game.wave.number}", 1769, 110)
+    gfx.font = this.mediumFont
+    gfx.textAlign = TextAlignment.Center
+    gfx.fillText(s"${game.player.health.toInt} HP", 192, 182)    
+    gfx.fillText(s"${"$"} ${game.player.money}", 192, 99)
+    
+    // Shop icons
+    Animate.animate("cannondog", 428, 76, 60, 60, gfx)
+    Animate.animate("cannondog", 628, 76, 60, 60, gfx)
+    Animate.animate("cannondog", 828, 76, 60, 60, gfx)    
+    
+    // Shop prices
+    gfx.textAlign = TextAlignment.Left
+    gfx.font = this.smallFont
+    gfx.fillText("$ 600",  403, 204)
+    gfx.fillText("$ 1200", 597, 204)
+    gfx.fillText("$ 1000", 796, 204)
+    
     // Translate back
     gfx.translate(0, -this.mainH)
   }
@@ -112,6 +129,11 @@ object Render {
   var sideH: Double = 0.0
   var gridW: Double = 0.0
   var gridH: Double = 0.0
+  
+  // The preloaded fonts
+  var smallFont:  Font = null
+  var mediumFont: Font = null
+  var bigFont:    Font = null
 
   def prerender(main: Canvas, side: Canvas, game: Game) = {
 
@@ -163,11 +185,15 @@ object Render {
     this.sideBg = snapshotSide
     
     // Load font
-    val fontStream = new FileInputStream(new File("assets/font/gamegirl.ttf"))
-    val gamegirlFont = Font.loadFont(fontStream, 40)
-    fontStream.close()
-    mainGfx.font = gamegirlFont 
-    sideGfx.font = gamegirlFont 
+    val smallFontStream  = new FileInputStream(new File("assets/font/gamegirl.ttf"))
+    val mediumFontStream = new FileInputStream(new File("assets/font/gamegirl.ttf"))
+    val bigFontStream    = new FileInputStream(new File("assets/font/gamegirl.ttf"))
+    this.smallFont  = Font.loadFont(smallFontStream, 20)
+    this.mediumFont = Font.loadFont(mediumFontStream, 30)
+    this.bigFont    = Font.loadFont(bigFontStream, 40)
+    smallFontStream.close()
+    mediumFontStream.close()
+    bigFontStream.close()
   }
   
   
@@ -232,6 +258,19 @@ object Render {
     }
   }
   
+  
+  /* Renders the ongoing special effects in the effects object
+   */
+  
+  def renderEffects(gfx: GraphicsContext) = {
+    gfx.font = this.smallFont
+    gfx.fill = Color.White
+    for (m <- Effects.moneyEffects) {
+      val (x, y) = this.canvasCoords(m.x, m.y)
+      gfx.fillText("$", x, y)
+    }
+  }
+  
 
   /* Converts any grid position to a coordinate position on the
    * canvas, given a game and a canvas and a pair of coordinates.
@@ -248,6 +287,7 @@ object Render {
   var previousFrames = Buffer[Int]()
   def fps(elapsedTime: Double, canvas: Canvas) = {
     val gfx = canvas.graphicsContext2D
+    gfx.font = this.bigFont
     val fps = (1.0 / elapsedTime).toInt
     previousFrames.append(fps)
     if (previousFrames.size > 60) {

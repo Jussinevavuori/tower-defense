@@ -7,11 +7,8 @@ import scala.collection.mutable.Buffer
   * {{{
   * 	
   * class TowerType(_x: Double, _y: Double)
-<<<<<<< HEAD
-  * 	extends Tower(_x, _y, name, strength, radius, cooldown, price)
-=======
+
   * 	extends Tower(_x, _y, name, strength, radius, cooldown, price, upgrade)
->>>>>>> 0f16db16ba94389b4d22fec28e1a327d9ba7c676
   * 
   * 	def generateProjectiles: Buffer[Projectile]
   * 
@@ -75,7 +72,7 @@ class HomingTower1(_x: Double, _y: Double)
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
-    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, target, 0.3, 0.0001))
+    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, target, 0.4, 1.1))
   }
 }
 class HomingTower2(_x: Double, _y: Double)
@@ -83,6 +80,6 @@ class HomingTower2(_x: Double, _y: Double)
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
-    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, target, 0.3, 0.0001))
+    Buffer(new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, target, 0.4, 1.1))
   }
 }

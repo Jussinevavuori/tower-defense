@@ -20,6 +20,16 @@ object Audio {
     player.play()
   }
   
+  def playTimes(filename: String, times: Int, loudness: Double = 0.5) = {
+    val filepath = "assets/sfx/" + filename
+    val file = new File(filepath).toURI().toString()
+    val media = new Media(file)
+    val player = new MediaPlayer(media)
+    player.cycleCount = times
+    player.volume = loudness
+    player.play()
+  }
+  
 }
 
 // Plays the music in the background. Music can be started, stopped or muted

@@ -22,7 +22,7 @@ class HomingProjectile(_x: Double, _y: Double,
     if (this.target.alive) this.latestTargetPos = target.pos
     val vel = this.latestTargetPos - this.pos
     vel.scaleTo(this.speed)
-    this.speed += math.min(this.speed + this.acceleration, this.maxSpeed)
+    if (this.speed < this.maxSpeed) this.speed *= this.acceleration
     vel
   }
   

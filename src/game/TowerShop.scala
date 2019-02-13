@@ -24,14 +24,15 @@ class TowerShop {
   }
   
   // Function to buy and place down the active tower
-  def purchase(game: Game, x: Double, y: Double) = {
-    if (this.activeTower.isDefined) {
+  def purchase(game: Game, x: Double, y: Double): Boolean = {
+    if (this.activeTower.isDefined & game.isValidSpot(x, y)) {
       val purchased = this.activeTower.get
       this.activeTower = None
       purchased.pos.moveTo(Vec(x, y))
       game.player.charge(purchased.price)
       game.towers += purchased
-    }
+      true
+    } else false
   }
   
   // Function to upgrade the chosen tower

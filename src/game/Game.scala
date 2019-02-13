@@ -33,6 +33,7 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
   
   // Buffer of projectiles
   var projectiles = Buffer[Projectile]()
+
   
     
   /* Function that is called every frame and updates the game
@@ -40,25 +41,21 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
    * scaling the movement
    */
   def update(elapsedTime: Double): Unit = {
-    
-
+        
     // Update the enemies
-    for (i <- this.enemies.indices) {
+    for (i <- this.enemies.indices.reverse) {
       val enemy = this.enemies(i)  // Current enemy
       if (enemy.dead) { // If enemy is dead
         this.player.reward(enemy.reward)  // Reward player with correct amount of money
-        for (spawn <- enemy.death()) {  // Add spawned enemies from the dead enemy to the game
-          this.enemies.append(spawn)
-        }
-      } else {  // If enemy is alive 
-        if (enemy.advance(elapsedTime)) {  // Advance the enemy.
-          this.player.damage(1)  // If enemy reaches the goal damage the player
-        }
+        for (spawn <- enemy.death())  // Add spawned enemies from the dead enemy to the game
+          this.enemies.append(spawn)   
+        gui.Effects.addMoneyEffect(enemy)
+        this.enemies.remove(i) // Remove enemy
+      } else if (enemy.advance(elapsedTime)) {  // Advance the enemy.
+        this.player.damage(1)  // If enemy reaches the goal damage the player
+        this.enemies.remove(i)  // and remove the enemy
       }
     }
-    
-    // Delete dead and finished enemies from the game
-    this.enemies = this.enemies.filterNot(e => e.dead || e.finished)
     
    // Update each tower's target and shoot and upgrade
     for (i <- 0 until this.towers.length reverse) {
@@ -90,14 +87,32 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
     
   }
   
-  /* Loads the next wave
+  /* Loads the next wave only if current wave is finished spawning enemies, all the enemies
+   * have been already killed and there is another wave to load in.
    */
   
-  def loadNextWave() = {
-    if (this.wave.number < WaveLoader.maxWave && this.wave.finished) {
+  def loadNextWave(): Boolean = {
+    if (this.wave.number < WaveLoader.maxWave && this.wave.finished && this.enemies.isEmpty) {
       this.wave = WaveLoader(this.wave.number + 1, this.path)
+      true
+    } else {
+      false
     }
+  }
+  
+  
+  /* Sees if a valid spot on the grid is valid, that is it is within the game bounds and 
+   * not overlapping with the path too much
+   */
+  
+  def isValidSpot(x: Double, y: Double) = {
+    val v = Vec(x, y)
+    x >= 0.0 && y >= 0.0 && x <= this.cols && y <= this.rows &&
+    this.path.toArray().map(_.pos).forall(p => p.distance(v) > 1.0)
   }
 
 
 }
+
+
+
