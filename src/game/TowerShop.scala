@@ -2,7 +2,7 @@ package game
 
 class TowerShop {
   
-  // Thw current tower being placed down
+  // The current tower being placed down
   var activeTower: Option[Tower] = None
   
   // True when a tower is being placed down
@@ -11,9 +11,9 @@ class TowerShop {
   // Function to choose a tower to be the active tower by its id
   def choose(id: String, game: Game) = {
     val choice = id match {
-        case "basic"  => new CannonTower1(-1, -1)
-        case "laser"  => new RapidTower1(-1, -1)
-        case "homing" => new HomingTower1(-1, -1)
+        case "c1"  => new CannonTower1(-1, -1)
+        case "r1"  => new RapidTower1(-1, -1)
+        case "h1" => new HomingTower1(-1, -1)
         case _ => throw new IllegalArgumentException("Unrecognized tower id")
     }
     if (this.activeTower.isEmpty && game.player.canAfford(choice.price)) {
@@ -39,10 +39,11 @@ class TowerShop {
   def upgrade(game: Game, tower: Tower): Option[Tower] = {
     if (tower.upgrade.isDefined && game.player.canAfford(tower.upgrade.get.price)) {
       tower.upgraded = true
-      game.towers += tower.upgrade.get
-      tower.upgrade.get.pos.moveTo(tower.pos)
-      game.player.charge(tower.upgrade.get.price)
-      tower.upgrade
+      val upgraded = tower.upgrade.get
+      game.towers += upgraded
+      upgraded.pos.moveTo(tower.pos)
+      game.player.charge(upgraded.price)
+      Some(upgraded)
     } else {
       None
     }

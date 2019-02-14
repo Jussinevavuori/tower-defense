@@ -146,12 +146,13 @@ object Main extends JFXApp {
           
           
       // Creating invisible GUI buttons that light up when hovered over by a mouse
-      val b_lefttop  = Rectangle(0, 0, 0, 0) 
-      val b_righttop = Rectangle(1920, 1080, 0, 0)
-      val b_nextwave = Rectangle(1729, 972, 120, 83)
-      val b_shop1    = Rectangle(406, 893, 104, 104) // X + 20
-      val b_shop2    = Rectangle(606, 893, 104, 104)
-      val b_shop3    = Rectangle(806, 893, 104 , 104)
+      val b_lefttop  = Rectangle(   0,    0,   0,   0) 
+      val b_righttop = Rectangle(1920, 1080,   0,   0)
+      val b_nextwave = Rectangle(1729,  972, 120,  83)
+      val b_shop1    = Rectangle( 708,  894, 104, 104)
+      val b_shop2    = Rectangle( 908,  894, 104, 104)
+      val b_shop3    = Rectangle(1108,  894, 104, 104)
+      val b_upgrade  = Rectangle(   0,    0,   0,   0)
       b_shop1.arcHeight = 25
       b_shop1.arcWidth  = 25
       b_shop2.arcHeight = 25
@@ -164,29 +165,34 @@ object Main extends JFXApp {
       b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.0)
       b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.0)
       b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.0)
+      b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.0)
       b_nextwave.setOnMouseEntered(  new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop1.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop2.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop3.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
+      b_upgrade.setOnMouseEntered(   new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.2) } )
       b_nextwave.setOnMouseExited(   new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.0) } )
       b_shop1.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.0) } )  
       b_shop2.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.0) } )  
       b_shop3.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.0) } )
+      b_upgrade.setOnMouseExited(    new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.0) } )
       b_nextwave.setOnMousePressed(  new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.5) } )
       b_shop1.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
       b_shop2.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
       b_shop3.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
+      b_upgrade.setOnMousePressed(   new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.5) } )
       b_nextwave.setOnMouseReleased( new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop1.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop2.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
       b_shop3.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
+      b_upgrade.setOnMouseReleased(  new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.2) } )
       
       
       
       // Arranging the layout
       val buttons = new Group()
       val stack   = new StackPane()
-      buttons.children = List(b_lefttop, b_righttop, b_nextwave, b_shop1, b_shop2, b_shop3)
+      buttons.children = List(b_lefttop, b_righttop, b_nextwave, b_shop1, b_shop2, b_shop3, b_upgrade)
       stack.children   = List(sideCanvas, mainCanvas, menuBar, buttons, titleCanvas)
       stack.setAlignment(Pos.TopLeft)
       root = stack
@@ -198,6 +204,11 @@ object Main extends JFXApp {
       b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyCannonTower(currentGame) } } )
       b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyRapidTower( currentGame) } } )
       b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyHomingTower(currentGame) } } )
+      b_upgrade.setOnMouseClicked( new EventHandler[ME] { def handle(e: ME) = {
+        selectedTower    = Actions.upgradeTower(currentGame, selectedTower)
+        b_upgrade.fill   = Color(1.0, 1.0, 1.0, 0.0)
+        b_upgrade.width  = 0
+        b_upgrade.height = 0} } )
       
       
       // INPUT: MOUSE CLICKED ON SCREEN
@@ -228,7 +239,14 @@ object Main extends JFXApp {
           if (currentGame.shop.active) Actions.purchaseTower(currentGame, x, y)  
           
           // Tower selections
-          else selectedTower = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
+          else {
+            val selection    = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
+            selectedTower    = selection._1
+            b_upgrade.x      = selection._2
+            b_upgrade.y      = selection._3
+            b_upgrade.width  = selection._4
+            b_upgrade.height = selection._5
+          }
         }
       }
       

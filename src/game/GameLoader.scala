@@ -130,9 +130,16 @@ object GameLoader extends App {
     (list \ "tower").map(t => {
       val (x, y, id) = ((t \@ "x").toInt, (t \@ "y").toInt, (t \@ "id"))
       id match {
-        case "basic" => new CannonTower1(x, y)
-        case "laser" => new RapidTower1(x, y)
-        case "homing" => new HomingTower1(x, y)
+        case "c1" => new CannonTower1(x, y)
+        case "c2" => new CannonTower2(x, y)
+        case "c3" => new CannonTower3(x, y)
+        case "c4" => new CannonTower4(x, y)
+        case "r1" => new  RapidTower1(x, y)
+        case "r2" => new  RapidTower2(x, y)
+        case "r3" => new  RapidTower3(x, y)
+        case "r4" => new  RapidTower4(x, y)
+        case "h1" => new HomingTower1(x, y)
+        case "h2" => new HomingTower2(x, y)
         case _ => throw new CorruptedSavedataException("Unrecognized tower id")
       }
     }).toBuffer

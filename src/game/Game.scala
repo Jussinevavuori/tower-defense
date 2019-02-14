@@ -44,42 +44,81 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
         
     // Update the enemies
     for (i <- this.enemies.indices.reverse) {
-      val enemy = this.enemies(i)  // Current enemy
-      if (enemy.dead) { // If enemy is dead
-        this.player.reward(enemy.reward)  // Reward player with correct amount of money
-        for (spawn <- enemy.death())  // Add spawned enemies from the dead enemy to the game
+      
+      // Find the enemy in the buffer
+      val enemy = this.enemies(i)
+      
+      // Upon enemy death
+      if (enemy.dead) {
+        
+        // Reward the player with the money from the enemy
+        this.player.reward(enemy.reward)
+        
+        // Add all the enemies that spawn upon the enemy's death to the game
+        for (spawn <- enemy.death()) {
           this.enemies.append(spawn)   
+        }
+      
         gui.Effects.addMoneyEffect(enemy)
-        this.enemies.remove(i) // Remove enemy
-      } else if (enemy.advance(elapsedTime)) {  // Advance the enemy.
-        this.player.damage(1)  // If enemy reaches the goal damage the player
-        this.enemies.remove(i)  // and remove the enemy
+        
+        // Finally remove the enemy from the game
+        this.enemies.remove(i)
+        
+      // For alive enemies advance them and if they get to the end
+      } else if (enemy.advance(elapsedTime)) {
+        
+        // Damage the player by one
+        this.player.damage(1)
+        gui.Audio.play("damage.wav")
+        
+        // Remove the enemy from the game
+        this.enemies.remove(i)
       }
     }
     
-   // Update each tower's target and shoot and upgrade
-    for (i <- 0 until this.towers.length reverse) {
-      if (towers(i).upgraded) {
+    // Update towers
+    for (i <- this.towers.indices.reverse) {
+      
+      // Find the tower in the buffer
+      val tower = this.towers(i)
+      
+      // Remove upgraded towers
+      if (tower.upgraded) {
         this.towers.remove(i)
       }
-      val tower = this.towers(i)
+      
+      // Update the towers target
       tower.updateTarget(this.enemies)
+      
+      // Add the shot projectiles to the game
       this.projectiles ++= tower.shoot(elapsedTime)
     }
     
     // Update and remove projectiles
     for (i <- this.projectiles.indices.reverse) {
-      val p = this.projectiles(i)
-      p.move()
-      p.hit(this.enemies)
-      if (p.finished) {
+      
+      // Find the projectile in the buffer
+      val projectile = this.projectiles(i)
+      
+      // Move the projectile
+      projectile.move()
+      
+      // Try to hit all enemies
+      projectile.hit(this.enemies)
+      
+      // If projectile finishes, remove it
+      if (projectile.finished) {
         this.projectiles.remove(i)
       }
     }
 
     // Spawn in the enemies when necessary
     if (!this.wave.finished) {
+      
+      // Try to get a spawn from the wave
       val spawn = this.wave.spawn()
+      
+      // If an enemy spawned, add it to the game
       if (spawn.isDefined) {
         this.enemies += spawn.get
       }

@@ -69,7 +69,7 @@ abstract class Tower(_x: Double, _y: Double,
       this.target = None
     
       // Find all viable enemies that are within range
-      val viable = enemies.filter(_.pos.distanceSqrd(this.pos) < radiusSqrd)
+      val viable = enemies.filter(_.pos.distanceSqrd(this.pos) < radiusSqrd).sortBy(_.size * -1)
       
       // Only if there are viable enemies, pick one. Else, let target remain unchaned
       if (!viable.isEmpty) {

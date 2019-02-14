@@ -16,18 +16,13 @@ import scalafx.scene.image.WritableImage
 import scalafx.scene.paint.Color
 import scalafx.scene.text.Font
 import scalafx.scene.text.TextAlignment
+import javax.imageio.ImageIO
+import scalafx.embed.swing.SwingFXUtils
 
 object Render {
 
-  /* Renders a given tower defense game to the given canvas every
-   * time it is called.
-   *
-   * @param		The game to be rendered
-   * @param		The canvas for the game to be rendered on
-   *
-   * @return	Unit
+  /* Renders a given tower defense game to the given canvas every time it is called.
    */
-
   def renderGame(game: Game, canvas: Canvas, selectedTower: Option[Tower]): Unit = {
 
     if (this.mainBg == null) throw new RenderingException(
@@ -47,6 +42,9 @@ object Render {
       this.renderSelectedTower(gfx, selectedTower.get)
     }
     this.renderEffects(gfx)
+    if (selectedTower.isDefined && selectedTower.get.upgrade.isDefined) {
+      this.renderSelectionUpgrade(gfx, selectedTower.get)
+    }
     
     // Translating back
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
@@ -58,13 +56,7 @@ object Render {
 
   /* Renders a given tower defense game's sidebar to the bottom
    * of a fullscreen canvas when called
-   *
-   * @param		The game, whose sidebar is to be rendered
-   * @param		The canvas for the game to be rendered on
-   *
-   * @return	Unit
    */
-
   def renderSide(game: Game, canvas: Canvas): Unit = {
 
     if (this.sideBg == null) throw new RenderingException(
@@ -80,31 +72,32 @@ object Render {
     // Draw player and wave information
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     gfx.font = this.bigFont
-    gfx.fillText(s"${game.wave.number}", 1769, 110)
-    gfx.font = this.mediumFont
     gfx.textAlign = TextAlignment.Center
+    gfx.fillText(s"${game.wave.number}", 1789, 110)
+    gfx.font = this.mediumFont
     gfx.fillText(s"${game.player.health.toInt} HP", 192, 182)    
     gfx.fillText(s"${"$"} ${game.player.money}", 192, 99)
     
     // Shop icons
-    Animate.animate("cannondog", 428, 76, 60, 60, gfx)
-    Animate.animate("cannondog", 628, 76, 60, 60, gfx)
-    Animate.animate("cannondog", 828, 76, 60, 60, gfx)    
+    Animate.animate("cannondog",  730, 76, 60, 60, gfx)
+    Animate.animate("cannondog",  930, 76, 60, 60, gfx)
+    Animate.animate("cannondog", 1130, 76, 60, 60, gfx)    
     
     // Shop prices
     gfx.textAlign = TextAlignment.Left
     gfx.font = this.smallFont
-    gfx.fillText("$ 600",  403, 204)
-    gfx.fillText("$ 1200", 597, 204)
-    gfx.fillText("$ 1000", 796, 204)
+    gfx.fillText("$ 600",  705, 204)
+    gfx.fillText("$ 800",  899, 204)
+    gfx.fillText("$ 700", 1098, 204)
     
     // Translate back
     gfx.translate(0, -this.mainH)
   }
 
-  /* Renders the active tower in the towershop
-   */
-
+  
+  
+  
+  // Renders the active tower in the towershop
   def renderActiveTower(canvas: Canvas, game: Game, mx: Double, my: Double): Unit = {
 
     val gfx = canvas.graphicsContext2D
@@ -114,9 +107,9 @@ object Render {
 
   }
   
-  /* Renders a selectable tower when mouse is hovering over it
-   */
   
+  
+  // Renders a selectable tower when mouse is hovering over it  
   def renderSelectableTower(canvas: Canvas, game: Game, tower: Tower): Unit = {
     
     val gfx = canvas.graphicsContext2D
@@ -126,13 +119,22 @@ object Render {
     gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
   }
 
+  
+  
+  
+  
   /* Prerenders the background and saves it as a png to the disk, so it doesn't
    * have to be rendered each frame. Must be called with both the main and
-   * side canvas and the game when loading the came.
+   * side canvas and the game when loading the came. Loads the variables declared
+   * below
    */
 
+  // The screenshots from preload to be drawn on each frame
   private var mainBg: Image = null
   private var sideBg: Image = null
+  
+  // Other preloaded graphics
+  private var upgradeImage: Image = this.loadImage("upgrade")
 
   // Shortcuts for width and height of the canvases and grid, calculated at prerender
   var mainW: Double = 0.0
@@ -167,19 +169,17 @@ object Render {
       j <- 0 until game.rows
     } {
       val (x, y) = canvasCoords(i, j)
-      val sprite = this.loadRandomImage("grasstile", Array(10, 10, 10, 1))
+      val sprite = this.loadRandomImage("grasstile", Array(15, 15, 5, 5, 5, 1))
       mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
     }
 
     // Rendering the path
-    mainGfx.fill = Color(1.0, 0.0, 0.0, 1.0) // Red color for path markers
-    val (rx, ry) = (0.1 * this.gridW, 0.1 * this.gridH) // The oval radii
-    var path: Option[Path] = Some(game.path) // The current path starting with the initial game path
-    while (path.isDefined) { // Going through the path chain and drawing a circle for each one
+    var path: Option[Path] = Some(game.path)                     // The current path starting with the initial game path
+    while (path.isDefined) {                                     // Going through the path chain and drawing a circle for each one
       val (x, y) = this.canvasCoords(path.get.pos.x, path.get.pos.y)
-      val sprite = this.loadRandomImage("pathtile", Array(1, 5))
+      val sprite = this.loadRandomImage("pathtile", Array(1))
       mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
-      path = path.get.next // Loading the next path as the current path
+      path = path.get.next                                       // Loading the next path as the current path
     }
 
     // Rendering the sidebar graphics to side canvas
@@ -210,9 +210,8 @@ object Render {
   
   
   
-  /* Renders the selected tower
-   */
   
+  // Renders the selected tower  
   private def renderSelectedTower(gfx: GraphicsContext, tower: Tower): Unit = {
     gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
     gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
@@ -222,12 +221,28 @@ object Render {
     val ry = tower.radius * gridH
     gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
     gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+    if (tower.upgrade.isDefined) {
+      gfx.drawImage(this.upgradeImage, x - 60, y - 80, 120, 40)
+      gfx.font = this.smallFont
+      gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
+      gfx.textAlign = TextAlignment.Center
+      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
+    }
   }
 
   
-  /* Renders the towers
-   */
-
+  // Renders the selected tower's upgrade box
+  private def renderSelectionUpgrade(gfx: GraphicsContext, tower: Tower): Unit = {
+    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
+    gfx.drawImage(this.upgradeImage, x - 60, y - 80, 120, 40)
+    gfx.font = this.smallFont
+    gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
+    gfx.textAlign = TextAlignment.Center
+    gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
+  }
+  
+  
+  // Renders the towers
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
     for (t <- towers) {
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
@@ -235,10 +250,10 @@ object Render {
     }
   }
   
-
-  /* Renders the projectiles
-   */
   
+  
+
+  // Renders the projectiles  
   private def renderProjectiles(gfx: GraphicsContext, projectiles: Buffer[Projectile]) = {
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     for (p <- projectiles) {
@@ -248,9 +263,9 @@ object Render {
   }
 
 
-  /* Renders the enemies as purple circles of the correct size.
-   */
-
+  
+  
+  // Renders the enemies as purple circles of the correct size.
   private def renderEnemies(gfx: GraphicsContext, enemies: Buffer[Enemy]) = {
 
     for (e <- enemies) {
@@ -271,34 +286,41 @@ object Render {
   }
   
   
-  /* Renders the ongoing special effects in the effects object
-   */
   
-  def renderEffects(gfx: GraphicsContext) = {
+  
+  // Renders the ongoing special effects in the effects object
+  def renderEffects(gfx: GraphicsContext) = {  
     gfx.font = this.smallFont
     gfx.fill = Color.White
     for (m <- Effects.moneyEffects) {
       val (x, y) = this.canvasCoords(m.x, m.y)
-      gfx.fillText("$", x, y)
+      gfx.fillText(m.text, x, y)
+    }
+    for (t <- Effects.towerupEffects) {
+      val (x, y) = this.canvasCoords(t.x, t.y)
+      Animate.animate("towerupParticle", x, y, 16, 16, gfx, 5)
     }
   }
   
 
+  
+  
   /* Converts any grid position to a coordinate position on the
    * canvas, given a game and a canvas and a pair of coordinates.
    */
-
   private def canvasCoords(x: Double, y: Double): (Double, Double) = {
     (x * this.gridW, y * this.gridH)
   }
 
+  
+  
 
   /* Renders the FPS in the top corner of the canvas
    */
-
   var previousFrames = Buffer[Int]()
   def fps(elapsedTime: Double, canvas: Canvas) = {
     val gfx = canvas.graphicsContext2D
+    gfx.textAlign = TextAlignment.Left
     gfx.font = this.bigFont
     val fps = (1.0 / elapsedTime).toInt
     previousFrames.append(fps)
@@ -310,9 +332,10 @@ object Render {
     gfx.fillText(avg.toString, 20, 50)
   }
   
-  /* Loads an image from "assets/sprites" 
-   */
   
+  
+  
+  // Loads an image from "assets/sprites" 
   def loadImage(filename: String): Image = {
     val filepath = "assets/gfx/" + filename + ".png"
     val inputStream = new FileInputStream(filepath)
@@ -321,10 +344,10 @@ object Render {
     image
   }
   
-
-  /* Loads a random image
-   */
   
+  
+
+  // Loads a random variation of a filename
   def loadRandomImage(filename: String, chances: Array[Int]): Image = {
     val randomInt = scala.util.Random.nextInt(chances.sum) + 1
     var filepath = ""

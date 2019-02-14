@@ -27,7 +27,7 @@ import scala.collection.mutable.Buffer
   */
 
 class CannonTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "basic", 12.0, 5.5, 0.9, 600,
+  extends Tower(_x, _y, "c1", 10.0, 3.7, 1.00, 600,
       Some(new CannonTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
@@ -36,7 +36,25 @@ class CannonTower1(_x: Double, _y: Double)
   }
 }
 class CannonTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "basic", 18.0, 5.8, 0.8, 500, None) {
+  extends Tower(_x, _y, "c2", 12.5, 4.0, 0.90, 400,
+    Some(new CannonTower3(_x, _y))) {
+  
+  def generateProjectiles(target: Enemy) = {
+    gui.Audio.play("shot1.wav", 0.2)
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
+  }
+}
+class CannonTower3(_x: Double, _y: Double)
+  extends Tower(_x, _y, "c3", 17.0, 4.3, 0.80, 600,
+    Some(new CannonTower4(_x, _y))) {
+  
+  def generateProjectiles(target: Enemy) = {
+    gui.Audio.play("shot1.wav", 0.2)
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
+  }
+}
+class CannonTower4(_x: Double, _y: Double)
+  extends Tower(_x, _y, "c4", 20.0, 4.6, 0.70, 1000, None) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
@@ -47,7 +65,7 @@ class CannonTower2(_x: Double, _y: Double)
 
 
 class RapidTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "laser", 1.5, 3.5, 0.12, 1200,
+  extends Tower(_x, _y, "r1", 1.8, 2.8, 0.12, 800,
       Some(new RapidTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
@@ -56,7 +74,25 @@ class RapidTower1(_x: Double, _y: Double)
   }
 }
 class RapidTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "laser", 1.8, 3.8, 0.10, 800, None) {
+  extends Tower(_x, _y, "r2", 2.2, 3.2, 0.10, 600,
+      Some(new RapidTower3(_x, _y))) {
+  
+  def generateProjectiles(target: Enemy) = {
+    gui.Audio.play("shot3.wav", 0.2)
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius,target))
+  }
+}
+class RapidTower3(_x: Double, _y: Double)
+  extends Tower(_x, _y, "r3", 2.6, 3.6, 0.08, 900,
+    Some(new RapidTower4(_x, _y))) {
+  
+  def generateProjectiles(target: Enemy) = {
+    gui.Audio.play("shot3.wav", 0.2)
+    Buffer(new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius,target))
+  }
+}
+class RapidTower4(_x: Double, _y: Double)
+  extends Tower(_x, _y, "r4", 3.0, 4.0, 0.06, 1500, None) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot3.wav", 0.2)
@@ -65,9 +101,8 @@ class RapidTower2(_x: Double, _y: Double)
 }
 
 
-
 class HomingTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "homing", 20.0, 7, 1.4, 1000,
+  extends Tower(_x, _y, "h1", 20.0, 7, 1.4, 700,
       Some(new HomingTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
@@ -76,7 +111,7 @@ class HomingTower1(_x: Double, _y: Double)
   }
 }
 class HomingTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "homing", 30.0, 7.5, 1.3, 1000, None) {
+  extends Tower(_x, _y, "h2", 30.0, 7.5, 1.3, 350, None) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)

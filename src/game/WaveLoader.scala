@@ -62,6 +62,11 @@ object WaveLoader {
               case "n1" => new EnemyN1(x, y, target)
               case "n2" => new EnemyN2(x, y, target)
               case "n3" => new EnemyN3(x, y, target)
+              case "n4" => new EnemyN4(x, y, target)
+              case "t1" => new EnemyT1(x, y, target)
+              case "t2" => new EnemyT2(x, y, target)
+              case "t3" => new EnemyT3(x, y, target)
+              case "t4" => new EnemyT4(x, y, target)
               case _ => throw new CorruptedWavedataException(
                 s"Unrecognized enemy id in wavedata: '${data._2}'")
             }

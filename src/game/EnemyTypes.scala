@@ -54,6 +54,84 @@ class EnemyN3(_x: Double, _y: Double, _target: Option[Path])
   )
 }
 
+// Normal fourth: spawns two smaller units
+class EnemyN4(_x: Double, _y: Double, _target: Option[Path])
+  extends Enemy("n4", 40.0, Speed(0.07, 0.005), 0.45, 20, _x, _y, _target) {
+  
+  def death = Array[Enemy](
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target)
+  )
+}
+
+// Trojan first: spawns ten normal first units
+class EnemyT1(_x: Double, _y: Double, _target: Option[Path])
+  extends Enemy("t1", 300.0, Speed(0.02, 0.005), 0.5, 20, _x, _y, _target) {
+  
+  def death = Array[Enemy](
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target),
+      new EnemyN1(this.pos.x, this.pos.y, this.target)
+  )
+}
+
+// Trojan second: spawns ten normal second units
+class EnemyT2(_x: Double, _y: Double, _target: Option[Path])
+  extends Enemy("t2", 400.0, Speed(0.02, 0.005), 0.5, 20, _x, _y, _target) {
+  
+  def death = Array[Enemy](
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target),
+      new EnemyN2(this.pos.x, this.pos.y, this.target)
+  )
+}
+
+// Trojan third: spawns ten normal third units
+class EnemyT3(_x: Double, _y: Double, _target: Option[Path])
+  extends Enemy("t3", 500.0, Speed(0.02, 0.005), 0.5, 20, _x, _y, _target) {
+  
+  def death = Array[Enemy](
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target),
+      new EnemyN3(this.pos.x, this.pos.y, this.target)
+  )
+}
+
+// Trojan third: spawns ten normal third units
+class EnemyT4(_x: Double, _y: Double, _target: Option[Path])
+  extends Enemy("t4", 600.0, Speed(0.02, 0.005), 0.5, 20, _x, _y, _target) {
+  
+  def death = Array[Enemy](
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target),
+      new EnemyN4(this.pos.x, this.pos.y, this.target)
+  )
+}
+
 
 
 // A function that returns the random number from the between

@@ -24,13 +24,15 @@ object Animate {
    * @param	 The width of a single grid unit
    * @param	 The height of a single grid unit
    * @param	 The graphics context used for drawing
+   * @param	 The delay for each frame. Optional
    */
   
   def animate(id: String, x: Double, y: Double,
-              w: Double, h: Double, gfx: GraphicsContext) = {
+              w: Double, h: Double, gfx: GraphicsContext,
+              delay: Int = this.frequency) = {
     
     val animation = this.animations(id)
-    val frame = this.currentFrame(animation.length)
+    val frame = this.currentFrame(animation.length, delay)
     gfx.drawImage(animation(frame), x, y, w, h)
     
   }
@@ -42,8 +44,8 @@ object Animate {
   private var frequency = 20 // Animation speed
   
   // Returns the current frame for an animation of a given length
-  private def currentFrame(frames: Int) = { 
-    (this.frame / this.frequency) % frames
+  private def currentFrame(frames: Int, delay: Int) = { 
+    (this.frame / delay) % frames
   }
   
   
@@ -66,6 +68,18 @@ object Animate {
   
   // All animation frames stored in a map so they don't have to be loaded each frame
   private val animations = Map[String, Array[Image]](
-    "cannondog" -> Array(this.frame("cannondog", 0), this.frame("cannondog", 1))
+    "cannondog" ->
+      Array(this.frame("cannondog", 0), this.frame("cannondog", 1)),
+    "towerupParticle" ->
+      Array(this.frame("towerupParticle", 0), this.frame("towerupParticle", 1),
+            this.frame("towerupParticle", 2), this.frame("towerupParticle", 3),
+            this.frame("towerupParticle", 4), this.frame("towerupParticle", 5),
+            this.frame("towerupParticle", 6))
   )
 }
+
+
+
+
+
+

@@ -18,12 +18,15 @@ class HomingProjectile(_x: Double, _y: Double,
   
   var speed = 0.02
   var latestTargetPos = target.pos
+  var latestVelocity = Vec(0, 0)
   def velocity = {
-    if (this.target.alive) this.latestTargetPos = target.pos
-    val vel = this.latestTargetPos - this.pos
-    vel.scaleTo(this.speed)
+    if (this.target.alive) { 
+      this.latestTargetPos = target.pos
+      this.latestVelocity = this.latestTargetPos - this.pos 
+    }
+    latestVelocity.scaleTo(this.speed)
     if (this.speed < this.maxSpeed) this.speed *= this.acceleration
-    vel
+    latestVelocity
   }
   
   def move(): Unit = this.pos += this.velocity

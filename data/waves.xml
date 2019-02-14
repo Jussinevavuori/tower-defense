@@ -6,17 +6,22 @@
 	</wave>
 	<wave>
 		<enemies>
-			<enemy count="3" id="n1"/>
+			<enemy count="2" id="n1"/>
 		</enemies>
 	</wave>
 	<wave>
 		<enemies>
-			<enemy count="6" id="n1"/>
+			<enemy count="4" id="n1"/>
 		</enemies>
 	</wave>
 	<wave>
 		<enemies>
-			<enemy count="6" id="n1"/>
+			<enemy count="7" id="n1"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="8" id="n1"/>
 			<enemy count="1" id="n2"/>
 		</enemies>
 	</wave>
@@ -34,28 +39,21 @@
 	</wave>
 	<wave>
 		<enemies>
-			<enemy count="10" id="n1"/>
+			<enemy count="20" id="n1"/>
 			<enemy count="8" id="n2"/>
 		</enemies>
 	</wave>
 	<wave>
 		<enemies>
-			<enemy count="6" id="n1"/>
-			<enemy count="2" id="n2"/>
+			<enemy count="30" id="n1"/>
+			<enemy count="14" id="n2"/>
+		</enemies>
+	</wave>
+	<wave>
+		<enemies>
+			<enemy count="16" id="n1"/>
+			<enemy count="20" id="n2"/>
 			<enemy count="1" id="n3"/>
-		</enemies>
-	</wave>
-	<wave>
-		<enemies>
-			<enemy count="2" id="n1"/>
-			<enemy count="5" id="n2"/>
-			<enemy count="3" id="n3"/>
-		</enemies>
-	</wave>
-	<wave>
-		<enemies>
-			<enemy count="8" id="n2"/>
-			<enemy count="6" id="n3"/>
 		</enemies>
 	</wave>
 </waves>
