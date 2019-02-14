@@ -83,10 +83,6 @@ object Titlescreen {
       Audio.play(this.sfx)
     }
   }
-  def skip() = {
-    this.completed = true
-    this.fading = true
-  }
 }
 
 

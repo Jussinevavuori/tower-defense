@@ -17,14 +17,9 @@ import scalafx.scene.control.Menu
 import scalafx.scene.control.MenuBar
 import scalafx.scene.control.MenuItem
 import scalafx.scene.control.SeparatorMenuItem
-import scalafx.scene.layout.Background
-import scalafx.scene.layout.BackgroundFill
-import scalafx.scene.layout.BorderPane
 import scalafx.scene.layout.StackPane
 import scalafx.scene.paint.Color
-import scalafx.scene.control.Button
 import scalafx.scene.shape.Rectangle
-import scalafx.scene.layout.Pane
 import scalafx.scene.Group
 
 object Main extends JFXApp {
@@ -53,12 +48,16 @@ object Main extends JFXApp {
       mainCanvas.requestFocus()
       Render.prerender(mainCanvas, sideCanvas, currentGame)
   
-      
+
       
       // Private variables for showing the GUI and game correctly
       private var showFPS = false
       private var mouseX = 0.0
       private var mouseY = 0.0
+      private def gridX = this.toGridX(this.mouseX)
+      private def gridY = this.toGridY(this.mouseY)
+      private def toGridX(x: Double) = x / Render.gridW
+      private def toGridY(y: Double) = y / Render.gridH  
       private var selectedTower: Option[Tower] = None
       private var previousTime: Long = -1
       
@@ -99,6 +98,9 @@ object Main extends JFXApp {
         Effects.advance()
         Render.renderGame(currentGame, this.mainCanvas, selectedTower)
         Render.renderSide(currentGame, this.sideCanvas)
+        val selectableTower = Actions.findSelectableTower(currentGame, gridX - 0.5, gridY - 0.5)
+        if (selectableTower.isDefined)
+          Render.renderSelectableTower(mainCanvas, currentGame, selectableTower.get)
         if (currentGame.shop.active) 
           Render.renderActiveTower(this.mainCanvas, currentGame, mouseX, mouseY)
         if (this.showFPS)
@@ -147,9 +149,9 @@ object Main extends JFXApp {
       val b_lefttop  = Rectangle(0, 0, 0, 0) 
       val b_righttop = Rectangle(1920, 1080, 0, 0)
       val b_nextwave = Rectangle(1729, 972, 120, 83)
-      val b_shop1    = Rectangle(386, 1021, 144, 32)
-      val b_shop2    = Rectangle(586, 1021, 144, 32)
-      val b_shop3    = Rectangle(786, 1021, 144, 32)
+      val b_shop1    = Rectangle(406, 893, 104, 104) // X + 20
+      val b_shop2    = Rectangle(606, 893, 104, 104)
+      val b_shop3    = Rectangle(806, 893, 104 , 104)
       b_shop1.arcHeight = 25
       b_shop1.arcWidth  = 25
       b_shop2.arcHeight = 25
@@ -192,10 +194,10 @@ object Main extends JFXApp {
       
       
       // INPUT : ACTIVE GUI BUTTONS
-      b_nextwave.setOnMouseClicked(new EventHandler[ME] { def handle(e: ME) = { Buttonactions.loadNextWave(  currentGame) } } )
-      b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Buttonactions.buyCannonTower(currentGame) } } )
-      b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Buttonactions.buyRapidTower( currentGame) } } )
-      b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Buttonactions.buyHomingTower(currentGame) } } )
+      b_nextwave.setOnMouseClicked(new EventHandler[ME] { def handle(e: ME) = { Actions.loadNextWave(  currentGame) } } )
+      b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyCannonTower(currentGame) } } )
+      b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyRapidTower( currentGame) } } )
+      b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyHomingTower(currentGame) } } )
       
       
       // INPUT: MOUSE CLICKED ON SCREEN
@@ -205,8 +207,11 @@ object Main extends JFXApp {
       // INPUT: MOUSE MOVED ON SCREEN
       mainCanvas.onMouseMoved = new EventHandler[ME] {
         def handle(me: ME) = {
+          
+          // Update mouse coordinates
           mouseX = me.getSceneX
           mouseY = me.getSceneY
+          // Show and hide menubar
           menuBar.visible = me.getSceneY < 35
         }
       }
@@ -216,23 +221,14 @@ object Main extends JFXApp {
       mainCanvas.onMouseClicked = new EventHandler[ME] {
         def handle(me: ME): Unit = {
           
-          if (currentGame.shop.active) {  // Shop purchases
-            if (currentGame.shop.purchase(currentGame, mouseX / Render.gridW, mouseY / Render.gridH)) {
-              Audio.play("coincluster.wav")
-              Audio.play("impact.wav")
-            } else Audio.play("error.wav")
-          }
+          // Mouse coordinates
+          val (x, y) = (toGridX(me.getSceneX), toGridY(me.getSceneY))
           
-          else {  // Tower selections
-            val mouseVec = Vec(mouseX / Render.gridW - 0.5, mouseY / Render.gridH - 0.5)
-            for (t <- currentGame.towers) {
-              if (mouseVec.distance(t.pos) < 0.6) {
-                selectedTower = Some(t)
-                return
-              }
-            }
-            selectedTower = None
-          }
+          // Shop purchases
+          if (currentGame.shop.active) Actions.purchaseTower(currentGame, x, y)  
+          
+          // Tower selections
+          else selectedTower = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
         }
       }
       
@@ -242,15 +238,14 @@ object Main extends JFXApp {
         def handle(ke: KeyEvent) = { ke.getCode() match {
      
             // Spacebar skips titlescreen
-            case KeyCode.SPACE if (!Titlescreen.completed) => {
-              Titlescreen.skip()
-            }
+            case KeyCode.SPACE if (!Titlescreen.completed) => Actions.skipTitleScreen()
             
-            // Enter upgrades selected tower
-            case KeyCode.ENTER if (selectedTower.isDefined) => {
-              selectedTower = currentGame.shop.upgrade(currentGame, selectedTower.get)
-              if (selectedTower.isDefined) Audio.play("fanfare.wav") else Audio.play("error.wav")
-            }
+            // Shortcut to next wave
+            case KeyCode.SPACE => Actions.loadNextWave(currentGame)
+            
+            // Shortcut to tower upgrade
+            case KeyCode.ENTER => selectedTower = Actions.upgradeTower(currentGame, selectedTower)
+            
             case _ =>
           }
         }
@@ -263,12 +258,12 @@ object Main extends JFXApp {
         Render.prerender(mainCanvas, sideCanvas, currentGame)
         Audio.play("iosfx.wav")
       }
-      gmLoad.onAction       = (e: ActionEvent) => {
+      gmLoad.onAction       = (e: ActionEvent) => { 
         currentGame = GameLoader("data/savedata.xml")
         Render.prerender(mainCanvas, sideCanvas, currentGame)
         Audio.play("iosfx.wav")
       }
-      gmSave.onAction       = (e: ActionEvent) => {
+      gmSave.onAction       = (e: ActionEvent) => { 
         GameSaver.save(currentGame)
         Audio.play("iosfx.wav")
       }
@@ -277,11 +272,7 @@ object Main extends JFXApp {
       dmMute.onAction       = (e: ActionEvent) => { Music.mute() }
       dmStartMusic.onAction = (e: ActionEvent) => { Music.startLoop() }
       dmStopMusic.onAction  = (e: ActionEvent) => { Music.stopLoop() }
-      dmGodmode.onAction    = (e: ActionEvent) => {
-        currentGame.player.reward(10000)
-        currentGame.player.heal(1000)
-        Audio.play("fanfare.wav")
-      }
+      dmGodmode.onAction    = (e: ActionEvent) => { Actions.activateGodmode(currentGame) }
     }  
   }
 }

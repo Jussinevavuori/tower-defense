@@ -113,6 +113,18 @@ object Render {
     }
 
   }
+  
+  /* Renders a selectable tower when mouse is hovering over it
+   */
+  
+  def renderSelectableTower(canvas: Canvas, game: Game, tower: Tower): Unit = {
+    
+    val gfx = canvas.graphicsContext2D
+    gfx.fill = Color(1.0, 1.0, 1.0, 0.2)
+    val (x, y) = this.canvasCoords(tower.pos.x + 0.5, tower.pos.y + 0.5)
+    val (rx, ry) = (0.7 * this.gridW, 0.7 * this.gridH)
+    gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
+  }
 
   /* Prerenders the background and saves it as a png to the disk, so it doesn't
    * have to be rendered each frame. Must be called with both the main and
