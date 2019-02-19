@@ -18,6 +18,7 @@ import scalafx.scene.text.Font
 import scalafx.scene.text.TextAlignment
 import javax.imageio.ImageIO
 import scalafx.embed.swing.SwingFXUtils
+import scalafx.scene.image.PixelReader
 
 object Render {
 
@@ -79,9 +80,9 @@ object Render {
     gfx.fillText(s"${"$"} ${game.player.money}", 192, 99)
     
     // Shop icons
-    Animate.animate("cannondog",  730, 76, 60, 60, gfx)
-    Animate.animate("cannondog",  930, 76, 60, 60, gfx)
-    Animate.animate("cannondog", 1130, 76, 60, 60, gfx)    
+    Animate("cannondog",  730, 76, 60, 60, gfx)
+    Animate("koala",      930, 76, 60, 60, gfx)
+    Animate("mage",      1130, 76, 60, 60, gfx)    
     
     // Shop prices
     gfx.textAlign = TextAlignment.Left
@@ -102,9 +103,13 @@ object Render {
 
     val gfx = canvas.graphicsContext2D
     if (game.shop.active) {
-      Animate("cannondog", mx, my, this.gridW, this.gridH, gfx)
+      game.shop.activeTower.get.typeid match {
+        case "c1" => Animate("cannondog", mx, my, this.gridW, this.gridH, gfx)
+        case "b1" => Animate("koala",     mx, my, this.gridW, this.gridH, gfx)
+        case "h1" => Animate("mage",      mx, my, this.gridW, this.gridH, gfx)
+        case _    => Animate("cannondog", mx, my, this.gridW, this.gridH, gfx)
+      }
     }
-
   }
   
   
@@ -135,6 +140,9 @@ object Render {
   
   // Other preloaded graphics
   private var upgradeImage: Image = this.loadImage("upgrade")
+  private var bulletProjImage: Image = this.loadImage("bulletproj")
+  private var homingProjImage: Image = this.loadImage("homingproj")
+  private var boomerangProjImage: Image = this.loadImage("boomerangproj")
 
   // Shortcuts for width and height of the canvases and grid, calculated at prerender
   var mainW: Double = 0.0
@@ -163,23 +171,44 @@ object Render {
     this.gridW = mainW / game.cols
     this.gridH = mainH / game.rows
     
-    // Rendering the background
-    for {
+    // Creating a two dimensional array containing all the path locations
+    // and drawing the background based on the grid
+    var paths: Array[(Int, Int)] =
+      game.path.toArray().map(p => (p.pos.x.toInt, p.pos.y.toInt))
+    val grid: Array[Array[Boolean]] = 
+      Array.ofDim[Boolean](game.cols + 2, game.rows + 2)
+    
+    for { 
       i <- 0 until game.cols
-      j <- 0 until game.rows
+      j <- 0 until game.rows 
     } {
-      val (x, y) = canvasCoords(i, j)
-      val sprite = this.loadRandomImage("grasstile", Array(15, 15, 5, 5, 5, 1))
-      mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
+      grid(i + 1)(j + 1) = paths.contains((i, j))
     }
-
-    // Rendering the path
-    var path: Option[Path] = Some(game.path)                     // The current path starting with the initial game path
-    while (path.isDefined) {                                     // Going through the path chain and drawing a circle for each one
-      val (x, y) = this.canvasCoords(path.get.pos.x, path.get.pos.y)
-      val sprite = this.loadRandomImage("pathtile", Array(1))
-      mainGfx.drawImage(sprite, x, y, this.gridW, this.gridH)
-      path = path.get.next                                       // Loading the next path as the current path
+    
+    for {
+      i <- 1 to game.cols
+      j <- 1 to game.rows
+    } {
+      val (dx, dy) = canvasCoords(i - 1, j - 1)
+      val spritesheet: Image = this.loadImage("ss_ground")
+      val (sx, sy): (Int, Int) = {
+        if (grid(i)(j))                            (4, 1)
+        else if (grid(i - 1)(j) && grid(i)(j + 1)) (6, 2)
+        else if (grid(i + 1)(j) && grid(i)(j + 1)) (8, 2)
+        else if (grid(i + 1)(j) && grid(i)(j - 1)) (8, 0)
+        else if (grid(i - 1)(j) && grid(i)(j - 1)) (6, 0)
+        else if (grid(i)(j + 1))                   (4, 0)
+        else if (grid(i + 1)(j))                   (3, 1)
+        else if (grid(i)(j - 1))                   (4, 2)
+        else if (grid(i - 1)(j))                   (5, 1)
+        else if (grid(i - 1)(j + 1))               (5, 0)
+        else if (grid(i + 1)(j + 1))               (3, 0)
+        else if (grid(i + 1)(j - 1))               (3, 2)
+        else if (grid(i - 1)(j - 1))               (5, 2)
+        else                                       (1, 1)
+      }
+      val (sw, sh) = (60, 60)
+      mainGfx.drawImage(spritesheet, sx * sw, sy * sh, sw, sh, dx, dy, this.gridW, this.gridH)
     }
 
     // Rendering the sidebar graphics to side canvas
@@ -246,7 +275,24 @@ object Render {
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
     for (t <- towers) {
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
-      Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+      t.typeid match {
+        case "c1" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        case "c2" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        case "c3" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        case "c4" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        
+        case "b1" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
+        case "b2" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
+        case "b3" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
+        case "b4" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
+        
+        case "h1" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
+        case "h2" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
+        case "h3" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
+        case "h4" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
+        
+        case _    => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+      }
     }
   }
   
@@ -258,7 +304,26 @@ object Render {
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     for (p <- projectiles) {
       val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
-      gfx.fillOval(x - 3, y - 3, 6, 6)
+      
+      if (p.isInstanceOf[HomingProjectile]) {
+        val angle = p.asInstanceOf[HomingProjectile].dir() 
+        gfx.translate(x, y)
+        gfx.rotate(angle)
+        gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
+        gfx.rotate(-angle)
+        gfx.translate(-x, -y)
+      }
+      else if (p.isInstanceOf[BulletProjectile]) {
+        gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
+      }
+      else if (p.isInstanceOf[BoomerangProjectile]) {
+        val angle = p.asInstanceOf[BoomerangProjectile].angle
+        gfx.translate(x, y)
+        gfx.rotate(angle)
+        gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
+        gfx.rotate(-angle)
+        gfx.translate(-x, -y)
+      }
     }
   }
 
@@ -298,16 +363,15 @@ object Render {
     }
     for (t <- Effects.towerupEffects) {
       val (x, y) = this.canvasCoords(t.x, t.y)
-      Animate.animate("towerupParticle", x, y, 16, 16, gfx, 5)
+      Animate.animate("towerup", x, y, 16, 16, gfx, 5)
     }
   }
   
 
   
   
-  /* Converts any grid position to a coordinate position on the
-   * canvas, given a game and a canvas and a pair of coordinates.
-   */
+  // Converts any grid position to a coordinate position on the
+  // canvas, given a game and a canvas and a pair of coordinates.
   private def canvasCoords(x: Double, y: Double): (Double, Double) = {
     (x * this.gridW, y * this.gridH)
   }
@@ -315,8 +379,7 @@ object Render {
   
   
 
-  /* Renders the FPS in the top corner of the canvas
-   */
+  // Renders the FPS in the top corner of the canvas
   var previousFrames = Buffer[Int]()
   def fps(elapsedTime: Double, canvas: Canvas) = {
     val gfx = canvas.graphicsContext2D
@@ -342,9 +405,7 @@ object Render {
     val image = new Image(inputStream)
     inputStream.close()
     image
-  }
-  
-  
+  }  
   
 
   // Loads a random variation of a filename

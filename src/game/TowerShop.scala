@@ -12,7 +12,7 @@ class TowerShop {
   def choose(id: String, game: Game) = {
     val choice = id match {
         case "c1"  => new CannonTower1(-1, -1)
-        case "r1"  => new RapidTower1(-1, -1)
+        case "b1"  => new BoomerangTower1(-1, -1)
         case "h1" => new HomingTower1(-1, -1)
         case _ => throw new IllegalArgumentException("Unrecognized tower id")
     }

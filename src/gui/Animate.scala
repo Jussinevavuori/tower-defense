@@ -27,55 +27,65 @@ object Animate {
    * @param	 The delay for each frame. Optional
    */
   
-  def animate(id: String, x: Double, y: Double,
-              w: Double, h: Double, gfx: GraphicsContext,
-              delay: Int = this.frequency) = {
+  def animate(id: String, canvasX: Double, canvasY: Double,
+              gridW: Double, gridH: Double, gfx: GraphicsContext,
+              delay: Int = 20): Unit = {
     
-    val animation = this.animations(id)
-    val frame = this.currentFrame(animation.length, delay)
-    gfx.drawImage(animation(frame), x, y, w, h)
+    // Handle wrong ids
+    if (!this.animations.contains(id)) throw new RenderingException(
+        s"Given animation spritesheet as_$id.png does not exist in the data")
     
+    // Spritesheet, sprite size, frame count
+    val (ss, size, count) = this.animations(id)
+    
+    // Current frame
+    val frame = this.currentFrame(count, delay)
+    
+    // Drawing the cropped image
+    gfx.drawImage(ss, frame * size, 0, size, size, canvasX, canvasY, gridW, gridH)
   }
+  
+  
   
   // Called each frame to advance animation
   def advance() = this.frame += 1
+  private var frame = 0
   
-  private var frame = 0      // Current frame
-  private var frequency = 20 // Animation speed
-  
-  // Returns the current frame for an animation of a given length
-  private def currentFrame(frames: Int, delay: Int) = { 
-    (this.frame / delay) % frames
+  // Returns the ongoing frame of an animation with the given length and delay
+  private def currentFrame(length: Int, delay: Int) = { 
+    (this.frame / delay) % length
   }
+  
   
   
   // Shortcut to the animate method
   def apply(id: String, canvasX: Double, canvasY: Double,
-            gridW: Double, gridH: Double, gfx: GraphicsContext) = {
+            gridW: Double, gridH: Double, gfx: GraphicsContext,
+            delay: Int = 20): Unit = {
     this.animate(id, canvasX, canvasY, gridW, gridH, gfx)
   }
   
   
-  // Gets the animation frame for the given id of frames length animation
-  private def frame(id: String, frame: Int): Image = {
-    val filepath = "assets/gfx/" + id + "-" + frame + ".png"
-    val inputStream = new FileInputStream(filepath)
-    val image = new Image(inputStream)
-    inputStream.close
-    image
-  }
-  
+
   
   // All animation frames stored in a map so they don't have to be loaded each frame
-  private val animations = Map[String, Array[Image]](
-    "cannondog" ->
-      Array(this.frame("cannondog", 0), this.frame("cannondog", 1)),
-    "towerupParticle" ->
-      Array(this.frame("towerupParticle", 0), this.frame("towerupParticle", 1),
-            this.frame("towerupParticle", 2), this.frame("towerupParticle", 3),
-            this.frame("towerupParticle", 4), this.frame("towerupParticle", 5),
-            this.frame("towerupParticle", 6))
+  // Animation ID -> Spritesheet, Spritesize, Framecount
+  private val animations = Map[String, (Image, Int, Int)]( 
+    "koala"     -> this.loadAnimation("koala",     60, 2),
+    "cannondog" -> this.loadAnimation("cannondog", 40, 2),
+    "mage"      -> this.loadAnimation("mage",      60, 2),
+    "towerup"   -> this.loadAnimation("towerup",   16, 7)
   )
+  
+  // Gets the animation frame for the given id of frames length animation
+  private def loadAnimation(id: String, spriteSize: Int, frameCount: Int) = {
+    val filepath = "assets/gfx/as_" + id + ".png"
+    val inputStream = new FileInputStream(filepath)
+    val animationSheet = new Image(inputStream)
+    inputStream.close
+    (animationSheet, spriteSize, frameCount)
+  }
+  
 }
 
 

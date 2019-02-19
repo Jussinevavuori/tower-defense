@@ -17,8 +17,8 @@ object Actions {
     g.shop.choose("c1", g)
     if (g.shop.active) Audio.play("coin.wav") else error()
   }
-  def buyRapidTower(g: Game) = {
-    g.shop.choose("r1", g)
+  def buyBoomerangTower(g: Game) = {
+    g.shop.choose("b1", g)
     if (g.shop.active) Audio.play("coin.wav") else error()
     }
   def buyHomingTower(g: Game) = {

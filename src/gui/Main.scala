@@ -200,15 +200,17 @@ object Main extends JFXApp {
       
       
       // INPUT : ACTIVE GUI BUTTONS
-      b_nextwave.setOnMouseClicked(new EventHandler[ME] { def handle(e: ME) = { Actions.loadNextWave(  currentGame) } } )
-      b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyCannonTower(currentGame) } } )
-      b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyRapidTower( currentGame) } } )
-      b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyHomingTower(currentGame) } } )
+      b_nextwave.setOnMouseClicked(new EventHandler[ME] { def handle(e: ME) = { Actions.loadNextWave(     currentGame) } } )
+      b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyCannonTower(   currentGame) } } )
+      b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyBoomerangTower(currentGame) } } )
+      b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyHomingTower(   currentGame) } } )
       b_upgrade.setOnMouseClicked( new EventHandler[ME] { def handle(e: ME) = {
         selectedTower    = Actions.upgradeTower(currentGame, selectedTower)
-        b_upgrade.fill   = Color(1.0, 1.0, 1.0, 0.0)
-        b_upgrade.width  = 0
-        b_upgrade.height = 0} } )
+        if (selectedTower.isDefined && selectedTower.get.upgrade.isEmpty) {
+          b_upgrade.fill   = Color(1.0, 1.0, 1.0, 0.0)
+          b_upgrade.width  = 0
+          b_upgrade.height = 0
+        }}})
       
       
       // INPUT: MOUSE CLICKED ON SCREEN
