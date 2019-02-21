@@ -8,49 +8,63 @@ import scala.util.Random.nextGaussian
 
 object Effects {
   
-  def advance() = {
-    this.moneyEffects.foreach(_.advance())
-    this.towerupEffects.foreach(_.advance())
-    this.moneyEffects = this.moneyEffects.filterNot(_.finished)
-    this.towerupEffects = this.towerupEffects.filterNot(_.finished)
+  var effects = Buffer[Effect]()
+  
+  // An effect class that lives for a certain amount of time and dies
+  sealed abstract class Effect(val maxAge: Int) {
+    var age = 0
+    var finished = false
+    def update(): Unit
+    def advance(): Unit = {
+      this.update()
+      this.age += 1
+      this.finished = this.age >= maxAge
+    }
   }
   
-  var moneyEffects = Buffer[MoneyEffect]()
-  case class MoneyEffect(var x: Double, var y: Double, reward: Int) { 
-    var finished = false
+  // Advancing all effects
+  def advance() = {
+    this.effects.foreach(_.advance)
+    this.effects = this.effects.filterNot(_.finished)
+  }
+  
+  // Money from killing enemies
+  case class MoneyEffect(var x: Double, var y: Double, reward: Int) extends Effect(30) { 
     var speed = 0.05
-    var age = 0
     val text = "$" + reward.toString()
-    def advance() = {
+    def update() = {
       this.speed *= 0.9
       this.y -= this.speed
-      if (this.age > 30) this.finished = true
-      this.age += 1
     }
   }
   def addMoneyEffect(e: Enemy) = {
-    this.moneyEffects += MoneyEffect(e.pos.x, e.pos.y, e.reward)
+    this.effects += MoneyEffect(e.pos.x, e.pos.y, e.reward)
     Audio.play("coin.wav", 0.15)
   }
   
-  var towerupEffects = Buffer[TowerupEffect]()
-  case class TowerupEffect(_x: Double, _y: Double) {
+  // Particles from advancing towers
+  case class TowerupEffect(_x: Double, _y: Double) extends Effect(35)  {
     var x = _x + 0.5 * (nextGaussian - 0.5)
     var y = _y + 0.5 * (nextGaussian - 0.5)
     var speed = 0.05
-    var age = 0
-    var finished = false
-    def advance() = {
+    def update() = {
       this.speed *= 0.9
       this.y -= this.speed
-      if (this.age > 35) this.finished = true
-      this.age += 1
     }
   }
   def addTowerupEffect(t: Tower) = {
     for (i <- 0 until 10) {
-      this.towerupEffects += TowerupEffect(t.pos.x, t.pos.y)
+      this.effects += TowerupEffect(t.pos.x, t.pos.y)
     }
+  }
+  
+  // Explosions from homing projectiles
+  case class ExplosionEffect(val x: Double, val y: Double) extends Effect(18) {
+    def update() = Unit
+  }
+  def addExplosionEffect(e: Enemy) = {
+    this.effects += ExplosionEffect(e.pos.x, e.pos.y)
+    Audio.play("explosion.wav")
   }
   
 }

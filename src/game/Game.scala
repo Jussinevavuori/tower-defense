@@ -33,6 +33,10 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
   
   // Buffer of projectiles
   var projectiles = Buffer[Projectile]()
+  
+  // Amount of money and projectiles at the start of the round for saving
+  var saveTowers = this.towers
+  var saveMoney  = this.player.money
 
   
     
@@ -124,6 +128,14 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
       }
     }
     
+    // After killing all enemies grant prize
+    if (this.enemies.isEmpty && this.wave.finished) {
+      
+      val reward = this.wave.prize
+      this.player.reward(reward)
+      if (reward > 0) gui.Audio.play("fanfare.wav")
+    }
+    
   }
   
   /* Loads the next wave only if current wave is finished spawning enemies, all the enemies
@@ -133,6 +145,8 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
   def loadNextWave(): Boolean = {
     if (this.wave.number < WaveLoader.maxWave && this.wave.finished && this.enemies.isEmpty) {
       this.wave = WaveLoader(this.wave.number + 1, this.path)
+      this.saveMoney = this.player.money
+      this.saveTowers = this.towers
       true
     } else {
       false

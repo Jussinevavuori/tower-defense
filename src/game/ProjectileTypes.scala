@@ -1,6 +1,7 @@
 package game
 
 import scala.math._
+import scala.collection.mutable.Buffer
 
 /* Bullet projectiles have a strength and a range. They are shot at a target
  * and continue moving in a straight line at high speed until they hit something
@@ -25,9 +26,10 @@ class BulletProjectile(x: Double, y: Double, str: Double, rng: Double,
  * position and effectively work as smart target seeking projectiles. If the
  * target is lost (for example upon its death) the projectile will continue
  * in a straight line until it goes outside its range or hits something.
+ * Explodes upon impact
  */
 class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
-    val target: Enemy, private val maxSpeed: Double, private val acceleration: Double)
+    val blastRadius: Double, val target: Enemy, private val maxSpeed: Double, private val acceleration: Double)
       extends Projectile(x, y, str, rng) {
   
   // The current velocity, starts from rest
@@ -51,6 +53,31 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
   
   // Moving in the direction of the updated velocity
   def move(): Unit = this.pos += this.velocity
+  
+  // Hits all the enemies in the blastradius upon impact
+  override def hit(enemies: Buffer[Enemy]): Unit = {
+    
+    // If outside of range, finish
+    if (this.pos.distanceSqrd(origin) > this.range * this.range) {
+      this.isOutOfRange = true
+    } else {
+      for (e <- enemies.diff(this.hitEnemies)) {
+        
+        // If this is close inside enemy
+        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {
+          
+          // Hurt everyone within blastradius
+          enemies.filter(e => {
+            e.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius
+          }).foreach(_.damage(this.damage))
+          
+          this.hitEnemies += e
+          gui.Effects.addExplosionEffect(e)
+          return
+        }
+      }
+    }
+  }
   
 }
 

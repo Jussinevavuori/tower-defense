@@ -128,12 +128,12 @@ object GameLoader extends App {
     val list = (xml \\ "game" \\ "towers")
     
     (list \ "tower").map(t => {
-      val (x, y, id) = ((t \@ "x").toInt, (t \@ "y").toInt, (t \@ "id"))
+      val (x, y, id) = ((t \@ "x").toDouble, (t \@ "y").toDouble, (t \@ "id"))
       id match {
         case "c1" => new CannonTower1(x, y)
         case "c2" => new CannonTower2(x, y)
-        case "c3" => new CannonTower3(x, y)
-        case "c4" => new CannonTower4(x, y)
+//        case "c3" => new CannonTower3(x, y)
+//        case "c4" => new CannonTower4(x, y)
         case "b1" => new BoomerangTower1(x, y)
         case "b2" => new BoomerangTower2(x, y)
 //        case "b3" => new BoomerangTower3(x, y)

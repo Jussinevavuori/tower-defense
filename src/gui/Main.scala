@@ -1,10 +1,10 @@
 package gui
 
 import game._
-import javafx.event.EventHandler
+import javafx.event.{ EventHandler => EH }
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.scene.input.{MouseEvent => ME}
+import javafx.scene.input.{ MouseEvent => ME }
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.jfxActionEvent2sfx
 import scalafx.animation.AnimationTimer
@@ -21,6 +21,8 @@ import scalafx.scene.layout.StackPane
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.Group
+import scalafx.scene.image.ImageView
+import scalafx.scene.ImageCursor
 
 object Main extends JFXApp {
   
@@ -42,15 +44,20 @@ object Main extends JFXApp {
       
       
       // Canvas for the game and sidebar and prerendering
-      val mainCanvas  = new Canvas(1920, 840)
-      val sideCanvas  = new Canvas(1920, 1080)
-      val titleCanvas = new Canvas(1920, 1080)
+      val mainCanvas        = new Canvas(1920, 840)
+      val sideCanvas        = new Canvas(1920, 1080)
+      val interactionCanvas = new Canvas(1920, 1080)
+      val titleCanvas       = new Canvas(1920, 1080)
       mainCanvas.requestFocus()
+      interactionCanvas.disable = true
       Render.prerender(mainCanvas, sideCanvas, currentGame)
   
-
+      // Custom cursor
+      //this.cursor = new ImageCursor( Render.loadImage("cursor") )
       
       // Private variables for showing the GUI and game correctly
+      private var selectedTower: Option[Tower] = None
+      private var previousTime: Long = -1
       private var showFPS = false
       private var mouseX = 0.0
       private var mouseY = 0.0
@@ -58,8 +65,6 @@ object Main extends JFXApp {
       private def gridY = this.toGridY(this.mouseY)
       private def toGridX(x: Double) = x / Render.gridW
       private def toGridY(y: Double) = y / Render.gridH  
-      private var selectedTower: Option[Tower] = None
-      private var previousTime: Long = -1
       
       
       
@@ -90,21 +95,27 @@ object Main extends JFXApp {
       // Creating the rendering timer
       val mainTimer = AnimationTimer { now =>
         
+        // Calculate elapsed time and update game based on it
         val elapsedTime: Double = (now - previousTime) / 1000000000.0 
         previousTime = now  // Calculate the elapsed time in seconds
         currentGame.update(elapsedTime)  // Run game
         
+        // Clear the interaction canvas
+        interactionCanvas.graphicsContext2D.clearRect(0, 0, interactionCanvas.getWidth, interactionCanvas.getHeight)
+        
+        // Render all the basics
         Animate.advance()
         Effects.advance()
         Render.renderGame(currentGame, this.mainCanvas, selectedTower)
         Render.renderSide(currentGame, this.sideCanvas)
+        
+        // Render the interaction canvas
         val selectableTower = Actions.findSelectableTower(currentGame, gridX - 0.5, gridY - 0.5)
-        if (selectableTower.isDefined)
-          Render.renderSelectableTower(mainCanvas, currentGame, selectableTower.get)
-        if (currentGame.shop.active) 
-          Render.renderActiveTower(this.mainCanvas, currentGame, mouseX, mouseY)
-        if (this.showFPS)
-          Render.fps(elapsedTime, mainCanvas) // Show FPS
+        if (selectableTower.isDefined) Render.renderSelectableTower(this.interactionCanvas, currentGame, selectableTower.get)
+        if (selectedTower.isDefined)   Render.renderSelectedTower(this.interactionCanvas, selectedTower.get)
+        if (currentGame.shop.active)   Render.renderActiveTower(this.interactionCanvas, currentGame, mouseX, mouseY)
+        if (this.showFPS)              Render.fps(elapsedTime, this.interactionCanvas) 
+        Render.renderShopTowers(this.interactionCanvas)
       }
 
       
@@ -142,83 +153,113 @@ object Main extends JFXApp {
           dmMute,       new SeparatorMenuItem,
           dmStartMusic, new SeparatorMenuItem,
           dmStopMusic)
-      
           
           
       // Creating invisible GUI buttons that light up when hovered over by a mouse
-      val b_lefttop  = Rectangle(   0,    0,   0,   0) 
-      val b_righttop = Rectangle(1920, 1080,   0,   0)
-      val b_nextwave = Rectangle(1729,  972, 120,  83)
-      val b_shop1    = Rectangle( 708,  894, 104, 104)
-      val b_shop2    = Rectangle( 908,  894, 104, 104)
-      val b_shop3    = Rectangle(1108,  894, 104, 104)
-      val b_upgrade  = Rectangle(   0,    0,   0,   0)
-      b_shop1.arcHeight = 25
-      b_shop1.arcWidth  = 25
-      b_shop2.arcHeight = 25
-      b_shop2.arcWidth  = 25
-      b_shop3.arcHeight = 25
-      b_shop3.arcWidth  = 25
-      b_lefttop.fill  = Color(1.0, 1.0, 1.0, 0.0)
-      b_righttop.fill = Color(1.0, 1.0, 1.0, 0.0)
-      b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.0)  
-      b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.0)
-      b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.0)
-      b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.0)
-      b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.0)
-      b_nextwave.setOnMouseEntered(  new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop1.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop2.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop3.setOnMouseEntered(     new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_upgrade.setOnMouseEntered(   new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_nextwave.setOnMouseExited(   new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.0) } )
-      b_shop1.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.0) } )  
-      b_shop2.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.0) } )  
-      b_shop3.setOnMouseExited(      new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.0) } )
-      b_upgrade.setOnMouseExited(    new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.0) } )
-      b_nextwave.setOnMousePressed(  new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.5) } )
-      b_shop1.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
-      b_shop2.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
-      b_shop3.setOnMousePressed(     new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.5) } )
-      b_upgrade.setOnMousePressed(   new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.5) } )
-      b_nextwave.setOnMouseReleased( new EventHandler[ME] { def handle(e: ME) = b_nextwave.fill = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop1.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop1.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop2.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop2.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_shop3.setOnMouseReleased(    new EventHandler[ME] { def handle(e: ME) = b_shop3.fill    = Color(1.0, 1.0, 1.0, 0.2) } )
-      b_upgrade.setOnMouseReleased(  new EventHandler[ME] { def handle(e: ME) = b_upgrade.fill  = Color(1.0, 1.0, 1.0, 0.2) } )
+          
+      // Loaded images
+      val img_shop                = Render.loadImage("shop")
+      val img_shopLocked          = Render.loadImage("shopLocked")
+      val img_shopHighlighted     = Render.loadImage("shopHighlighted")
+      val img_shopClicked         = Render.loadImage("shopClicked")
+      val img_nextwave            = Render.loadImage("nextwave")
+      val img_nextwaveHighlighted = Render.loadImage("nextwaveHighlighted")
+      val img_nextwaveClicked     = Render.loadImage("nextwaveClicked")
+      val img_upgrade             = Render.loadImage("upgrade")
+      val img_upgradeHighlighted  = Render.loadImage("upgradeHighlighted")
+      val img_upgradeClicked      = Render.loadImage("upgradeClicked")
+      
+      // Elements
+      val b_lefttop  = Rectangle(   0,    0,   0,   0) // For scaling purposes
+      val b_righttop = Rectangle(1920, 1080,   0,   0) // For scaling purposes
+      val b_shop1    = new ImageView( this.img_shop)
+      val b_shop2    = new ImageView( this.img_shop)
+      val b_shop3    = new ImageView( this.img_shop)
+      val b_lock1    = new ImageView( this.img_shopLocked)
+      val b_lock2    = new ImageView( this.img_shopLocked)
+      val b_lock3    = new ImageView( this.img_shopLocked)
+      val b_upgrade  = new ImageView( this.img_upgrade)
+      val b_nextwave = new ImageView( this.img_nextwave)
+      
+      // Setting properties
+      b_shop1.x    =  701; b_shop1.y    =  887; b_shop1.pickOnBounds    = false
+      b_shop2.x    =  901; b_shop2.y    =  887; b_shop2.pickOnBounds    = false
+      b_shop3.x    = 1101; b_shop3.y    =  887; b_shop3.pickOnBounds    = false
+      b_lock1.x    =  701; b_lock1.y    =  887; b_shop1.pickOnBounds    = false; b_lock1.visible = false
+      b_lock2.x    =  901; b_lock2.y    =  887; b_shop2.pickOnBounds    = false; b_lock2.visible = true
+      b_lock3.x    = 1101; b_lock3.y    =  887; b_shop3.pickOnBounds    = false; b_lock3.visible = true
+      b_upgrade.x  =   10; b_upgrade.y  =   10; b_upgrade.pickOnBounds  = false; b_upgrade.visible = false
+      b_nextwave.x = 1729; b_nextwave.y =  972; b_nextwave.pickOnBounds = false
+
+      // Highlight on mouse enter
+      b_nextwave.setOnMouseEntered(  new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveHighlighted } )
+      b_shop1.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopHighlighted } )
+      b_shop2.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopHighlighted } )
+      b_shop3.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopHighlighted } )
+      b_upgrade.setOnMouseEntered(   new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeHighlighted } )
+      
+      // Return to normal on mouse exit
+      b_nextwave.setOnMouseExited(   new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwave } )
+      b_shop1.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shop    } )  
+      b_shop2.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shop    } )  
+      b_shop3.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shop    } )
+      b_upgrade.setOnMouseExited(    new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgrade } )
+      
+      // Extra highlight on mouse click
+      b_nextwave.setOnMousePressed(  new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveClicked } )
+      b_shop1.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopClicked } )
+      b_shop2.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopClicked } )
+      b_shop3.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopClicked } )
+      b_upgrade.setOnMousePressed(   new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeClicked } )
+      
+      // Return to normal highlight on mouse released
+      b_nextwave.setOnMouseReleased( new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveHighlighted } )
+      b_shop1.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopHighlighted } )
+      b_shop2.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopHighlighted } )
+      b_shop3.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopHighlighted } )
+      b_upgrade.setOnMouseReleased(  new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeHighlighted } )
       
       
       
       // Arranging the layout
       val buttons = new Group()
       val stack   = new StackPane()
-      buttons.children = List(b_lefttop, b_righttop, b_nextwave, b_shop1, b_shop2, b_shop3, b_upgrade)
-      stack.children   = List(sideCanvas, mainCanvas, menuBar, buttons, titleCanvas)
+      buttons.children = List(
+          b_lefttop, b_righttop,
+          b_shop1, b_shop2, b_shop3,
+          b_lock1, b_lock2, b_lock3,
+          b_nextwave, b_upgrade)
+      stack.children   = List(sideCanvas, mainCanvas, buttons, interactionCanvas, menuBar, titleCanvas)
       stack.setAlignment(Pos.TopLeft)
       root = stack
 
       
       
       // INPUT : ACTIVE GUI BUTTONS
-      b_nextwave.setOnMouseClicked(new EventHandler[ME] { def handle(e: ME) = { Actions.loadNextWave(     currentGame) } } )
-      b_shop1.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyCannonTower(   currentGame) } } )
-      b_shop2.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyBoomerangTower(currentGame) } } )
-      b_shop3.setOnMouseClicked(   new EventHandler[ME] { def handle(e: ME) = { Actions.buyHomingTower(   currentGame) } } )
-      b_upgrade.setOnMouseClicked( new EventHandler[ME] { def handle(e: ME) = {
+      b_shop1.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyCannonTower(   currentGame) } } )
+      b_shop2.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyBoomerangTower(currentGame) } } )
+      b_shop3.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyHomingTower(   currentGame) } } )
+      b_lock1.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_lock2.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_lock3.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_upgrade.setOnMouseClicked( new EH[ME] { def handle(e: ME) = {
         selectedTower    = Actions.upgradeTower(currentGame, selectedTower)
-        if (selectedTower.isDefined && selectedTower.get.upgrade.isEmpty) {
-          b_upgrade.fill   = Color(1.0, 1.0, 1.0, 0.0)
-          b_upgrade.width  = 0
-          b_upgrade.height = 0
-        }}})
+        b_upgrade.visible = selectedTower.isDefined && !selectedTower.get.upgrade.isEmpty
+      }})
+      b_nextwave.setOnMouseClicked(new EH[ME] { def handle(e: ME) = {
+        Actions.loadNextWave(currentGame)
+        b_lock1.visible = (new CannonTower1    (0, 0).unlock) > currentGame.wave.number
+        b_lock2.visible = (new BoomerangTower1 (0, 0).unlock) > currentGame.wave.number
+        b_lock3.visible = (new HomingTower1    (0, 0).unlock) > currentGame.wave.number
+      }})
       
       
       // INPUT: MOUSE CLICKED ON SCREEN
-      this.onMouseClicked = new EventHandler[ME] { def handle(me: ME) = fullScreen = true }
+      this.onMouseClicked = new EH[ME] { def handle(me: ME) = fullScreen = true }
  
      
       // INPUT: MOUSE MOVED ON SCREEN
-      mainCanvas.onMouseMoved = new EventHandler[ME] {
+      mainCanvas.onMouseMoved = new EH[ME] {
         def handle(me: ME) = {
           
           // Update mouse coordinates
@@ -231,7 +272,7 @@ object Main extends JFXApp {
             
       
       // INPUT: CLICK ON MAIN CANVAS
-      mainCanvas.onMouseClicked = new EventHandler[ME] {
+      mainCanvas.onMouseClicked = new EH[ME] {
         def handle(me: ME): Unit = {
           
           // Mouse coordinates
@@ -242,26 +283,30 @@ object Main extends JFXApp {
           
           // Tower selections
           else {
-            val selection    = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
-            selectedTower    = selection._1
-            b_upgrade.x      = selection._2
-            b_upgrade.y      = selection._3
-            b_upgrade.width  = selection._4
-            b_upgrade.height = selection._5
+            val selection     = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
+            selectedTower     = selection._1
+            b_upgrade.x       = selection._2
+            b_upgrade.y       = selection._3
+            b_upgrade.visible = !(selection._2 == 0.0 && selection._3 == 0.0)
           }
-        }
+        } 
       }
-      
+       
       
       // INPUT: KEY PRESSED
-      this.onKeyPressed = new EventHandler[KeyEvent] {
+      this.onKeyPressed = new EH[KeyEvent] {
         def handle(ke: KeyEvent) = { ke.getCode() match {
      
             // Spacebar skips titlescreen
             case KeyCode.SPACE if (!Titlescreen.completed) => Actions.skipTitleScreen()
             
             // Shortcut to next wave
-            case KeyCode.SPACE => Actions.loadNextWave(currentGame)
+            case KeyCode.SPACE => {
+              Actions.loadNextWave(currentGame)
+              b_lock1.visible = (new CannonTower1    (0, 0).unlock) > currentGame.wave.number
+              b_lock2.visible = (new BoomerangTower1 (0, 0).unlock) > currentGame.wave.number
+              b_lock3.visible = (new HomingTower1    (0, 0).unlock) > currentGame.wave.number
+            }
             
             // Shortcut to tower upgrade
             case KeyCode.ENTER => selectedTower = Actions.upgradeTower(currentGame, selectedTower)
@@ -276,11 +321,19 @@ object Main extends JFXApp {
       gmNew.onAction        = (e: ActionEvent) => {
         currentGame = GameLoader("data/defaultdata.xml")
         Render.prerender(mainCanvas, sideCanvas, currentGame)
+        b_upgrade.visible = false
+        b_lock1.visible = false
+        b_lock2.visible = true
+        b_lock3.visible = true
         Audio.play("iosfx.wav")
       }
       gmLoad.onAction       = (e: ActionEvent) => { 
         currentGame = GameLoader("data/savedata.xml")
         Render.prerender(mainCanvas, sideCanvas, currentGame)
+        b_upgrade.visible = false
+        b_lock1.visible = false
+        b_lock2.visible = true
+        b_lock3.visible = true
         Audio.play("iosfx.wav")
       }
       gmSave.onAction       = (e: ActionEvent) => { 

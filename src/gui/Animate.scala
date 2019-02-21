@@ -29,7 +29,7 @@ object Animate {
   
   def animate(id: String, canvasX: Double, canvasY: Double,
               gridW: Double, gridH: Double, gfx: GraphicsContext,
-              delay: Int = 20): Unit = {
+              delay: Int = 20, currentFrame: Int = this.frame): Unit = {
     
     // Handle wrong ids
     if (!this.animations.contains(id)) throw new RenderingException(
@@ -39,7 +39,7 @@ object Animate {
     val (ss, size, count) = this.animations(id)
     
     // Current frame
-    val frame = this.currentFrame(count, delay)
+    val frame = this.currentFrame(count, delay, currentFrame)
     
     // Drawing the cropped image
     gfx.drawImage(ss, frame * size, 0, size, size, canvasX, canvasY, gridW, gridH)
@@ -52,7 +52,7 @@ object Animate {
   private var frame = 0
   
   // Returns the ongoing frame of an animation with the given length and delay
-  private def currentFrame(length: Int, delay: Int) = { 
+  private def currentFrame(length: Int, delay: Int, currentFrame: Int = this.frame) = { 
     (this.frame / delay) % length
   }
   
@@ -72,9 +72,10 @@ object Animate {
   // Animation ID -> Spritesheet, Spritesize, Framecount
   private val animations = Map[String, (Image, Int, Int)]( 
     "koala"     -> this.loadAnimation("koala",     60, 2),
-    "cannondog" -> this.loadAnimation("cannondog", 40, 2),
+    "cannondog" -> this.loadAnimation("cannondog", 60, 2),
     "mage"      -> this.loadAnimation("mage",      60, 2),
-    "towerup"   -> this.loadAnimation("towerup",   16, 7)
+    "towerup"   -> this.loadAnimation("towerup",   16, 7),
+    "explosion" -> this.loadAnimation("explosion", 60, 6)
   )
   
   // Gets the animation frame for the given id of frames length animation

@@ -26,7 +26,7 @@ object GameSaver extends App {
     val wave: Elem = <wave>{game.wave.number}</wave>
     
     val player: Elem =
-      <player><health>{game.player.health}</health><money>{game.player.money}</money></player>
+      <player><health>{game.player.health}</health><money>{game.saveMoney}</money></player>
       
     val path: Elem =
       <path>{game.path.toArray().map({p =>
@@ -34,9 +34,9 @@ object GameSaver extends App {
       })}</path>
     
     val towers: Elem =
-      <towers>{game.towers.map({t =>
+      <towers>{game.saveTowers.map({t =>
         this.createXMLElement("tower", Array(
-            "x" -> t.pos.x.toInt.toString(), "y" -> t.pos.y.toInt.toString(),
+            "x" -> t.pos.x.toString(), "y" -> t.pos.y.toString(),
             "id" -> t.typeid))
       })}</towers>
     

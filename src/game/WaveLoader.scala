@@ -20,7 +20,7 @@ object WaveLoader {
   
   def loadWave(wave: Int, path: Path): Wave = {
     
-    var finalWave = new Wave(-1, Buffer[Enemy]())
+    var finalWave = new Wave(-1, Buffer[Enemy](), 0)
   
     try {
     
@@ -53,6 +53,9 @@ object WaveLoader {
         (enemy \@ "count").toInt -> (enemy \@ "id")
       }).toArray
       
+      // Load the prize
+      val prize = (wavedata \@ "prize").toInt
+      
       // For all data points, add 'count' amount of times the enemy
       // specified in the 'id' to the enemies
       enemyData.foreach(data => {
@@ -63,10 +66,10 @@ object WaveLoader {
               case "n2" => new EnemyN2(x, y, target)
               case "n3" => new EnemyN3(x, y, target)
               case "n4" => new EnemyN4(x, y, target)
-              case "t1" => new EnemyT1(x, y, target)
-              case "t2" => new EnemyT2(x, y, target)
-              case "t3" => new EnemyT3(x, y, target)
-              case "t4" => new EnemyT4(x, y, target)
+//              case "t1" => new EnemyT1(x, y, target)
+//              case "t2" => new EnemyT2(x, y, target)
+//              case "t3" => new EnemyT3(x, y, target)
+//              case "t4" => new EnemyT4(x, y, target)
               case _ => throw new CorruptedWavedataException(
                 s"Unrecognized enemy id in wavedata: '${data._2}'")
             }
@@ -75,7 +78,7 @@ object WaveLoader {
       })
       
       scala.util.Random.shuffle(enemies)
-      finalWave = new Wave(wave, scala.util.Random.shuffle(enemies))
+      finalWave = new Wave(wave, scala.util.Random.shuffle(enemies), prize)
       
     } catch {
       

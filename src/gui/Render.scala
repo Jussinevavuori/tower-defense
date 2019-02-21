@@ -19,6 +19,8 @@ import scalafx.scene.text.TextAlignment
 import javax.imageio.ImageIO
 import scalafx.embed.swing.SwingFXUtils
 import scalafx.scene.image.PixelReader
+import gui.Effects.TowerupEffect
+import gui.Effects.ExplosionEffect
 
 object Render {
 
@@ -39,13 +41,7 @@ object Render {
     // Render all the dynamic elements
     this.renderEnemies(gfx, game.enemies)
     this.renderProjectiles(gfx, game.projectiles)
-    if (selectedTower.isDefined) {
-      this.renderSelectedTower(gfx, selectedTower.get)
-    }
     this.renderEffects(gfx)
-    if (selectedTower.isDefined && selectedTower.get.upgrade.isDefined) {
-      this.renderSelectionUpgrade(gfx, selectedTower.get)
-    }
     
     // Translating back
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
@@ -79,17 +75,12 @@ object Render {
     gfx.fillText(s"${game.player.health.toInt} HP", 192, 182)    
     gfx.fillText(s"${"$"} ${game.player.money}", 192, 99)
     
-    // Shop icons
-    Animate("cannondog",  730, 76, 60, 60, gfx)
-    Animate("koala",      930, 76, 60, 60, gfx)
-    Animate("mage",      1130, 76, 60, 60, gfx)    
-    
     // Shop prices
-    gfx.textAlign = TextAlignment.Left
+    gfx.textAlign = TextAlignment.Center
     gfx.font = this.smallFont
-    gfx.fillText("$ 600",  705, 204)
-    gfx.fillText("$ 800",  899, 204)
-    gfx.fillText("$ 700", 1098, 204)
+    gfx.fillText("$ " + new    CannonTower1(0, 0).price.toString,  760, 204)
+    gfx.fillText("$ " + new BoomerangTower1(0, 0).price.toString,  960, 204)
+    gfx.fillText("$ " + new    HomingTower1(0, 0).price.toString, 1160, 204)
     
     // Translate back
     gfx.translate(0, -this.mainH)
@@ -98,7 +89,7 @@ object Render {
   
   
   
-  // Renders the active tower in the towershop
+  // Renders the active tower in the towershop that is being purchased
   def renderActiveTower(canvas: Canvas, game: Game, mx: Double, my: Double): Unit = {
 
     val gfx = canvas.graphicsContext2D
@@ -123,6 +114,39 @@ object Render {
     val (rx, ry) = (0.7 * this.gridW, 0.7 * this.gridH)
     gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
   }
+  
+  
+  // Renders the selected tower  
+  def renderSelectedTower(canvas: Canvas, tower: Tower): Unit = {
+    
+    val gfx = canvas.graphicsContext2D
+    gfx.translate(this.gridW / 2, this.gridH / 2)
+    gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
+    gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
+    gfx.lineWidth = 10
+    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
+    val rx = tower.radius * gridW
+    val ry = tower.radius * gridH
+    gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
+    gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+    if (tower.upgrade.isDefined) {
+      gfx.font = this.smallFont
+      gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
+      gfx.textAlign = TextAlignment.Center
+      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
+    }
+    gfx.translate(-this.gridW / 2, -this.gridH / 2)
+  }
+  
+  
+  // Renders towers in the shop
+  def renderShopTowers(canvas: Canvas): Unit = {
+    
+    val gfx = canvas.graphicsContext2D
+    Animate("cannondog",  730, 916, 60, 60, gfx)
+    Animate("koala",      930, 916, 60, 60, gfx)
+    Animate("mage",      1130, 916, 60, 60, gfx)    
+  }
 
   
   
@@ -139,7 +163,6 @@ object Render {
   private var sideBg: Image = null
   
   // Other preloaded graphics
-  private var upgradeImage: Image = this.loadImage("upgrade")
   private var bulletProjImage: Image = this.loadImage("bulletproj")
   private var homingProjImage: Image = this.loadImage("homingproj")
   private var boomerangProjImage: Image = this.loadImage("boomerangproj")
@@ -236,44 +259,12 @@ object Render {
     mediumFontStream.close()
     bigFontStream.close()
   }
-  
-  
-  
-  
-  // Renders the selected tower  
-  private def renderSelectedTower(gfx: GraphicsContext, tower: Tower): Unit = {
-    gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
-    gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
-    gfx.lineWidth = 10
-    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
-    val rx = tower.radius * gridW
-    val ry = tower.radius * gridH
-    gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
-    gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
-    if (tower.upgrade.isDefined) {
-      gfx.drawImage(this.upgradeImage, x - 60, y - 80, 120, 40)
-      gfx.font = this.smallFont
-      gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
-      gfx.textAlign = TextAlignment.Center
-      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
-    }
-  }
 
-  
-  // Renders the selected tower's upgrade box
-  private def renderSelectionUpgrade(gfx: GraphicsContext, tower: Tower): Unit = {
-    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
-    gfx.drawImage(this.upgradeImage, x - 60, y - 80, 120, 40)
-    gfx.font = this.smallFont
-    gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
-    gfx.textAlign = TextAlignment.Center
-    gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
-  }
   
   
   // Renders the towers
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
-    for (t <- towers) {
+    for (t <- towers.sortBy(_.pos.y)) {
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
       t.typeid match {
         case "c1" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
@@ -357,13 +348,22 @@ object Render {
   def renderEffects(gfx: GraphicsContext) = {  
     gfx.font = this.smallFont
     gfx.fill = Color.White
-    for (m <- Effects.moneyEffects) {
-      val (x, y) = this.canvasCoords(m.x, m.y)
-      gfx.fillText(m.text, x, y)
-    }
-    for (t <- Effects.towerupEffects) {
-      val (x, y) = this.canvasCoords(t.x, t.y)
-      Animate.animate("towerup", x, y, 16, 16, gfx, 5)
+    for (eff <- Effects.effects) {
+      if (eff.isInstanceOf[gui.Effects.MoneyEffect]) {
+        val m = eff.asInstanceOf[gui.Effects.MoneyEffect]
+        val (x, y) = this.canvasCoords(m.x, m.y)
+        gfx.fillText(m.text, x, y)
+      }
+      else if (eff.isInstanceOf[gui.Effects.TowerupEffect]) {
+        val t = eff.asInstanceOf[gui.Effects.TowerupEffect]
+        val (x, y) = this.canvasCoords(t.x, t.y)
+        Animate.animate("towerup", x, y, 16, 16, gfx, 5, t.age)
+      }
+      else if (eff.isInstanceOf[gui.Effects.ExplosionEffect]) {
+        val e = eff.asInstanceOf[gui.Effects.ExplosionEffect]
+        val (x, y) = this.canvasCoords(e.x, e.y)
+        Animate.animate("explosion", x - 30, y - 30, 60, 60, gfx, 3, e.age)
+      }
     }
   }
   

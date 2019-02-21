@@ -13,15 +13,22 @@ import scala.collection.mutable.Buffer
  * 
  */
 
-class Wave(val number: Int, val enemies: Buffer[Enemy]) {
+class Wave(val number: Int, val enemies: Buffer[Enemy], private val prizeSum: Int) {
   
   private var timer = 0        // How many frames have passed
   private val frequency = 30   // Frequency of enemy spawns in frames
   private var index = 0        // Index of next enemy to spawn
+  private var prizeGranted = false
   
   // True when all enemies have been spawned
   def finished = this.index >= this.enemies.length
 
+  // Get the prize money but only once
+  def prize: Int = {
+    val sum = if (prizeGranted) 0 else this.prizeSum
+    this.prizeGranted = true
+    sum
+  }
   
   /* Function that each 'frequency' frames returns the next
    * enemy in the wave wrapped in an option. Every other frame

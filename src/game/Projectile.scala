@@ -2,7 +2,7 @@ package game
 
 import scala.collection.mutable.Buffer
 
-abstract class Projectile(_x: Double, _y: Double, damage: Double, range: Double) {
+abstract class Projectile(_x: Double, _y: Double, val damage: Double, val range: Double) {
   
   // The current and original position of the projectile
   val pos = Vec(_x, _y)
@@ -36,7 +36,7 @@ abstract class Projectile(_x: Double, _y: Double, damage: Double, range: Double)
   }
   
   // Contains all the hit enemies, specifically made for boomerangs
-  private var hitEnemies = Buffer[Enemy]()
+  var hitEnemies = Buffer[Enemy]()
   
   // Resets hit enemies upon calling, allowing for enemies to be hit twice
   def resetHitEnemies = this.hitEnemies = Buffer[Enemy]()

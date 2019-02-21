@@ -36,19 +36,17 @@ object Actions {
   
   // Method to select a tower at the given game location and return it
   // along the dimensions for the upgrade graphic if necessary
-  def selectTower(g: Game, _x: Double, _y: Double): (Option[Tower], Double, Double, Double, Double) = { 
+  def selectTower(g: Game, _x: Double, _y: Double): (Option[Tower], Double, Double) = { 
     val selection = g.towers.find(t => Vec(_x, _y).distance(t.pos) < 0.6)
-    var (x, y, w, h) = (0.0, 0.0, 0.0, 0.0)
+    var (x, y)  = (0.0, 0.0)
     if (selection.isDefined) {
       Audio.play("menu.wav")
       if (selection.get.upgrade.isDefined) {
         x = selection.get.pos.x * Render.gridW - 30
-        y = selection.get.pos.y * Render.gridH - 38
-        w = 120
-        h = 28
+        y = selection.get.pos.y * Render.gridH - 50
       }
     }
-    (selection, x, y, w, h)
+    (selection, x, y)
   }
   
   // Method to find a selectable tower at the given game location and return it
