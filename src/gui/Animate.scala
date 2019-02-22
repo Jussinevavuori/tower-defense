@@ -71,11 +71,14 @@ object Animate {
   // All animation frames stored in a map so they don't have to be loaded each frame
   // Animation ID -> Spritesheet, Spritesize, Framecount
   private val animations = Map[String, (Image, Int, Int)]( 
-    "koala"     -> this.loadAnimation("koala",     60, 2),
-    "cannondog" -> this.loadAnimation("cannondog", 60, 2),
-    "mage"      -> this.loadAnimation("mage",      60, 2),
-    "towerup"   -> this.loadAnimation("towerup",   16, 7),
-    "explosion" -> this.loadAnimation("explosion", 60, 6)
+    "koala1"     -> this.loadAnimation("koala1",     60, 2),
+    "koala2"     -> this.loadAnimation("koala2",     60, 2),
+    "cannondog1" -> this.loadAnimation("cannondog1", 60, 2),
+    "cannondog2" -> this.loadAnimation("cannondog2", 60, 2),
+    "cannondog3" -> this.loadAnimation("cannondog3", 60, 2),
+    "mage"       -> this.loadAnimation("mage",       60, 2),
+    "towerup"    -> this.loadAnimation("towerup",    16, 7),
+    "explosion"  -> this.loadAnimation("explosion",  60, 6)
   )
   
   // Gets the animation frame for the given id of frames length animation

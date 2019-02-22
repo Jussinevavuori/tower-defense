@@ -95,10 +95,10 @@ object Render {
     val gfx = canvas.graphicsContext2D
     if (game.shop.active) {
       game.shop.activeTower.get.typeid match {
-        case "c1" => Animate("cannondog", mx, my, this.gridW, this.gridH, gfx)
-        case "b1" => Animate("koala",     mx, my, this.gridW, this.gridH, gfx)
-        case "h1" => Animate("mage",      mx, my, this.gridW, this.gridH, gfx)
-        case _    => Animate("cannondog", mx, my, this.gridW, this.gridH, gfx)
+        case "c1" => Animate("cannondog1", mx, my, this.gridW, this.gridH, gfx)
+        case "b1" => Animate("koala1",     mx, my, this.gridW, this.gridH, gfx)
+        case "h1" => Animate("mage",       mx, my, this.gridW, this.gridH, gfx)
+        case _    => Animate("cannondog1", mx, my, this.gridW, this.gridH, gfx)
       }
     }
   }
@@ -143,9 +143,9 @@ object Render {
   def renderShopTowers(canvas: Canvas): Unit = {
     
     val gfx = canvas.graphicsContext2D
-    Animate("cannondog",  730, 916, 60, 60, gfx)
-    Animate("koala",      930, 916, 60, 60, gfx)
-    Animate("mage",      1130, 916, 60, 60, gfx)    
+    Animate("cannondog1",  730, 916, 60, 60, gfx)
+    Animate("koala1",      930, 916, 60, 60, gfx)
+    Animate("mage",       1130, 916, 60, 60, gfx)    
   }
 
   
@@ -267,22 +267,22 @@ object Render {
     for (t <- towers.sortBy(_.pos.y)) {
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
       t.typeid match {
-        case "c1" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
-        case "c2" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
-        case "c3" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
-        case "c4" => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        case "c1" => Animate("cannondog1", x, y, this.gridW, this.gridH, gfx)
+        case "c2" => Animate("cannondog2", x, y, this.gridW, this.gridH, gfx)
+        case "c3" => Animate("cannondog3", x, y, this.gridW, this.gridH, gfx)
+        case "c4" => Animate("cannondog2", x, y, this.gridW, this.gridH, gfx)
         
-        case "b1" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
-        case "b2" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
-        case "b3" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
-        case "b4" => Animate("koala", x, y, this.gridW, this.gridH, gfx)
+        case "b1" => Animate("koala1", x, y, this.gridW, this.gridH, gfx)
+        case "b2" => Animate("koala2", x, y, this.gridW, this.gridH, gfx)
+        case "b3" => Animate("koala2", x, y, this.gridW, this.gridH, gfx)
+        case "b4" => Animate("koala2", x, y, this.gridW, this.gridH, gfx)
         
         case "h1" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
         case "h2" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
         case "h3" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
         case "h4" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
         
-        case _    => Animate("cannondog", x, y, this.gridW, this.gridH, gfx)
+        case _    => Animate("cannondog1", x, y, this.gridW, this.gridH, gfx)
       }
     }
   }
