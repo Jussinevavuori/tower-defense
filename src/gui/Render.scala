@@ -31,24 +31,14 @@ object Render {
     if (this.mainBg == null) throw new RenderingException(
       "Main background is null. Prerender must be performed before rendering")
 
-    // Loading the graphics of the canvas and drawing background
     val gfx = canvas.graphicsContext2D
     gfx.drawImage(this.mainBg, 0, 0)
-
-    // Translating all other elements by half a grid square
     gfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
-
-    // Render all the dynamic elements
     this.renderEnemies(gfx, game.enemies)
     this.renderProjectiles(gfx, game.projectiles)
     this.renderEffects(gfx)
-    
-    // Translating back
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
-
-    // Animating all the sprites
     this.renderTowers(gfx, game.towers)
-
   }
 
   /* Renders a given tower defense game's sidebar to the bottom
@@ -94,12 +84,20 @@ object Render {
 
     val gfx = canvas.graphicsContext2D
     if (game.shop.active) {
-      game.shop.activeTower.get.typeid match {
+      val tower = game.shop.activeTower.get
+      tower.typeid match {
         case "c1" => Animate("cannondog1", mx, my, this.gridW, this.gridH, gfx)
         case "b1" => Animate("koala1",     mx, my, this.gridW, this.gridH, gfx)
-        case "h1" => Animate("mage",       mx, my, this.gridW, this.gridH, gfx)
+        case "h1" => Animate("panda1",     mx, my, this.gridW, this.gridH, gfx)
         case _    => Animate("cannondog1", mx, my, this.gridW, this.gridH, gfx)
       }
+      val rx = tower.radius * gridW
+      val ry = tower.radius * gridH
+      gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
+      gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
+      gfx.lineWidth = 10
+      gfx.fillOval(  mx + (gridW / 2) - rx, my + (gridH / 2) - ry, 2 * rx, 2 * ry)
+      gfx.strokeOval(mx + (gridW / 2) - rx, my + (gridH / 2) - ry, 2 * rx, 2 * ry)
     }
   }
   
@@ -107,26 +105,24 @@ object Render {
   
   // Renders a selectable tower when mouse is hovering over it  
   def renderSelectableTower(canvas: Canvas, game: Game, tower: Tower): Unit = {
-    
     val gfx = canvas.graphicsContext2D
-    gfx.fill = Color(1.0, 1.0, 1.0, 0.2)
     val (x, y) = this.canvasCoords(tower.pos.x + 0.5, tower.pos.y + 0.5)
     val (rx, ry) = (0.7 * this.gridW, 0.7 * this.gridH)
+    gfx.fill = Color(1.0, 1.0, 1.0, 0.2)
     gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
   }
   
   
   // Renders the selected tower  
   def renderSelectedTower(canvas: Canvas, tower: Tower): Unit = {
-    
     val gfx = canvas.graphicsContext2D
+    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
+    val rx = tower.radius * gridW
+    val ry = tower.radius * gridH
     gfx.translate(this.gridW / 2, this.gridH / 2)
     gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
     gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
     gfx.lineWidth = 10
-    val (x, y) = this.canvasCoords(tower.pos.x, tower.pos.y)
-    val rx = tower.radius * gridW
-    val ry = tower.radius * gridH
     gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
     gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
     if (tower.upgrade.isDefined) {
@@ -141,11 +137,10 @@ object Render {
   
   // Renders towers in the shop
   def renderShopTowers(canvas: Canvas): Unit = {
-    
     val gfx = canvas.graphicsContext2D
     Animate("cannondog1",  730, 916, 60, 60, gfx)
     Animate("koala1",      930, 916, 60, 60, gfx)
-    Animate("mage",       1130, 916, 60, 60, gfx)    
+    Animate("panda1",     1130, 916, 60, 60, gfx)    
   }
 
   
@@ -259,6 +254,14 @@ object Render {
     mediumFontStream.close()
     bigFontStream.close()
   }
+  
+  
+  // Renders the game over screen
+  def renderGameover(canvas: Canvas) = {
+    val gfx = canvas.graphicsContext2D
+    gfx.clearRect(0, 0, Int.MaxValue, Int.MaxValue)
+    Animate("gameover", 0, 0, this.gridW, this.gridH, gfx)
+  }
 
   
   
@@ -277,10 +280,10 @@ object Render {
         case "b3" => Animate("koala2", x, y, this.gridW, this.gridH, gfx)
         case "b4" => Animate("koala2", x, y, this.gridW, this.gridH, gfx)
         
-        case "h1" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
-        case "h2" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
-        case "h3" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
-        case "h4" => Animate("mage", x, y, this.gridW, this.gridH, gfx)
+        case "h1" => Animate("panda1", x, y, this.gridW, this.gridH, gfx)
+        case "h2" => Animate("panda1", x, y, this.gridW, this.gridH, gfx)
+        case "h3" => Animate("panda1", x, y, this.gridW, this.gridH, gfx)
+        case "h4" => Animate("panda1", x, y, this.gridW, this.gridH, gfx)
         
         case _    => Animate("cannondog1", x, y, this.gridW, this.gridH, gfx)
       }
@@ -295,7 +298,6 @@ object Render {
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     for (p <- projectiles) {
       val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
-      
       if (p.isInstanceOf[HomingProjectile]) {
         val angle = p.asInstanceOf[HomingProjectile].dir() 
         gfx.translate(x, y)

@@ -11,15 +11,15 @@ class TowerShop {
   // Function to choose a tower to be the active tower by its id
   def choose(id: String, game: Game) = {
     val choice = id match {
-        case "c1"  => new CannonTower1(-1, -1)
-        case "b1"  => new BoomerangTower1(-1, -1)
+        case "c1" => new CannonTower1(-1, -1)
+        case "b1" => new BoomerangTower1(-1, -1)
         case "h1" => new HomingTower1(-1, -1)
         case _ => throw new IllegalArgumentException("Unrecognized tower id")
     }
     if (this.activeTower.isEmpty && game.player.canAfford(choice.price)) {
       this.activeTower = Some(choice)
     } else {
-      println("You could not afford this item")
+      gui.Audio.play("error.wav")
     }
   }
   

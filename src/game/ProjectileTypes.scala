@@ -32,27 +32,24 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
     val blastRadius: Double, val target: Enemy, private val maxSpeed: Double, private val acceleration: Double)
       extends Projectile(x, y, str, rng) {
   
-  // The current velocity, starts from rest
-  private var vel = Vec(0, 0)
- 
+  
+  private var vel = Vec(0, 0)    // The current velocity, starts from rest
+   
+  def dir() = toDegrees(atan2(this.vel.y, this.vel.x))  // The direction of movement for rendering purposes
+
+  def move(): Unit = this.pos += this.velocity  // Moving in the direction of the updated velocity
+  
   // Function to calculate the current velocity
   def velocity = {
-    if (this.target.alive) {  // As long as target is alive, update velocity
-      val speed = this.vel.size  // The current speed
+    var speed = this.vel.size          // The current speed
+    if (this.target.alive) {           // As long as target is alive, update velocity direction
       this.vel = target.pos - this.pos // Calculate new direction
-      this.vel.scaleTo( {  // Scale to accelerated speed until max speed
-        if (speed >= this.maxSpeed) speed
-        else speed + this.acceleration
-      } )
+    }    
+    this.vel.scaleTo {    // Accelerate
+      speed + { if (speed < this.maxSpeed) this.acceleration else 0 }
     }
     this.vel    // Return the updated velocity
   }
-  
-  // The direction of movement for rendering purposes
-  def dir() = toDegrees(atan2(this.vel.y, this.vel.x))
-  
-  // Moving in the direction of the updated velocity
-  def move(): Unit = this.pos += this.velocity
   
   // Hits all the enemies in the blastradius upon impact
   override def hit(enemies: Buffer[Enemy]): Unit = {
@@ -62,18 +59,13 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
       this.isOutOfRange = true
     } else {
       for (e <- enemies.diff(this.hitEnemies)) {
-        
-        // If this is close inside enemy
-        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {
-          
-          // Hurt everyone within blastradius
-          enemies.filter(e => {
+        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {  // If this is close inside enemy
+          enemies.filter(e => {                                // Hurt everyone within blastradius
             e.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius
           }).foreach(_.damage(this.damage))
-          
           this.hitEnemies += e
           gui.Effects.addExplosionEffect(e)
-          return
+          return  // Break loop after explosion
         }
       }
     }

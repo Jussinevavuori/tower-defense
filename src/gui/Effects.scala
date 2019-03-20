@@ -64,7 +64,7 @@ object Effects {
   }
   def addExplosionEffect(e: Enemy) = {
     this.effects += ExplosionEffect(e.pos.x, e.pos.y)
-    Audio.play("explosion.wav")
+    Audio.play("explosion.wav", 0.2)
   }
   
 }

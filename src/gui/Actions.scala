@@ -79,6 +79,11 @@ object Actions {
     Audio.play("fanfare.wav")
   }
   
+  // Method to toggle fast forward
+  def toggleFastForward(g: Game, setting: Boolean) = {
+    g.toggleFastForward(setting)
+  }
+  
   // Shortcut to playing the error sound upon failure
   private def error() = Audio.play("error.wav")
 }

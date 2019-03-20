@@ -36,24 +36,24 @@ object Animate {
         s"Given animation spritesheet as_$id.png does not exist in the data")
     
     // Spritesheet, sprite size, frame count
-    val (ss, size, count) = this.animations(id)
+    val (ss, w, h, count) = this.animations(id)
     
     // Current frame
     val frame = this.currentFrame(count, delay, currentFrame)
     
     // Drawing the cropped image
-    gfx.drawImage(ss, frame * size, 0, size, size, canvasX, canvasY, gridW, gridH)
+    gfx.drawImage(ss, frame * w, 0, w, h, canvasX, canvasY, w, h)
   }
   
   
   
   // Called each frame to advance animation
   def advance() = this.frame += 1
-  private var frame = 0
+  var frame = 0
   
   // Returns the ongoing frame of an animation with the given length and delay
   private def currentFrame(length: Int, delay: Int, currentFrame: Int = this.frame) = { 
-    (this.frame / delay) % length
+    (currentFrame / delay) % length
   }
   
   
@@ -69,25 +69,26 @@ object Animate {
 
   
   // All animation frames stored in a map so they don't have to be loaded each frame
-  // Animation ID -> Spritesheet, Spritesize, Framecount
-  private val animations = Map[String, (Image, Int, Int)]( 
-    "koala1"     -> this.loadAnimation("koala1",     60, 2),
-    "koala2"     -> this.loadAnimation("koala2",     60, 2),
-    "cannondog1" -> this.loadAnimation("cannondog1", 60, 2),
-    "cannondog2" -> this.loadAnimation("cannondog2", 60, 2),
-    "cannondog3" -> this.loadAnimation("cannondog3", 60, 2),
-    "mage"       -> this.loadAnimation("mage",       60, 2),
-    "towerup"    -> this.loadAnimation("towerup",    16, 7),
-    "explosion"  -> this.loadAnimation("explosion",  60, 6)
+  // Animation ID -> Spritesheet, Spritewidth, Spriteheight, Framecount
+  private val animations = Map[String, (Image, Int, Int, Int)]( 
+    "koala1"     -> this.loadAnimation("koala1",       60,   60, 2),
+    "koala2"     -> this.loadAnimation("koala2",       60,   60, 2),
+    "cannondog1" -> this.loadAnimation("cannondog1",   60,   60, 2),
+    "cannondog2" -> this.loadAnimation("cannondog2",   60,   60, 2),
+    "cannondog3" -> this.loadAnimation("cannondog3",   60,   60, 2),
+    "panda1"     -> this.loadAnimation("panda1",       60,   60, 2),
+    "towerup"    -> this.loadAnimation("towerup",      16,   16, 7),
+    "explosion"  -> this.loadAnimation("explosion",    60,   60, 6),
+    "gameover"   -> this.loadAnimation("gameover",   1920, 1080, 2)
   )
   
   // Gets the animation frame for the given id of frames length animation
-  private def loadAnimation(id: String, spriteSize: Int, frameCount: Int) = {
+  private def loadAnimation(id: String, spriteHeight: Int, spriteWidth: Int, frameCount: Int) = {
     val filepath = "assets/gfx/as_" + id + ".png"
     val inputStream = new FileInputStream(filepath)
     val animationSheet = new Image(inputStream)
     inputStream.close
-    (animationSheet, spriteSize, frameCount)
+    (animationSheet, spriteHeight, spriteWidth, frameCount)
   }
   
 }

@@ -47,6 +47,7 @@ abstract class Enemy(
     // the last path segment. Consequences are handled elsewhere.
     if (this.target.isEmpty) {
       this.finished = true
+      this._health = 0
       return true
     }
     

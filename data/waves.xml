@@ -81,10 +81,60 @@
 		</enemies>
 	</wave>
 
-	<wave prize="100">12
+	<wave prize="100">13
 		<enemies>
 			<enemy count="10" id="n3"/>
 		</enemies>
 	</wave>
 
+	<wave prize="100">14
+		<enemies>
+			<enemy count="15" id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">15
+		<enemies>
+			<enemy count="20" id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">16
+		<enemies>
+			<enemy count="3" id="n4"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">17
+		<enemies>
+			<enemy count="9" id="n4"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">18
+		<enemies>
+			<enemy count="18" id="n4"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">19
+		<enemies>
+			<enemy count="12" id="n4"/>
+			<enemy count="12" id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">20
+		<enemies>
+			<enemy count="15" id="n4"/>
+			<enemy count="15" id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">21
+		<enemies>
+			<enemy count="20" id="n4"/>
+			<enemy count="20" id="n3"/>
+		</enemies>
+	</wave>
 </waves>

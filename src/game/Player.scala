@@ -10,29 +10,31 @@ class Player( initialHealth: Int = 100,   // Default health on a new player is 1
    */
   
   private var _health: Int = initialHealth
-  private var _alive: Boolean = true
   
   
   /* Function to return the player's health and state
    * without the ability to alter it.
    */
   
-  def health: Int     = this._health
-  def alive:  Boolean = this._alive
-  def dead:   Boolean = !this._alive
+  def health: Int     = this._health max 0
+  def alive:  Boolean = this._health > 0
+  def dead:   Boolean = !this.alive
   
   
   /* Functions to damage or heal the player by the given amount
    * only if the player is still alive. Only positive integers.
    */
   
-  def damage(amount: Int) =
-    if (this.alive && amount > 0)
-      this._health -= amount
+  def damage(amount: Int) = {
+    require(amount > 0)
+    this._health -= amount
+  }
       
-  def heal(amount: Int) =
-    if (this.alive && amount > 0)
+  def heal(amount: Int) = {
+    require(amount > 0)
+    if (this.alive)
       this._health += amount
+  }
   
   
   /* The player's money. Money can never go below zero.
