@@ -171,9 +171,10 @@ object Main extends JFXApp {
       val gmNew     = new MenuItem("New game");  gameMenu.items.addAll(gmNew,     new SeparatorMenuItem)
       val gmLoad    = new MenuItem("Load game"); gameMenu.items.addAll(gmLoad,    new SeparatorMenuItem)
       val gmSave    = new MenuItem("Save");      gameMenu.items.addAll(gmSave,    new SeparatorMenuItem)
+      val gmControl = new MenuItem("Controls");  gameMenu.items.addAll(gmControl, new SeparatorMenuItem)
       val gmShowFPS = new MenuItem("Show FPS");  gameMenu.items.addAll(gmShowFPS, new SeparatorMenuItem)
       val gmGodmode = new MenuItem("Godmode");   gameMenu.items.addAll(gmGodmode, new SeparatorMenuItem)
-      val gmExit    = new MenuItem("Exit");      gameMenu.items.addAll(gmExit,    new SeparatorMenuItem)
+      val gmExit    = new MenuItem("Exit");      gameMenu.items.addAll(gmExit)
           
       // Creating invisible GUI buttons that light up when hovered over by a mouse
           
@@ -353,8 +354,8 @@ object Main extends JFXApp {
             // On game over all keys load a new game
             case k if (gameover) => newGame()
           
-            // Spacebar skips titlescreen
-            case KeyCode.SPACE if (!Titlescreen.completed) => Actions.skipTitleScreen()
+            // All keys skip titlescreen
+            case t if (!Titlescreen.completed) => Actions.skipTitleScreen()
             
             // Shortcut to next wave
             case KeyCode.SPACE if (currentGame.enemies.isEmpty) => {
@@ -406,6 +407,7 @@ object Main extends JFXApp {
         b_lock3.visible = false
         Actions.activateGodmode(currentGame) 
       }
+      gmControl.onAction = (e: ActionEvent) => { Render.toggleControls }
       
       // Helper functions
       

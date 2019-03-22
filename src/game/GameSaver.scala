@@ -45,8 +45,8 @@ object GameSaver extends App {
     
       
     // Prettyprinted formatting of savedata as debug message
-    val prettyPrinter = new PrettyPrinter(80, 4)
-    println(prettyPrinter.format(savedata))
+    //val prettyPrinter = new PrettyPrinter(80, 4)
+    //println(prettyPrinter.format(savedata))
     
     // Saving to file
     try {

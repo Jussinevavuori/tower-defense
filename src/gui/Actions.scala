@@ -14,16 +14,22 @@ object Actions {
   
   // Methods to choose towers
   def buyCannonTower(g: Game) = {
-    g.shop.choose("c1", g)
-    if (g.shop.active) Audio.play("coin.wav") else error()
+    if (g.wave.number >= TowerInfo.unlockCannon) {
+      g.shop.choose("c1", g)
+      if (g.shop.active) Audio.play("coin.wav") else error()
+    } else error()
   }
   def buyBoomerangTower(g: Game) = {
-    g.shop.choose("b1", g)
-    if (g.shop.active) Audio.play("coin.wav") else error()
-    }
+    if (g.wave.number >= TowerInfo.unlockBoomerang) {
+      g.shop.choose("b1", g)
+      if (g.shop.active) Audio.play("coin.wav") else error()
+    } else error()
+  }
   def buyHomingTower(g: Game) = {
-    g.shop.choose("h1", g)
-    if (g.shop.active) Audio.play("coin.wav") else error()
+    if (g.wave.number >= TowerInfo.unlockHoming) {
+      g.shop.choose("h1", g)
+      if (g.shop.active) Audio.play("coin.wav") else error()
+    } else error()
   }
   
   // Methods to purchase bought tower at the given game location
@@ -44,7 +50,7 @@ object Actions {
       if (selection.get.upgrade.isDefined) {
         val pos = selection.get.pos
         x = (Render.gridW * (pos.x - 0.45) * 1920) / Main.stage.scene.value.getWidth
-        y = (Render.gridH * (pos.y - 1.25) * 1080) / Main.stage.scene.value.getHeight
+        y = (Render.gridH * (pos.y - 1.05) * 1080) / Main.stage.scene.value.getHeight
       }
     }
     (selection, x, y)

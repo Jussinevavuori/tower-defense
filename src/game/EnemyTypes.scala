@@ -56,7 +56,7 @@ class EnemyN3(_x: Double, _y: Double, _target: Option[Path])
 
 // Normal fourth: spawns two smaller units
 class EnemyN4(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n4", 40.0, Speed(0.09, 0.005), 0.45, 1, _x, _y, _target) {
+  extends Enemy("n4", 60.0, Speed(0.09, 0.005), 0.45, 1, _x, _y, _target) {
   
   def death = Array[Enemy](
       new EnemyN3(this.pos.x, this.pos.y, this.target),

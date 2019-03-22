@@ -57,7 +57,12 @@ object Render {
     gfx.fillText("$ " +    TowerInfo.priceCannon.toString,  760 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " + TowerInfo.priceBoomerang.toString,  960 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " +    TowerInfo.priceHoming.toString, 1160 * resizeW, 1044 * resizeH)
+    
+    if (this.showControls) {
+      this.renderControls(gfx)
+    }
   }
+  
 
   
   def testRender(canvas: Canvas, gridX: Double, gridY: Double) = {
@@ -128,7 +133,7 @@ object Render {
       this.setFontSize(gfx, 20)
       gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
       gfx.textAlign = TextAlignment.Center
-      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - 46)
+      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - (60 * resizeH))
     }
     
     gfx.translate(-this.gridW / 2, -this.gridH / 2)
@@ -284,6 +289,50 @@ object Render {
         Animate.animate("explosion", x - 30, y - 30, gfx, 3, e.age)
       }
     }
+  }
+  
+  // Renders the controls
+  def renderControls(gfx: GraphicsContext) {
+    this.controlsTimer += 1
+    val (fadeStart, fadeStop) = (300, 480)
+    if (controlsTimer > fadeStop) {
+      controlsTimer = 0
+      this.showControls = false
+    }
+    gfx.setGlobalAlpha {
+      if (controlsTimer < fadeStart) 1.0
+      else 1.0 - ((controlsTimer - fadeStart).toDouble / (fadeStop - fadeStart))
+    }
+    this.setFontSize(gfx, 15)
+    val (c, n) = (resizeW min resizeH, controls.length)
+    val line = 20 * c
+    var (tx, ty, tw, th) = (20 * c, 780 * c, 600 * c, n * line)
+    gfx.fill = Color(0.0, 0.0, 0.0, 0.6)
+    gfx.fillRect(tx - 4 * c, ty - th + 4 * c, tw, th) 
+    gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
+    gfx.textAlign = TextAlignment.Left
+    controls.reverse.foreach(instr => {
+      gfx.fillText(instr, tx, ty)
+      ty -= line
+    })
+    gfx.setGlobalAlpha(1.0)
+  }
+  private val controls = Array[String](
+    "[Spacebar]: Fast forward",
+    "[Spacebar]: Next Wave",
+    "[Enter]:    Upgrade selected tower",
+    "[1]:        Buy cannon dog",
+    "[2]:        Buy boomerang koala",
+    "[3]:        Buy tank panda",
+    "[F11]:      Fullscreen"
+  )
+  
+  
+  // Toggles controls
+  private var showControls = false
+  private var controlsTimer = 0
+  def toggleControls() = {
+    this.showControls = !this.showControls
   }
 
   

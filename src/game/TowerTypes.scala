@@ -8,22 +8,12 @@ import scala.collection.mutable.Buffer
   * 	
   * class TowerType(_x: Double, _y: Double)
 
-  * 	extends Tower(_x, _y, name, strength, radius, cooldown, price, upgrade)
+  * 	extends Tower(_x, _y, id, strength, radius, cooldown, price, upgrade)
   * 
   * 	def generateProjectiles: Buffer[Projectile]
   * 
   * }}}
   * 
-  * Where... 
-  * - The _x, _y parameters specify where the tower is placed.
-  * - Name is a string which describes the tower's name
-  * - Strength is a double which describes how much damage the tower
-  * 	inflicts on enemies
-  * - Radius is a double which describes how far the tower can spot
-  * 	and shoot enemies
-  * - Cooldown is amount of cooldown between shots in seconds
-  * - GenerateProjectiles returns the projectiles this tower generates
-  * 	upon shooting
   */
 
 class CannonTower1(_x: Double, _y: Double)
@@ -36,7 +26,7 @@ class CannonTower1(_x: Double, _y: Double)
   }
 }
 class CannonTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "c2", 13.0, 4.2, 0.66, 500, Some(new CannonTower3(_x, _y))) {  
+  extends Tower(_x, _y, "c2", 16.0, 4.2, 0.66, 500, Some(new CannonTower3(_x, _y))) {  
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
@@ -45,7 +35,7 @@ class CannonTower2(_x: Double, _y: Double)
   }
 }
 class CannonTower3(_x: Double, _y: Double)
-  extends Tower(_x, _y, "c3", 17.0, 4.7, 0.40, 800) {
+  extends Tower(_x, _y, "c3", 20.0, 4.7, 0.40, 800) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
@@ -80,7 +70,7 @@ class BoomerangTower2(_x: Double, _y: Double)
 
 
 class HomingTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "h1", 20.0, 7, 2.4, 1500, Some(new HomingTower2(_x, _y))) {
+  extends Tower(_x, _y, "h1", 40.0, 7, 2.4, 1200, Some(new HomingTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
@@ -89,7 +79,7 @@ class HomingTower1(_x: Double, _y: Double)
   }
 }
 class HomingTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "h2", 30.0, 7.5, 1.9, 1200) {
+  extends Tower(_x, _y, "h2", 60.0, 7.5, 1.9, 1200) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
