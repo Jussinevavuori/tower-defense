@@ -58,25 +58,29 @@ object Titlescreen {
     
     this.opacity = 1.0 - math.max(0.0, ((this.time - this.endTime) / this.fadeTime))
    
+    val W = Main.stage.scene.value.getWidth
+    val H = Main.stage.scene.value.getHeight
+    
     gfx.setGlobalAlpha(1.0)
     gfx.fill = Color.Black
-    gfx.fillRect(0, 0, canvas.getWidth, canvas.getHeight)
-    
+    gfx.fillRect(0, 0, W, H)
+        
     if (this.time > this.bgFadeinStart) {
       val alpha = math.min(1.0, ((this.time - this.bgFadeinStart) / this.bgFadeinTime ))
       gfx.setGlobalAlpha(alpha)
-      gfx.drawImage(this.bgImage, 0, 0)
+      gfx.drawImage(this.bgImage, 0, 0, W, H)
     }
     
-    if (this.time > this.fgFadeoutStart) {
-      val alpha = 1.0 - math.min(1.0, ((this.time - this.fgFadeoutStart) / this.fgFadeoutTime ))
-      gfx.setGlobalAlpha(alpha)
-      gfx.drawImage(this.fgImage, 0, 0)
-    } else if (this.time > fgFadeinStart) {
-      val alpha = math.min(1.0, ((this.time - this.fgFadeinStart) / this.fgFadeinTime ))
-      gfx.setGlobalAlpha(alpha)
-      gfx.drawImage(this.fgImage, 0, 0)
+    val alpha = {
+      if (this.time > this.fgFadeoutStart) {
+        1.0 - { 1.0 min ((this.time - this.fgFadeoutStart) / this.fgFadeoutTime ) }
+      } else if (this.time > fgFadeinStart) {
+        1.0 min ((this.time - this.fgFadeinStart) / this.fgFadeinTime)
+      } else 0
     }
+   
+    gfx.setGlobalAlpha(alpha)
+    gfx.drawImage(this.fgImage, 0, 0, W, H)
     
     if (this.time > this.sfxPlayTime && !this.sfxPlayed) {
       this.sfxPlayed = true

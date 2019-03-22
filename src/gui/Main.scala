@@ -35,29 +35,26 @@ object Main extends JFXApp {
     
     
     title = "Tower Defense"
-    fullScreen = true
-    resizable = false
-
+    fullScreen = false
+    resizable = true
+    width = 1280
+    height = 720
     
+
     scene = new Scene {
       
-      
-      
       // Canvas for the game and sidebar and prerendering
-      val mainCanvas        = new Canvas(1920, 840)
-      val sideCanvas        = new Canvas(1920, 1080)
+      val gameCanvas        = new Canvas(1920, 1080)
       val interactionCanvas = new Canvas(1920, 1080)
       val gameoverCanvas    = new Canvas(1920, 1080)
       val titleCanvas       = new Canvas(1920, 1080)
-      mainCanvas.requestFocus()
+      gameCanvas.requestFocus()
       interactionCanvas.disable = true
       gameoverCanvas.disable = true
       gameoverCanvas.visible = false
-      Render.prerender(mainCanvas, sideCanvas, currentGame)
-  
-      // Custom cursor
-      //this.cursor = new ImageCursor( Render.loadImage("cursor") )
-      
+      Render.prerender(gameCanvas, currentGame)
+            
+
       // Private variables for showing the GUI and game correctly
       private var selectedTower: Option[Tower] = None
       private var previousTime: Long = -1
@@ -95,8 +92,12 @@ object Main extends JFXApp {
           titleCanvas.visible = false
           titleScreenTimer.stop()
         }
+        
+        resize()
       }
       titleScreenTimer.start() // Initially start with the titlescreen
+      
+      
       
       // Creating the rendering timer
       val mainTimer = AnimationTimer { now =>
@@ -106,20 +107,17 @@ object Main extends JFXApp {
         previousTime = now  // Calculate the elapsed time in seconds
         currentGame.update(elapsedTime)  // Run game
         
-        // Clear the interaction canvas
-        interactionCanvas.graphicsContext2D.clearRect(0, 0, interactionCanvas.getWidth, interactionCanvas.getHeight)
-        
-        // Render all the basics
+        // Render the game
         Animate.advance()
         Effects.advance()
-        Render.renderGame(currentGame, this.mainCanvas, selectedTower)
-        Render.renderSide(currentGame, this.sideCanvas)
+        Render.renderGame(currentGame, gameCanvas, selectedTower)
         
         // Render the interaction canvas
+        interactionCanvas.graphicsContext2D.clearRect(0, 0, interactionCanvas.getWidth, interactionCanvas.getHeight)
         val selectableTower = Actions.findSelectableTower(currentGame, gridX - 0.5, gridY - 0.5)
         if (selectableTower.isDefined) Render.renderSelectableTower(this.interactionCanvas, currentGame, selectableTower.get)
         if (selectedTower.isDefined)   Render.renderSelectedTower(this.interactionCanvas, selectedTower.get)
-        if (currentGame.shop.active)   Render.renderActiveTower(this.interactionCanvas, currentGame, mouseX, mouseY)
+        if (currentGame.shop.active)   Render.renderActiveTower(this.interactionCanvas, currentGame, gridX, gridY)
         if (this.showFPS)              Render.fps(elapsedTime, this.interactionCanvas) 
         Render.renderShopTowers(this.interactionCanvas)
         
@@ -133,6 +131,36 @@ object Main extends JFXApp {
           gameover = true
           Render.renderGameover(gameoverCanvas)
         }
+                
+        resize()
+      }
+      
+      def resize() = {
+        val (resizeW, resizeH) = (scene.value.getWidth / 1920, scene.value.getHeight / 1080)
+                gameCanvas.width = 1920 * resizeW;          gameCanvas.height = 1080 * resizeH
+         interactionCanvas.width = 1920 * resizeW;   interactionCanvas.height = 1080 * resizeH
+            gameoverCanvas.width = 1920 * resizeW;      gameoverCanvas.height = 1080 * resizeH
+               titleCanvas.width = 1920 * resizeW;         titleCanvas.height = 1080 * resizeH
+        b_shop1.setFitWidth(b_shop1StdW * resizeW); b_shop1.setFitHeight(b_shop2StdH * resizeH)
+        b_shop2.setFitWidth(b_shop2StdW * resizeW); b_shop2.setFitHeight(b_shop2StdH * resizeH)
+        b_shop3.setFitWidth(b_shop3StdW * resizeW); b_shop3.setFitHeight(b_shop3StdH * resizeH)
+        b_lock1.setFitWidth(b_lock1StdW * resizeW); b_lock1.setFitHeight(b_lock1StdH * resizeH)
+        b_lock2.setFitWidth(b_lock2StdW * resizeW); b_lock2.setFitHeight(b_lock2StdH * resizeH)
+        b_lock3.setFitWidth(b_lock3StdW * resizeW); b_lock3.setFitHeight(b_lock3StdH * resizeH)
+        b_upgrd.setFitWidth(b_upgrdStdW * resizeW); b_upgrd.setFitHeight(b_upgrdStdH * resizeH)
+        b_nextw.setFitWidth(b_nextwStdW * resizeW); b_nextw.setFitHeight(b_nextwStdH * resizeH)
+        b_fastf.setFitWidth(b_fastfStdW * resizeW); b_fastf.setFitHeight(b_fastfStdH * resizeH)
+        b_music.setFitWidth(b_musicStdW * resizeW); b_music.setFitHeight(b_musicStdH * resizeH)
+        b_shop1.x =  701 * resizeW; b_shop1.y =  887 * resizeH
+        b_shop2.x =  901 * resizeW; b_shop2.y =  887 * resizeH
+        b_shop3.x = 1101 * resizeW; b_shop3.y =  887 * resizeH
+        b_lock1.x =  701 * resizeW; b_lock1.y =  887 * resizeH
+        b_lock2.x =  901 * resizeW; b_lock2.y =  887 * resizeH
+        b_lock3.x = 1101 * resizeW; b_lock3.y =  887 * resizeH
+        b_nextw.x = 1729 * resizeW; b_nextw.y =  972 * resizeH
+        b_fastf.x = 1600 * resizeW; b_fastf.y =  972 * resizeH
+        b_music.x = 1856 * resizeW; b_music.y =   32 * resizeH
+        b_upgrd.x = b_upgrdX * resizeW; b_upgrd.y = b_upgrdY * resizeH
       }
 
       
@@ -167,67 +195,84 @@ object Main extends JFXApp {
       val img_noteOff             = Render.loadImage("note_off")
       
       // Elements
-      val b_lefttop  = Rectangle(   0,    0,   0,   0) // For scaling purposes
-      val b_righttop = Rectangle(1920, 1080,   0,   0) // For scaling purposes
-      val b_shop1    = new ImageView(this.img_shop)
-      val b_shop2    = new ImageView(this.img_shop)
-      val b_shop3    = new ImageView(this.img_shop)
-      val b_lock1    = new ImageView(this.img_shopLocked)
-      val b_lock2    = new ImageView(this.img_shopLocked)
-      val b_lock3    = new ImageView(this.img_shopLocked)
-      val b_upgrade  = new ImageView(this.img_upgrade)
-      val b_nextwave = new ImageView(this.img_nextwave)
-      val b_fastf    = new ImageView(this.img_fastf)
-      val b_music    = new ImageView(this.img_noteOn)
+      val b_leftt = Rectangle(   0,    0,   0,   0) // For scaling purposes
+      val b_right = Rectangle(1920, 1080,   0,   0) // For scaling purposes
+      val b_shop1 = new ImageView(this.img_shop)
+      val b_shop2 = new ImageView(this.img_shop)
+      val b_shop3 = new ImageView(this.img_shop)
+      val b_lock1 = new ImageView(this.img_shopLocked)
+      val b_lock2 = new ImageView(this.img_shopLocked)
+      val b_lock3 = new ImageView(this.img_shopLocked)
+      val b_upgrd = new ImageView(this.img_upgrade)
+      val b_nextw = new ImageView(this.img_nextwave)
+      val b_fastf = new ImageView(this.img_fastf)
+      val b_music = new ImageView(this.img_noteOn)
+      
+      // Standard W and H
+      val b_shop1StdW = b_shop1.getImage.getWidth; val b_shop1StdH = b_shop1.getImage.getHeight
+      val b_shop2StdW = b_shop2.getImage.getWidth; val b_shop2StdH = b_shop2.getImage.getHeight
+      val b_shop3StdW = b_shop3.getImage.getWidth; val b_shop3StdH = b_shop3.getImage.getHeight
+      val b_lock1StdW = b_lock1.getImage.getWidth; val b_lock1StdH = b_lock1.getImage.getHeight
+      val b_lock2StdW = b_lock2.getImage.getWidth; val b_lock2StdH = b_lock2.getImage.getHeight
+      val b_lock3StdW = b_lock3.getImage.getWidth; val b_lock3StdH = b_lock3.getImage.getHeight
+      val b_upgrdStdW = b_upgrd.getImage.getWidth; val b_upgrdStdH = b_upgrd.getImage.getHeight
+      val b_nextwStdW = b_nextw.getImage.getWidth; val b_nextwStdH = b_nextw.getImage.getHeight
+      val b_fastfStdW = b_fastf.getImage.getWidth; val b_fastfStdH = b_fastf.getImage.getHeight
+      val b_musicStdW = b_music.getImage.getWidth; val b_musicStdH = b_music.getImage.getHeight
       
       // Setting properties
-      // x coordinates     // y coordinates     // pick on bounds                // other
-      b_shop1.x    =  701; b_shop1.y    =  887; b_shop1.pickOnBounds    = false
-      b_shop2.x    =  901; b_shop2.y    =  887; b_shop2.pickOnBounds    = false
-      b_shop3.x    = 1101; b_shop3.y    =  887; b_shop3.pickOnBounds    = false
-      b_lock1.x    =  701; b_lock1.y    =  887; b_shop1.pickOnBounds    = false; b_lock1.visible = false
-      b_lock2.x    =  901; b_lock2.y    =  887; b_shop2.pickOnBounds    = false; b_lock2.visible = true
-      b_lock3.x    = 1101; b_lock3.y    =  887; b_shop3.pickOnBounds    = false; b_lock3.visible = true
-      b_upgrade.x  =   10; b_upgrade.y  =   10; b_upgrade.pickOnBounds  = false; b_upgrade.visible = false
-      b_nextwave.x = 1729; b_nextwave.y =  972; b_nextwave.pickOnBounds = false
-      b_fastf.x    = 1600; b_fastf.y    =  972; b_fastf.pickOnBounds    = false
-      b_music.x    = 1856; b_music.y    =   32; b_music.pickOnBounds    = true
+      var (b_upgrdX, b_upgrdY) = (0.0, 0.0)
+      b_shop1.x =  701; b_shop1.y =  887; b_shop1.pickOnBounds = false
+      b_shop2.x =  901; b_shop2.y =  887; b_shop2.pickOnBounds = false
+      b_shop3.x = 1101; b_shop3.y =  887; b_shop3.pickOnBounds = false
+      b_lock1.x =  701; b_lock1.y =  887; b_shop1.pickOnBounds = false; b_lock1.visible = false
+      b_lock2.x =  901; b_lock2.y =  887; b_shop2.pickOnBounds = false; b_lock2.visible = true
+      b_lock3.x = 1101; b_lock3.y =  887; b_shop3.pickOnBounds = false; b_lock3.visible = true
+      b_nextw.x = 1729; b_nextw.y =  972; b_nextw.pickOnBounds = false
+      b_fastf.x = 1600; b_fastf.y =  972; b_fastf.pickOnBounds = false
+      b_music.x = 1856; b_music.y =   32; b_music.pickOnBounds = true
+      b_upgrd.x = b_upgrdX; b_upgrd.y = b_upgrdY; b_upgrd.pickOnBounds = false; b_upgrd.visible = false
+      
+
 
       // Highlight on mouse enter
-      b_nextwave.setOnMouseEntered(  new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveHighlighted } )
-      b_shop1.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopHighlighted } )
-      b_shop2.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopHighlighted } )
-      b_shop3.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopHighlighted } )
-      b_upgrade.setOnMouseEntered(   new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeHighlighted } )
-      b_fastf.setOnMouseEntered(     new EH[ME] { def handle(e: ME) = b_fastf.image    = img_fastfHighlighted } )
+      b_nextw.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_nextw.image = img_nextwaveHighlighted } )
+      b_shop1.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_shop1.image = img_shopHighlighted     } )
+      b_shop2.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_shop2.image = img_shopHighlighted     } )
+      b_shop3.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_shop3.image = img_shopHighlighted     } )
+      b_upgrd.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_upgrd.image = img_upgradeHighlighted  } )
+      b_fastf.setOnMouseEntered(new EH[ME] { def handle(e: ME) = b_fastf.image = img_fastfHighlighted    } )
       
       // Return to normal on mouse exit
-      b_nextwave.setOnMouseExited(   new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwave } )
-      b_shop1.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shop    } )  
-      b_shop2.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shop    } )  
-      b_shop3.setOnMouseExited(      new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shop    } )
-      b_upgrade.setOnMouseExited(    new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgrade } )
-      b_fastf.setOnMouseExited(      new EH[ME] { def handle(e: ME) = { b_fastf.image  = img_fastf
+      b_nextw.setOnMouseExited(new EH[ME] { def handle(e: ME) = b_nextw.image = img_nextwave } )
+      b_shop1.setOnMouseExited(new EH[ME] { def handle(e: ME) = b_shop1.image = img_shop     } )  
+      b_shop2.setOnMouseExited(new EH[ME] { def handle(e: ME) = b_shop2.image = img_shop     } )  
+      b_shop3.setOnMouseExited(new EH[ME] { def handle(e: ME) = b_shop3.image = img_shop     } )
+      b_upgrd.setOnMouseExited(new EH[ME] { def handle(e: ME) = b_upgrd.image = img_upgrade  } )
+      b_fastf.setOnMouseExited(new EH[ME] { def handle(e: ME) = {
+        b_fastf.image = img_fastf
         Actions.toggleFastForward(currentGame, false)  // Also set fast forward functionality
       }})
       
       // Extra highlight on mouse click
-      b_nextwave.setOnMousePressed(  new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveClicked } )
-      b_shop1.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopClicked } )
-      b_shop2.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopClicked } )
-      b_shop3.setOnMousePressed(     new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopClicked } )
-      b_upgrade.setOnMousePressed(   new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeClicked } )
-      b_fastf.setOnMousePressed(     new EH[ME] { def handle(e: ME) = { b_fastf.image  = img_fastfClicked
+      b_nextw.setOnMousePressed(new EH[ME] { def handle(e: ME) = b_nextw.image = img_nextwaveClicked } )
+      b_shop1.setOnMousePressed(new EH[ME] { def handle(e: ME) = b_shop1.image = img_shopClicked     } )
+      b_shop2.setOnMousePressed(new EH[ME] { def handle(e: ME) = b_shop2.image = img_shopClicked     } )
+      b_shop3.setOnMousePressed(new EH[ME] { def handle(e: ME) = b_shop3.image = img_shopClicked     } )
+      b_upgrd.setOnMousePressed(new EH[ME] { def handle(e: ME) = b_upgrd.image = img_upgradeClicked  } )
+      b_fastf.setOnMousePressed(new EH[ME] { def handle(e: ME) = {
+        b_fastf.image = img_fastfClicked
         Actions.toggleFastForward(currentGame, true)  // Also set fast forward functionality
       }})
 
       // Return to normal highlight on mouse released
-      b_nextwave.setOnMouseReleased( new EH[ME] { def handle(e: ME) = b_nextwave.image = img_nextwaveHighlighted } )
-      b_shop1.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop1.image    = img_shopHighlighted } )
-      b_shop2.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop2.image    = img_shopHighlighted } )
-      b_shop3.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = b_shop3.image    = img_shopHighlighted } )
-      b_upgrade.setOnMouseReleased(  new EH[ME] { def handle(e: ME) = b_upgrade.image  = img_upgradeHighlighted } )
-      b_fastf.setOnMouseReleased(    new EH[ME] { def handle(e: ME) = { b_fastf.image  = img_fastfHighlighted
+      b_nextw.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_nextw.image = img_nextwaveHighlighted } )
+      b_shop1.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_shop1.image = img_shopHighlighted     } )
+      b_shop2.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_shop2.image = img_shopHighlighted     } )
+      b_shop3.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_shop3.image = img_shopHighlighted     } )
+      b_upgrd.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_upgrd.image = img_upgradeHighlighted  } )
+      b_fastf.setOnMouseReleased(new EH[ME] { def handle(e: ME) = {
+        b_fastf.image = img_fastfHighlighted
         Actions.toggleFastForward(currentGame, false)  // Also set fast forward functionality
       }})
 
@@ -237,10 +282,10 @@ object Main extends JFXApp {
       val buttons = new Group()
       val stack   = new StackPane()
       buttons.children = List(
-          b_lefttop, b_righttop, b_shop1, b_shop2, b_shop3, b_fastf,
-          b_lock1, b_lock2, b_lock3, b_nextwave, b_upgrade, b_music)
+          b_leftt, b_right, b_shop1, b_shop2, b_shop3, b_fastf,
+          b_lock1, b_lock2, b_lock3, b_nextw, b_upgrd, b_music)
       stack.children   = List(
-          sideCanvas, mainCanvas, buttons, interactionCanvas,
+          gameCanvas, buttons, interactionCanvas,
           menuBar, titleCanvas, gameoverCanvas)
       stack.setAlignment(Pos.TopLeft)
       root = stack
@@ -248,63 +293,51 @@ object Main extends JFXApp {
       
       
       // INPUT : ACTIVE GUI BUTTONS (except fast forward)
-      b_shop1.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyCannonTower(   currentGame) } } )
-      b_shop2.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyBoomerangTower(currentGame) } } )
-      b_shop3.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Actions.buyHomingTower(   currentGame) } } )
-      b_lock1.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
-      b_lock2.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
-      b_lock3.setOnMouseClicked(   new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
-      b_upgrade.setOnMouseClicked( new EH[ME] { def handle(e: ME) = {
+      b_shop1.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Actions.buyCannonTower(   currentGame) } } )
+      b_shop2.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Actions.buyBoomerangTower(currentGame) } } )
+      b_shop3.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Actions.buyHomingTower(   currentGame) } } )
+      b_lock1.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_lock2.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_lock3.setOnMouseClicked(new EH[ME] { def handle(e: ME) = { Audio.play("error.wav") } } )
+      b_upgrd.setOnMouseClicked(new EH[ME] { def handle(e: ME) = {
         selectedTower    = Actions.upgradeTower(currentGame, selectedTower)
-        b_upgrade.visible = selectedTower.isDefined && !selectedTower.get.upgrade.isEmpty
+        b_upgrd.visible = selectedTower.isDefined && !selectedTower.get.upgrade.isEmpty
       }})
-      b_nextwave.setOnMouseClicked(new EH[ME] { def handle(e: ME) = {
+      b_nextw.setOnMouseClicked(new EH[ME] { def handle(e: ME) = {
         Actions.loadNextWave(currentGame)
-        b_lock1.visible = (new CannonTower1    (0, 0).unlock) > currentGame.wave.number
-        b_lock2.visible = (new BoomerangTower1 (0, 0).unlock) > currentGame.wave.number
-        b_lock3.visible = (new HomingTower1    (0, 0).unlock) > currentGame.wave.number
+        checkLocks()
       }})
       b_music.setOnMouseClicked(new EH[ME] { def handle(e: ME) = {
         b_music.setImage(if (!muted) img_noteOff else img_noteOn)
         Music.mute()
         muted = !muted
       }})
-      
-      
-      // INPUT: MOUSE CLICKED ON SCREEN
-      this.onMouseClicked = new EH[ME] { def handle(me: ME) = fullScreen = true }
  
      
       // INPUT: MOUSE MOVED ON SCREEN
-      mainCanvas.onMouseMoved = new EH[ME] {
-        def handle(me: ME) = {
-          
-          // Update mouse coordinates
-          mouseX = me.getSceneX
+      gameCanvas.onMouseMoved = new EH[ME] { def handle(me: ME) = {
+        
+          mouseX = me.getSceneX  // Update mouse coordinates
           mouseY = me.getSceneY
-          // Show and hide menubar
-          menuBar.visible = me.getSceneY < 32
+          menuBar.visible = mouseY < 32  // Show and hide menubar
         }
       }
             
       
       // INPUT: CLICK ON MAIN CANVAS
-      mainCanvas.onMouseClicked = new EH[ME] {
-        def handle(me: ME): Unit = {
+      gameCanvas.onMouseClicked = new EH[ME] { def handle(me: ME): Unit = {
           
-          // Mouse coordinates
-          val (x, y) = (toGridX(me.getSceneX), toGridY(me.getSceneY))
+          val (mx, my) = (me.getSceneX, me.getSceneY)
+          val (x, y) = (toGridX(mx), toGridY(my))  // Mouse coordinates
           
-          // Shop purchases
-          if (currentGame.shop.active) Actions.purchaseTower(currentGame, x, y)  
+          if (currentGame.shop.active) Actions.purchaseTower(currentGame, x, y)  // Shop purchases
           
-          // Tower selections
-          else {
-            val selection     = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
-            selectedTower     = selection._1
-            b_upgrade.x       = selection._2
-            b_upgrade.y       = selection._3
-            b_upgrade.visible = !(selection._2 == 0.0 && selection._3 == 0.0)
+          else {                                                                  // Tower selection
+            var (sel, sx, sy) = Actions.selectTower(currentGame, x - 0.5, y - 0.5)
+            selectedTower = sel
+            b_upgrdX = sx
+            b_upgrdY = sy
+            b_upgrd.visible = !(sx == 0.0 && sy == 0.0)
           }
         } 
       }
@@ -313,6 +346,9 @@ object Main extends JFXApp {
       // INPUT: KEY PRESSED
       this.onKeyPressed = new EH[KeyEvent] {
         def handle(ke: KeyEvent) = { ke.getCode() match {
+          
+            // Fullscreen
+            case KeyCode.F11 => fullScreen = !fullScreen.value
      
             // On game over all keys load a new game
             case k if (gameover) => newGame()
@@ -323,9 +359,7 @@ object Main extends JFXApp {
             // Shortcut to next wave
             case KeyCode.SPACE if (currentGame.enemies.isEmpty) => {
               Actions.loadNextWave(currentGame)
-              b_lock1.visible = (new CannonTower1    (0, 0).unlock) > currentGame.wave.number && !godmode
-              b_lock2.visible = (new BoomerangTower1 (0, 0).unlock) > currentGame.wave.number && !godmode 
-              b_lock3.visible = (new HomingTower1    (0, 0).unlock) > currentGame.wave.number && !godmode
+              checkLocks()
             }
             
             // Shortcut to fast forward
@@ -342,19 +376,18 @@ object Main extends JFXApp {
       // INPUT: KEY RELEASED
       this.onKeyReleased = new EH[KeyEvent] {
         def handle(ke: KeyEvent) = { ke.getCode() match {
-            
+                
             // Toggle fast forward off
-            case KeyCode.SPACE => Actions.toggleFastForward(currentGame, false)
-            
+            case KeyCode.SPACE => Actions.toggleFastForward(currentGame, false)  
             case _ =>
           }
         }
       }
       
       // INPUT: GAME OVER CLICK STARTS NEW GAME
-      gameoverCanvas.onMouseClicked = new EH[ME] {
-        def handle(e: ME) = newGame()
-      }
+      gameoverCanvas.onMouseClicked = new EH[ME] { def handle(e: ME) = {
+        newGame()
+      }}
       
       
       // INPUT: MENU BUTTONS
@@ -373,6 +406,9 @@ object Main extends JFXApp {
         b_lock3.visible = false
         Actions.activateGodmode(currentGame) 
       }
+      
+      // Helper functions
+      
       private def newGame() = {
         currentGame = GameLoader("data/defaultdata.xml")
         resetSettings()
@@ -384,22 +420,21 @@ object Main extends JFXApp {
       private def resetSettings() = {
         Music.stopLoop()
         Music.startLoop()
-        Render.prerender(mainCanvas, sideCanvas, currentGame)
         godmode = false
         gameover = false
-        b_upgrade.visible = false
+        b_upgrd.visible = false
         b_lock1.visible = false
         b_lock2.visible = true
         b_lock3.visible = true
         Audio.play("iosfx.wav")
         gameoverCanvas.disable = true
         gameoverCanvas.visible = false
+      }  
+      private def checkLocks() = {
+        b_lock1.visible = TowerInfo.unlockCannon    > currentGame.wave.number && !godmode
+        b_lock2.visible = TowerInfo.unlockBoomerang > currentGame.wave.number && !godmode
+        b_lock3.visible = TowerInfo.unlockHoming    > currentGame.wave.number && !godmode
       }
-      
-      
-      val kysButton = new MenuItem("KYS")
-      gameMenu.items.add(kysButton)
-      kysButton.onAction = (e: ActionEvent) => currentGame.player.damage(Int.MaxValue)      
     }
   }
 }

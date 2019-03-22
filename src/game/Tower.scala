@@ -16,8 +16,7 @@ abstract class Tower(_x: Double, _y: Double,
                      val radius:   Double,
                      val cooldown: Double,
                      val price:    Int,
-                     val upgrade:  Option[Tower] = None,
-                     val unlock:   Int = 0) {
+                     val upgrade:  Option[Tower] = None) {
   
   
   /* The position of a tower

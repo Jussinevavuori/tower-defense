@@ -57,7 +57,7 @@ class CannonTower3(_x: Double, _y: Double)
 
 
 class BoomerangTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "b1", 5.0, 3.0, 2.0, 600, Some(new BoomerangTower2(_x, _y)), 5) {
+  extends Tower(_x, _y, "b1", 5.0, 3.0, 2.0, 600, Some(new BoomerangTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("throw.wav", 0.2)
@@ -80,7 +80,7 @@ class BoomerangTower2(_x: Double, _y: Double)
 
 
 class HomingTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "h1", 20.0, 7, 2.4, 1500, Some(new HomingTower2(_x, _y)), 10) {
+  extends Tower(_x, _y, "h1", 20.0, 7, 2.4, 1500, Some(new HomingTower2(_x, _y))) {
   
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
@@ -96,5 +96,20 @@ class HomingTower2(_x: Double, _y: Double)
     Buffer(
       new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 2.5, target, 0.4, 0.002))
   }
+}
+
+
+
+// Contains the unlock levels and prices
+object TowerInfo {
+  
+  final val unlockCannon    = 0
+  final val unlockBoomerang = 5
+  final val unlockHoming    = 10
+
+  final val priceCannon    = new CannonTower1(0, 0).price
+  final val priceBoomerang = new BoomerangTower1(0, 0).price
+  final val priceHoming    = new HomingTower1(0, 0).price
+  
 }
 

@@ -38,12 +38,13 @@ object Actions {
   // along the dimensions for the upgrade graphic if necessary
   def selectTower(g: Game, _x: Double, _y: Double): (Option[Tower], Double, Double) = { 
     val selection = g.towers.find(t => Vec(_x, _y).distance(t.pos) < 0.6)
-    var (x, y)  = (0.0, 0.0)
+    var (x, y) = (0.0, 0.0)
     if (selection.isDefined) {
       Audio.play("menu.wav")
       if (selection.get.upgrade.isDefined) {
-        x = selection.get.pos.x * Render.gridW - 30
-        y = selection.get.pos.y * Render.gridH - 50
+        val pos = selection.get.pos
+        x = (Render.gridW * (pos.x - 0.45) * 1920) / Main.stage.scene.value.getWidth
+        y = (Render.gridH * (pos.y - 1.25) * 1080) / Main.stage.scene.value.getHeight
       }
     }
     (selection, x, y)

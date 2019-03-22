@@ -25,7 +25,7 @@ class TowerShop {
   
   // Function to buy and place down the active tower
   def purchase(game: Game, x: Double, y: Double): Boolean = {
-    if (this.activeTower.isDefined & game.isValidSpot(x, y)) {
+    if (this.activeTower.isDefined && game.isValidSpot(x, y) && (y < game.rows - 1)) {
       val purchased = this.activeTower.get
       this.activeTower = None
       purchased.pos.moveTo(Vec(x, y))

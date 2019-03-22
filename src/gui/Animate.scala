@@ -27,8 +27,7 @@ object Animate {
    * @param	 The delay for each frame. Optional
    */
   
-  def animate(id: String, canvasX: Double, canvasY: Double,
-              gridW: Double, gridH: Double, gfx: GraphicsContext,
+  def animate(id: String, canvasX: Double, canvasY: Double, gfx: GraphicsContext,
               delay: Int = 20, currentFrame: Int = this.frame): Unit = {
     
     // Handle wrong ids
@@ -42,7 +41,7 @@ object Animate {
     val frame = this.currentFrame(count, delay, currentFrame)
     
     // Drawing the cropped image
-    gfx.drawImage(ss, frame * w, 0, w, h, canvasX, canvasY, w, h)
+    gfx.drawImage(ss, frame * w, 0, w, h, canvasX, canvasY, w * Render.resizeW, h * Render.resizeW)
   }
   
   
@@ -56,13 +55,10 @@ object Animate {
     (currentFrame / delay) % length
   }
   
-  
-  
   // Shortcut to the animate method
-  def apply(id: String, canvasX: Double, canvasY: Double,
-            gridW: Double, gridH: Double, gfx: GraphicsContext,
-            delay: Int = 20): Unit = {
-    this.animate(id, canvasX, canvasY, gridW, gridH, gfx)
+  def apply(id: String, canvasX: Double, canvasY: Double, gfx: GraphicsContext,
+            delay: Int = 20, currentFrame: Int = this.frame): Unit = {
+    this.animate(id, canvasX, canvasY, gfx)
   }
   
   
