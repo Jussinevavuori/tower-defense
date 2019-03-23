@@ -37,6 +37,10 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
   // Amount of money and projectiles at the start of the round for saving
   var saveTowers = this.towers
   var saveMoney  = this.player.money
+  
+  
+  // True when game is over
+  def gameover = this.player.dead
 
   
     
@@ -49,91 +53,60 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
     // Loop five times for fast forward
     for (loop <- 0 until {if (this.fastForward) 5 else 1}) {
           
-      // Update the enemies
-      for (i <- this.enemies.indices.reverse) {
+      
+      for (i <- this.enemies.indices.reverse) {  // Update the enemies
         
-        // Find the enemy in the buffer
-        val enemy = this.enemies(i)
+        val enemy = this.enemies(i)              // Find the enemy in the buffer
+                                                 
+        if (enemy.dead) {                        // Upon enemy death
+                                                 
+          this.player.reward(enemy.reward)       // Reward the player with the money from the enemy
+          for (spawn <- enemy.death()) {         // Add all the enemies that spawn upon the enemy's death to the game
+            this.enemies.append(spawn)           
+          }                                      
+          gui.Effects.addMoneyEffect(enemy)      // Play money effect
+          this.enemies.remove(i)                 // Finally remove the enemy from the game
+
+        }
         
-        // Upon enemy death
-        if (enemy.dead) {
+        else if (enemy.advance(elapsedTime)) {   // Else, move and if enemy reaches end
           
-          // Reward the player with the money from the enemy
-          this.player.reward(enemy.reward)
-          
-          // Add all the enemies that spawn upon the enemy's death to the game
-          for (spawn <- enemy.death()) {
-            this.enemies.append(spawn)   
-          }
-        
-          gui.Effects.addMoneyEffect(enemy)
-          
-          // Finally remove the enemy from the game
-          this.enemies.remove(i)
-          
-        // For alive enemies advance them and if they get to the end
-        } else if (enemy.advance(elapsedTime)) {
-          
-          // Damage the player by one
-          this.player.damage(1)
-          gui.Audio.play("damage.wav")
-          
-          // Remove the enemy from the game
-          this.enemies.remove(i)
+          this.player.damage(1)                  // Damage the player by one
+          gui.Audio.play("damage.wav")           
+          this.enemies.remove(i)                 // Remove the enemy from the game
         }
       }
       
-      // Update towers
-      for (i <- this.towers.indices.reverse) {
+      
+      for (i <- this.towers.indices.reverse) {         // Update towers
         
-        // Find the tower in the buffer
-        val tower = this.towers(i)
-        
-        // Remove upgraded towers
-        if (tower.upgraded) {
+        val tower = this.towers(i)                     // Find the tower in the buffer
+        if (tower.upgraded)                            // Remove upgraded towers
           this.towers.remove(i)
-        }
-        
-        // Update the towers target
-        tower.updateTarget(this.enemies)
-        
-        // Add the shot projectiles to the game
-        this.projectiles ++= tower.shoot(elapsedTime)
+        tower.updateTarget(this.enemies)               // Update the towers target
+        this.projectiles ++= tower.shoot(elapsedTime)  // Add the shot projectiles to the game
       }
       
-      // Update and remove projectiles
-      for (i <- this.projectiles.indices.reverse) {
+      
+      for (i <- this.projectiles.indices.reverse) {  // Update and remove projectiles
         
-        // Find the projectile in the buffer
-        val projectile = this.projectiles(i)
-        
-        // Move the projectile
-        projectile.move()
-        
-        // Try to hit all enemies
-        projectile.hit(this.enemies)
-        
-        // If projectile finishes, remove it
-        if (projectile.finished) {
+        val projectile = this.projectiles(i)         // Find the projectile in the buffer       
+        projectile.move()                            // Move the projectile
+        projectile.hit(this.enemies)                 // Try to hit all enemies
+        if (projectile.finished)                     // If projectile finishes, remove it
           this.projectiles.remove(i)
-        }
       }
   
-      // Spawn in the enemies when necessary
-      if (!this.wave.finished) {
-        
-        // Try to get a spawn from the wave
-        val spawn = this.wave.spawn()
-        
-        // If an enemy spawned, add it to the game
-        if (spawn.isDefined) {
+      
+      if (!this.wave.finished) {       // Spawn in the enemies each wave
+
+        val spawn = this.wave.spawn()  // Try to get a spawn from the wave
+        if (spawn.isDefined)           // If an enemy spawned, add it to the game
           this.enemies += spawn.get
-        }
       }
       
-      // After killing all enemies grant prize
-      if (this.enemies.isEmpty && this.wave.finished) {
-        
+      if (this.enemies.isEmpty && this.wave.finished) {  // After killing all enemies grant prize
+
         val reward = this.wave.prize
         this.player.reward(reward)
         if (reward > 0) gui.Audio.play("fanfare.wav")

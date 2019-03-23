@@ -7,30 +7,44 @@ import game._
 
 object Actions {
   
+  
+  
   // Automatically asks the game to load a new wave
   def loadNextWave(g: Game) = {
     if (g.loadNextWave()) Audio.play("menu.wav") else error()
+    this.checkLocks()
   }
   
+  
+  // Save the game
+  def save() = {
+    GameSaver.save(Main.currentGame)
+    Audio.play("iosfx.wav")
+  }
+  
+  
   // Methods to choose towers
-  def buyCannonTower(g: Game) = {
-    if (g.wave.number >= TowerInfo.unlockCannon) {
+  def buyCannonTower(g: Game, godmode: Boolean) = {
+    if (g.wave.number >= TowerInfo.unlockCannon || godmode) {
       g.shop.choose("c1", g)
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
-  def buyBoomerangTower(g: Game) = {
-    if (g.wave.number >= TowerInfo.unlockBoomerang) {
+  def buyBoomerangTower(g: Game, godmode: Boolean) = {
+    if (g.wave.number >= TowerInfo.unlockBoomerang || godmode) {
       g.shop.choose("b1", g)
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
-  def buyHomingTower(g: Game) = {
-    if (g.wave.number >= TowerInfo.unlockHoming) {
+  def buyHomingTower(g: Game, godmode: Boolean) = {
+    if (g.wave.number >= TowerInfo.unlockHoming || godmode) {
       g.shop.choose("h1", g)
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
+  
+  
+  
   
   // Methods to purchase bought tower at the given game location
   def purchaseTower(g: Game, x: Double, y: Double) = {
@@ -40,8 +54,9 @@ object Actions {
     } else error()
   }
   
-  // Method to select a tower at the given game location and return it
-  // along the dimensions for the upgrade graphic if necessary
+  
+  
+  // Selects a tower from the map
   def selectTower(g: Game, _x: Double, _y: Double): (Option[Tower], Double, Double) = { 
     val selection = g.towers.find(t => Vec(_x, _y).distance(t.pos) < 0.6)
     var (x, y) = (0.0, 0.0)
@@ -53,13 +68,17 @@ object Actions {
         y = (Render.gridH * (pos.y - 1.05) * 1080) / Main.stage.scene.value.getHeight
       }
     }
-    (selection, x, y)
+    (selection, x, y)  // Returns position for offset upgrade button and option[tower]
   }
+  
+  
   
   // Method to find a selectable tower at the given game location and return it
   def findSelectableTower(g: Game, x: Double, y: Double): Option[Tower] = {
     g.towers.find(t => Vec(x, y).distance(t.pos) < 0.6)
   }
+  
+  
   
   // Method to upgrade selected tower
   def upgradeTower(g: Game, t: Option[Tower]): Option[Tower] = {
@@ -73,24 +92,82 @@ object Actions {
     } else None
   }
   
+  
+  
   // Method to skip the title screen
   def skipTitleScreen() = {
     Titlescreen.completed = true
     Titlescreen.fading = true
   }
   
+  
+  
   // Method to activate godmode
   def activateGodmode(g: Game) = {
     g.player.reward(100000)
     g.player.heal(1000)
     Audio.play("fanfare.wav")
+    InGameScene.godmode = true
+    InGameScene.b_lock1.visible = false
+    InGameScene.b_lock2.visible = false
+    InGameScene.b_lock3.visible = false
   }
+  
+  
   
   // Method to toggle fast forward
   def toggleFastForward(g: Game, setting: Boolean) = {
     g.toggleFastForward(setting)
   }
   
+  
+  // Method to start new game
+  def newGame() = {
+    Main.load("data/defaultdata.xml")
+    this.resetSettings()
+  }
+  
+  
+  // Method to load saved game
+  def loadGame() = {
+    Main.load("data/savedata.xml")
+    this.resetSettings()
+  }
+  
+  
+  // Private method to reset settings
+  private def resetSettings() = {
+    Music.stopLoop()
+    Music.startLoop()
+    InGameScene.godmode = false
+    InGameScene.b_upgrd.visible = false
+    InGameScene.b_lock1.visible = false
+    InGameScene.b_lock2.visible = true
+    InGameScene.b_lock3.visible = true
+    Audio.play("iosfx.wav")
+    InGameScene.gameoverCanvas.disable = true
+    InGameScene.gameoverCanvas.visible = false
+  }
+  
+  
+  // Method to check visual upgrade locks
+  def checkLocks() = {
+    InGameScene.b_lock1.visible = {
+      TowerInfo.unlockCannon    > Main.currentGame.wave.number && !InGameScene.godmode
+    }
+    InGameScene.b_lock2.visible = {
+      TowerInfo.unlockBoomerang > Main.currentGame.wave.number && !InGameScene.godmode
+    }
+    InGameScene.b_lock3.visible = {
+      TowerInfo.unlockHoming    > Main.currentGame.wave.number && !InGameScene.godmode
+    }
+  }
+  
   // Shortcut to playing the error sound upon failure
   private def error() = Audio.play("error.wav")
 }
+
+
+
+
+

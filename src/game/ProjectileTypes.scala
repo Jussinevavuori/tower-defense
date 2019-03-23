@@ -3,69 +3,90 @@ package game
 import scala.math._
 import scala.collection.mutable.Buffer
 
-/* Bullet projectiles have a strength and a range. They are shot at a target
- * and continue moving in a straight line at high speed until they hit something
- * or exceed their range.
+
+
+/* Bullet projectile is the simplest projectile. It has a predetermined
+ * velocity direction and magnitude and moves according to that velocity
+ * until out of range or hits an enemy
  */
+
 class BulletProjectile(x: Double, y: Double, str: Double, rng: Double,
     target: Enemy)
       extends Projectile(x, y, str, rng) {
   
-  // Calculating the initial velocity, which will not change direction or magnitude
-  val velocity = (target.pos - this.pos)
+  private val velocity = (target.pos - this.pos)
   velocity.scaleTo(0.4)
   
-  // Moving in the direction of the precalculated velocity
   def move(): Unit = this.pos += this.velocity
 }
 
 
 
 
-/* Homing projectiles calculate their velocity based on the target's current
- * position and effectively work as smart target seeking projectiles. If the
- * target is lost (for example upon its death) the projectile will continue
- * in a straight line until it goes outside its range or hits something.
- * Explodes upon impact
+/* Homing projectiles explode upon impact damaging several enemies at once.
+ * As long as homing projectiles have a valid target, they steer in the 
+ * direction of the target. Homing projectiles accelerate to a max velocity
  */
 class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
-    val blastRadius: Double, val target: Enemy, private val maxSpeed: Double, private val acceleration: Double)
+    val blastRadius: Double, val target: Enemy, val maxSpeed: Double, val acceleration: Double)
       extends Projectile(x, y, str, rng) {
   
   
-  private var vel = Vec(0, 0)    // The current velocity, starts from rest
    
-  def dir() = toDegrees(atan2(this.vel.y, this.vel.x))  // The direction of movement for rendering purposes
+  def dir() = toDegrees(atan2(this.vel.y, this.vel.x))
 
-  def move(): Unit = this.pos += this.velocity  // Moving in the direction of the updated velocity
+  def move(): Unit = this.pos += this.velocity
   
-  // Function to calculate the current velocity
+  private var vel = Vec(0, 0)
   def velocity = {
-    var speed = this.vel.size          // The current speed
-    if (this.target.alive) {           // As long as target is alive, update velocity direction
-      this.vel = target.pos - this.pos // Calculate new direction
-    }    
-    this.vel.scaleTo {    // Accelerate
-      speed + { if (speed < this.maxSpeed) this.acceleration else 0 }
-    }
-    this.vel    // Return the updated velocity
-  }
-  
-  // Hits all the enemies in the blastradius upon impact
-  override def hit(enemies: Buffer[Enemy]): Unit = {
     
-    // If outside of range, finish
-    if (this.pos.distanceSqrd(origin) > this.range * this.range) {
+    var speed = this.vel.size            // Current speed magnitude
+    
+    if (this.target.alive) {             // As long as target is alive, update
+      this.vel = target.pos - this.pos   // direction of movement
+    }
+    
+    this.vel.scaleTo {                   // Scale movement to accelerate until max speed
+      speed + { 
+        if (speed < maxSpeed) acceleration else 0
+      }
+    }
+    
+    this.vel
+  }
+
+  
+  /* Hits all enemies that haven't been already hit that are within range
+   */
+  override def hit(enemies: Seq[Enemy]): Unit = { // Try to hit an enemy
+    
+    if (this.pos.distanceSqrd(origin) > range * range) {  // If outside of range, finish
+      
       this.isOutOfRange = true
+    
     } else {
-      for (e <- enemies.diff(this.hitEnemies)) {
-        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {  // If this is close inside enemy
-          enemies.filter(e => {                                // Hurt everyone within blastradius
-            e.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius
-          }).foreach(_.damage(this.damage))
-          this.hitEnemies += e
+      
+      for (e <- enemies) {
+        
+        val withinRadius = this.pos.distanceSqrd(e.pos) < e.size * e.size
+        val notYetHit    = !this.hitEnemies.contains(e)
+        
+        if (withinRadius && notYetHit) {
+          
+          val radius = this.blastRadius * this.blastRadius
+          
+          val withinBlastRadius = enemies.filter(e => {
+            val distance = e.pos.distanceSqrd(this.pos)
+            distance < radius
+          })
+          
+          withinBlastRadius.foreach(_.damage(this.damage))
+          
+          this.hitEnemies = this.hitEnemies ++ withinBlastRadius
+          
           gui.Effects.addExplosionEffect(e)
-          return  // Break loop after explosion
+          
+          return  // Break loop
         }
       }
     }
@@ -75,45 +96,47 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
 
 
 
+
 /* Boomerang projectiles start at a given speed, slow down until they reach
  * given distance and start accelerating backwards until they return to the
  * original shooter.
  */
 class BoomerangProjectile(x: Double, y: Double, str: Double,
-    val target: Enemy, private var speed: Double)
+    val target: Enemy, var speed: Double)
       extends Projectile(x, y, str, Double.MaxValue) {
   
   
-  // The current angle of boomerang rotation in degrees
+  /* The current angle of boomerang rotation in degrees
+   */
   var angle: Double = 0.0
   
-  // Starting position
+  
+  /* The precalculated starting speed, direction and acceleration
+   */
   private val startingSpeed = this.speed
-  
-  // The precalculated direction vector
   private val direction = this.target.pos - this.pos
-  
-  // The acceleration constant
   private val acceleration = 0.005
   
-  // Function to move the projectile
+  
+  /* Function to move the projectile in an arc
+   */
   def move(): Unit = {
-    // Spin
-    this.angle += 6.0
     
-    // Calculate new velocity
+    this.angle += 6.0
     this.speed -= this.acceleration
     val currentVel = Vec(this.direction.x, this.direction.y)
     currentVel.scaleTo(this.speed)
     
-    // Allow enemies to be hit twice: reset upon apex
-    if (this.speed * this.speed < this.acceleration) this.resetHitEnemies
+    // All enemies can be hit twice, hits reset at apex
+    val hitApex = speed * speed < acceleration * acceleration
+    if (hitApex) this.resetHitEnemies
     
-    // Move
     this.pos += currentVel  
   }
   
-  // This projectile only finishes when it returns to original shooter
+  
+  /* This projectile only finishes when it returns to original shooter
+   */
   override def finished: Boolean = {
     this.speed < -1 * this.startingSpeed
   }
