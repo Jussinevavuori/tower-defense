@@ -32,11 +32,14 @@ object Render {
 
     val gfx = canvas.graphicsContext2D
 
+    // Recalculate W and H
     this.W = Main.stage.scene.value.getWidth
     this.H = Main.stage.scene.value.getHeight
     
+    // Draw background
     gfx.drawImage(this.bg, 0, 0, W, H)
     
+    // Draw all game elements
     gfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
     this.renderEnemies(gfx, game.enemies)
     this.renderProjectiles(gfx, game.projectiles)
@@ -44,32 +47,28 @@ object Render {
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
     this.renderTowers(gfx, game.towers)
     
+    // Draw wave number
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)  // Draw game info
     gfx.textAlign = TextAlignment.Center
     this.setFontSize(gfx, 40)
     gfx.fillText(s"${game.wave.number}", 1789 * resizeW, 950 * resizeH)
+    
+    // Draw HP and money
     this.setFontSize(gfx, 30)
     gfx.fillText(s"${game.player.health.toInt} HP", 192 * resizeW, 1024 * resizeH)
     gfx.fillText(s"${"$"} ${game.player.money}",    192 * resizeW,  941 * resizeH)
     
-    gfx.textAlign = TextAlignment.Center  // Shop prices
+    // Draw tower prices
     this.setFontSize(gfx, 20)
+    gfx.textAlign = TextAlignment.Center  // Shop prices
     gfx.fillText("$ " +    TowerInfo.priceCannon.toString,  760 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " + TowerInfo.priceBoomerang.toString,  960 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " +    TowerInfo.priceHoming.toString, 1160 * resizeW, 1044 * resizeH)
     
+    // Show controls if necessary
     if (this.showControls) {
       this.renderControls(gfx)
     }
-  }
-  
-
-  
-  def testRender(canvas: Canvas, gridX: Double, gridY: Double) = {
-    val gfx = canvas.graphicsContext2D
-    val (x, y) = this.canvasCoords(gridX, gridY)
-    gfx.fill = Color(1.0, 1.0, 1.0, 0.4)
-    gfx.fillOval(x - 3, y - 3, 6, 6)
   }
   
   
@@ -341,6 +340,8 @@ object Render {
   def canvasCoords(x: Double, y: Double): (Double, Double) = {
     (x * this.gridW, y * this.gridH)
   }
+  
+  
   
   // Converts a radius to elliptical radii
   private def radius(r: Double): (Double, Double) = {

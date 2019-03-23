@@ -1,28 +1,25 @@
 package gui
 
 import game._
-import javafx.event.{ EventHandler => EH }
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.{ MouseEvent => ME }
 import scalafx.Includes.eventClosureWrapperWithParam
 import scalafx.Includes.jfxActionEvent2sfx
-import scalafx.animation.AnimationTimer
-import scalafx.application.JFXApp
+import javafx.event.{ EventHandler => EH }
+import javafx.scene.input.{ MouseEvent => ME }
 import scalafx.event.{ ActionEvent => AE }
-import scalafx.geometry.Pos
-import scalafx.scene.Scene
-import scalafx.scene.canvas.Canvas
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
+import scalafx.animation.AnimationTimer
 import scalafx.scene.control.Menu
 import scalafx.scene.control.MenuBar
 import scalafx.scene.control.MenuItem
 import scalafx.scene.control.SeparatorMenuItem
+import scalafx.scene.canvas.Canvas
+import scalafx.scene.image.ImageView
 import scalafx.scene.layout.StackPane
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.Group
-import scalafx.scene.image.ImageView
-import scalafx.scene.ImageCursor
+import scalafx.geometry.Pos
 
 object InGameScene extends AnimationScene {
   
@@ -113,21 +110,21 @@ object InGameScene extends AnimationScene {
 
 
   // Loaded images for GUI buttons
-  val img_shop = Render.loadImage("shop")
-  val img_shopLocked = Render.loadImage("shopLocked")
-  val img_shopHighlighted = Render.loadImage("shopHighlighted")
-  val img_shopClicked = Render.loadImage("shopClicked")
-  val img_nextwave = Render.loadImage("nextwave")
+  val img_shop                = Render.loadImage("shop")
+  val img_shopLocked          = Render.loadImage("shopLocked")
+  val img_shopHighlighted     = Render.loadImage("shopHighlighted")
+  val img_shopClicked         = Render.loadImage("shopClicked")
+  val img_nextwave            = Render.loadImage("nextwave")
   val img_nextwaveHighlighted = Render.loadImage("nextwaveHighlighted")
-  val img_nextwaveClicked = Render.loadImage("nextwaveClicked")
-  val img_upgrade = Render.loadImage("upgrade")
-  val img_upgradeHighlighted = Render.loadImage("upgradeHighlighted")
-  val img_upgradeClicked = Render.loadImage("upgradeClicked")
-  val img_fastf = Render.loadImage("fastforward")
-  val img_fastfHighlighted = Render.loadImage("fastforwardHighlighted")
-  val img_fastfClicked = Render.loadImage("fastforwardClicked")
-  val img_noteOn = Render.loadImage("note_on")
-  val img_noteOff = Render.loadImage("note_off")
+  val img_nextwaveClicked     = Render.loadImage("nextwaveClicked")
+  val img_upgrade             = Render.loadImage("upgrade")
+  val img_upgradeHighlighted  = Render.loadImage("upgradeHighlighted")
+  val img_upgradeClicked      = Render.loadImage("upgradeClicked")
+  val img_fastf               = Render.loadImage("fastforward")
+  val img_fastfHighlighted    = Render.loadImage("fastforwardHighlighted")
+  val img_fastfClicked        = Render.loadImage("fastforwardClicked")
+  val img_noteOn              = Render.loadImage("note_on")
+  val img_noteOff             = Render.loadImage("note_off")
 
   // GUI buttons
   val b_leftt = Rectangle(0, 0, 0, 0) // For scaling purposes
@@ -157,15 +154,15 @@ object InGameScene extends AnimationScene {
 
   // Setting properties and coordinates for all gui buttons
   var (b_upgrdX, b_upgrdY) = (0.0, 0.0)
-  b_shop1.x = 701; b_shop1.y = 887; b_shop1.pickOnBounds = false
-  b_shop2.x = 901; b_shop2.y = 887; b_shop2.pickOnBounds = false
+  b_shop1.x =  701; b_shop1.y = 887; b_shop1.pickOnBounds = false
+  b_shop2.x =  901; b_shop2.y = 887; b_shop2.pickOnBounds = false
   b_shop3.x = 1101; b_shop3.y = 887; b_shop3.pickOnBounds = false
-  b_lock1.x = 701; b_lock1.y = 887; b_shop1.pickOnBounds = false; b_lock1.visible = false
-  b_lock2.x = 901; b_lock2.y = 887; b_shop2.pickOnBounds = false; b_lock2.visible = true
+  b_lock1.x =  701; b_lock1.y = 887; b_shop1.pickOnBounds = false; b_lock1.visible = false
+  b_lock2.x =  901; b_lock2.y = 887; b_shop2.pickOnBounds = false; b_lock2.visible = true
   b_lock3.x = 1101; b_lock3.y = 887; b_shop3.pickOnBounds = false; b_lock3.visible = true
   b_nextw.x = 1729; b_nextw.y = 972; b_nextw.pickOnBounds = false
   b_fastf.x = 1600; b_fastf.y = 972; b_fastf.pickOnBounds = false
-  b_music.x = 1856; b_music.y = 32; b_music.pickOnBounds = true
+  b_music.x = 1856; b_music.y =  32; b_music.pickOnBounds = true
   b_upgrd.x = b_upgrdX; b_upgrd.y = b_upgrdY; b_upgrd.pickOnBounds = false; b_upgrd.visible = false
 
   // Highlight on mouse enter

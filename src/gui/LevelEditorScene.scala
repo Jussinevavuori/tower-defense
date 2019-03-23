@@ -2,28 +2,19 @@ package gui
 
 import game._
 import javafx.event.{ EventHandler => EH }
+import scalafx.event.{ ActionEvent => AE }
+import javafx.scene.input.{ MouseEvent => ME }
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.scene.input.{ MouseEvent => ME }
-import scalafx.Includes.eventClosureWrapperWithParam
-import scalafx.Includes.jfxActionEvent2sfx
 import scalafx.animation.AnimationTimer
-import scalafx.application.JFXApp
-import scalafx.event.ActionEvent
 import scalafx.geometry.Pos
-import scalafx.scene.Scene
+import scalafx.geometry.HPos
 import scalafx.scene.canvas.Canvas
-import scalafx.scene.control.Menu
-import scalafx.scene.control.MenuBar
-import scalafx.scene.control.MenuItem
-import scalafx.scene.control.SeparatorMenuItem
 import scalafx.scene.layout.StackPane
-import scalafx.scene.paint.Color
-import scalafx.scene.shape.Rectangle
-import scalafx.scene.Group
 import scalafx.scene.image.ImageView
-import scalafx.scene.ImageCursor
+import scalafx.scene.layout.VBox
 import scalafx.scene.text.TextAlignment
+import scalafx.scene.paint.Color
 
 object LevelEditorScene extends AnimationScene {
   

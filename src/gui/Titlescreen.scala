@@ -7,7 +7,10 @@ import scalafx.scene.paint.Color
 import scalafx.scene.canvas.Canvas
 
 
-
+/*
+ *  Titlescreen controls the titlescreen
+ *  graphics, drawing and animation.
+ */
 
 
 object Titlescreen {

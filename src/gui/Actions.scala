@@ -96,6 +96,7 @@ object Actions {
   
   // Method to skip the title screen
   def skipTitleScreen() = {
+    MainMenuScene.titleCanvas.visible = false
     Titlescreen.completed = true
     Titlescreen.fading = true
   }
