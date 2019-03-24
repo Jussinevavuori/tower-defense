@@ -89,7 +89,6 @@ object InGameScene extends AnimationScene {
   val menuBar   = new MenuBar { visible = false }
   val gameMenu  = new Menu("Game"); menuBar.menus.add(gameMenu)
   val gmNew     = new MenuItem("New game");  gameMenu.items.addAll(gmNew,     new SeparatorMenuItem)
-  val gmLoad    = new MenuItem("Load game"); gameMenu.items.addAll(gmLoad,    new SeparatorMenuItem)
   val gmSave    = new MenuItem("Save");      gameMenu.items.addAll(gmSave,    new SeparatorMenuItem)
   val gmControl = new MenuItem("Controls");  gameMenu.items.addAll(gmControl, new SeparatorMenuItem)
   val gmShowFPS = new MenuItem("Show FPS");  gameMenu.items.addAll(gmShowFPS, new SeparatorMenuItem)
@@ -98,12 +97,15 @@ object InGameScene extends AnimationScene {
   val gmExit    = new MenuItem("Exit");      gameMenu.items.addAll(gmExit)
   gmSave.onAction    = (e: AE) => Actions.save
   gmNew.onAction     = (e: AE) => Actions.newGame()
-  gmLoad.onAction    = (e: AE) => Actions.loadGame()
   gmExit.onAction    = (e: AE) => sys.exit(0)
   gmShowFPS.onAction = (e: AE) => this.showFPS = !this.showFPS
   gmGodmode.onAction = (e: AE) => Actions.activateGodmode(Main.currentGame)
   gmControl.onAction = (e: AE) => Render.toggleControls
-  gmMmenu.onAction   = (e: AE) => Main.changeStatus(ProgramStatus.MainMenu)
+  gmMmenu.onAction   = (e: AE) => {
+    if (Main.currentGame.wave.number > 1) Actions.save
+    Music.changeMusic("warriors")
+    Main.changeStatus(ProgramStatus.MainMenu)
+  }
   
   
   
@@ -112,8 +114,8 @@ object InGameScene extends AnimationScene {
    */
 
 
-  val b_leftt = Rectangle(0, 0, 0, 0)       // For scaling purposes
-  val b_right = Rectangle(1920, 1080, 0, 0) // For scaling purposes
+  val scl1 = Rectangle(0, 0, 0, 0)       // For scaling purposes
+  val scl2 = Rectangle(1920, 1080, 0, 0) // For scaling purposes
   
   val b_shop1 = new MovableDynamicHoverButton("shopButton", 701, 887) {
     override def onClick() = Actions.buyCannonTower(Main.currentGame, godmode)
@@ -267,7 +269,7 @@ object InGameScene extends AnimationScene {
   val buttons = new Group()
   val stack = new StackPane()
   buttons.children = List(
-    b_leftt, b_right, b_shop1, b_shop2, b_shop3, b_fastf,
+    scl1, scl2, b_shop1, b_shop2, b_shop3, b_fastf,
     b_lock1, b_lock2, b_lock3, b_nextw, b_upgrd, b_music)
   stack.children = List(
     gameCanvas, buttons, interactionCanvas, menuBar, gameoverCanvas)
@@ -284,6 +286,8 @@ object InGameScene extends AnimationScene {
   var animation = AnimationTimer { now =>
 
     Time.updateElapsedTime(now)
+    
+    Main.currentGame.update(Time.elapsedTime)
 
     // Render the game
     Animate.advance()

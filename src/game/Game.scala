@@ -49,17 +49,16 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
    * scaling the movement
    */
   def update(elapsedTime: Double): Unit = {
-    
+        
     // Loop five times for fast forward
     for (loop <- 0 until {if (this.fastForward) 5 else 1}) {
-          
-      
+                
       for (i <- this.enemies.indices.reverse) {  // Update the enemies
         
         val enemy = this.enemies(i)              // Find the enemy in the buffer
                                                  
         if (enemy.dead) {                        // Upon enemy death
-                                                 
+                                                           
           this.player.reward(enemy.reward)       // Reward the player with the money from the enemy
           for (spawn <- enemy.death()) {         // Add all the enemies that spawn upon the enemy's death to the game
             this.enemies.append(spawn)           
@@ -72,7 +71,7 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
         else if (enemy.advance(elapsedTime)) {   // Else, move and if enemy reaches end
           
           this.player.damage(1)                  // Damage the player by one
-          gui.Audio.play("damage.wav")           
+          gui.Audio.play("damage2.wav")           
           this.enemies.remove(i)                 // Remove the enemy from the game
         }
       }
