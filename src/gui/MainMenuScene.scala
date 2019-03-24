@@ -34,9 +34,6 @@ object MainMenuScene extends AnimationScene {
   
   val gfx = canvas.graphicsContext2D
   val bg = Render.loadImage("mainMenuBg")
-  val buttonNormal = Render.loadImage("mainMenuButtonNormal")
-  val buttonClick  = Render.loadImage("mainMenuButtonClick")
-  val buttonHover  = Render.loadImage("mainMenuButtonHover")
   
   
   /*
@@ -47,31 +44,15 @@ object MainMenuScene extends AnimationScene {
   val buttons = new VBox(32)
   buttons.alignment = Pos.Center
   
-  val b_play = new ImageView(buttonNormal)
-  val b_exit = new ImageView(buttonNormal)
-  
+  val b_play = new DynamicHoverButton("mainMenuButton") {
+    override def onClick() = Main.changeStatus(ProgramStatus.InGame)
+  }
+  val b_exit = new DynamicHoverButton("mainMenuButton") {
+    override def onClick() = sys.exit()
+  }
   buttons.children = List(b_play, b_exit)
 
-  val b_playStdW = b_play.image.value.getWidth; val b_playStdH = b_play.image.value.getHeight
-  val b_exitStdW = b_exit.image.value.getWidth; val b_exitStdH = b_exit.image.value.getHeight
   
-  b_play.setOnMouseEntered( new EH[ME] { def handle(e: ME) = b_play.image = buttonHover  })
-  b_exit.setOnMouseEntered( new EH[ME] { def handle(e: ME) = b_exit.image = buttonHover  })
-  b_play.setOnMouseExited(  new EH[ME] { def handle(e: ME) = b_play.image = buttonNormal })
-  b_exit.setOnMouseExited(  new EH[ME] { def handle(e: ME) = b_exit.image = buttonNormal })
-  b_play.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_play.image = buttonHover  })
-  b_exit.setOnMouseReleased(new EH[ME] { def handle(e: ME) = b_exit.image = buttonHover  })
-
-  b_play.setOnMouseClicked( new EH[ME] { def handle(e: ME) = {
-    b_play.image = buttonClick
-    Main.changeStatus(ProgramStatus.InGame)
-  }})
-  b_exit.setOnMouseClicked( new EH[ME] { def handle(e: ME) = {
-    b_exit.image = buttonClick
-    sys.exit()
-  }})
-
-
   /*
    * MAIN ANIMATION LOOP
    */
@@ -107,9 +88,9 @@ object MainMenuScene extends AnimationScene {
   
   
   def resize(W: Double, H: Double) = {
-    val (rw, rh) = (W / 1920, H / 1080)
-    b_play.setFitWidth(b_playStdW * rw); b_play.setFitHeight(b_playStdH * rh)
-    b_exit.setFitWidth(b_exitStdW * rw); b_exit.setFitHeight(b_exitStdH * rh)
+    buttons.spacing = (32 * H) / 1080
+    b_play.resize(W, H)
+    b_exit.resize(W, H)
   }
 
   
