@@ -13,7 +13,10 @@ object Main extends JFXApp {
   
   // The current game running in the GUI
   var currentGame = GameLoader("data/defaultdata.xml")
-  def load(s: String) = this.currentGame = GameLoader(s)
+  def loadGame(g: Game) = {
+    currentGame = g
+    Render.prerender(InGameScene.gameCanvas, this.currentGame)
+  }
   def gameover = currentGame.gameover
   
   

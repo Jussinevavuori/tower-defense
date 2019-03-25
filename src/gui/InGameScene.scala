@@ -147,9 +147,8 @@ object InGameScene extends AnimationScene {
     val onImg = Render.loadImage("note_on")
     val offImg = Render.loadImage("note_off")
     override def onClick() = {
-      muted = !muted
-      this.image = { if (muted) offImg else onImg }
       Music.mute()
+      this.image = { if (Music.muted) offImg else onImg }
     }
   }
   val b_lock1 = new MovableDynamicButton(Render.loadImage("shopLocked"), 701, 887) {

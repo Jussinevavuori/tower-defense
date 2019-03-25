@@ -42,6 +42,37 @@ object GameLoader {
     }
   }
   
+  // Loads the current game saved in the gamedata.xml and returns it.
+  def loadCustomGame(level: Int): Game = {
+    
+    try {
+      
+      val prettyPrinter = new PrettyPrinter(80, 4)
+      println(s"${"-"*40}\nLOADING LEVEL\n${"-"*40}\n")
+      val n = (XML.loadFile(new File("data/customdata.xml")) \\ "data" \ "game")(level)
+      val xml = Elem(null, n.label, n.attributes, n.scope, false, n.child:_*)
+      println(prettyPrinter.format(xml))
+      
+      // Game properties
+      val (rows, cols) = this.loadGameDimensions(xml)
+      val player       = this.loadPlayer(xml)
+      val wave         = this.loadWave(xml)
+      val path         = this.loadPath(xml)
+      val towers       = this.loadTowers(xml)
+            
+      new Game(rows, cols, path, wave, player, towers)
+      
+    } catch {
+      case e: Throwable => {  // Catch all throwables
+        println(s"Error loading custom data level $level")
+        e.printStackTrace()
+      }
+      
+      // In error cases return a broken temp game
+      new Game(1, 1, new Path(0, 0, None))
+    }
+  }
+  
   
   // Functions for loading gamedata from an xml and returning game objects
   

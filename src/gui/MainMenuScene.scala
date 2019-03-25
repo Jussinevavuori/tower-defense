@@ -41,29 +41,29 @@ object MainMenuScene extends AnimationScene {
   val moreButtons = new Group()
   mainButtons.alignment = Pos.Center
   
-  val b_play = new DynamicDefaultButton("NEW GAME") {  // New game
+  val b_play = new DefaultButton("NEW GAME") {  // New game
     override def onClick() = {
       Actions.newGame()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }
   }
-  val b_cont = new DynamicDefaultButton("CONTINUE") {  // Continue game
+  val b_cont = new DefaultButton("CONTINUE") {  // Continue game
     override def onClick() = {
       Actions.loadGame()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }
   }
-  val b_load = new DynamicDefaultButton("LOAD LEVEL") {  // Load game
+  val b_load = new DefaultButton("LOAD LEVEL") {  // Load game
     override def onClick() = {
       Main.changeStatus(ProgramStatus.LoadGame)
     }
   }
-  val b_lvle = new DynamicDefaultButton("LEVEL EDITOR") {  // Level editor
+  val b_lvle = new DefaultButton("LEVEL EDITOR") {  // Level editor
     override def onClick() = Main.changeStatus(ProgramStatus.LevelEditor)
   }
-  val b_exit = new DynamicDefaultButton("EXIT") {  // Exit
+  val b_exit = new DefaultButton("EXIT") {  // Exit
     override def onClick() = sys.exit()
   }
   val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {  // Toggle music
@@ -72,9 +72,8 @@ object MainMenuScene extends AnimationScene {
     val onImg = Render.loadImage("note_on")
     val offImg = Render.loadImage("note_off")
     override def onClick() = {
-      muted = !muted
-      this.image = { if (muted) offImg else onImg }
       Music.mute()
+      this.image = { if (Music.muted) offImg else onImg }
     }
   }
   

@@ -9,7 +9,12 @@ import javafx.event.{ EventHandler => EH }
 import javafx.scene.input.{ MouseEvent => ME }
 import scalafx.event.{ ActionEvent => AE }
 
-class DynamicDefaultButton(val name: String) extends Canvas(640, 64) {
+
+/* A dynamic default button has always the same default button graphic
+ * with a given text and functions like a button should.
+ */
+
+class DefaultButton(val name: String) extends Canvas(640, 64) {
   
   // Loaded images and properties
   val gfx = this.graphicsContext2D
@@ -46,15 +51,15 @@ class DynamicDefaultButton(val name: String) extends Canvas(640, 64) {
   
   // Setting the functionalities and image changing
   this.setOnMouseEntered( new EH[ME] { def handle(e: ME) = {
-    overlay = 0.1
+    overlay = 0.10
     onEnter()
   }})
   this.setOnMouseExited(  new EH[ME] { def handle(e: ME) = {
-    overlay = 0.0
+    overlay = 0.00
     onExit()
   }})
   this.setOnMouseReleased(new EH[ME] { def handle(e: ME) = {
-    overlay = 0.1
+    overlay = 0.10
     onRelease()
   }})
   this.setOnMousePressed( new EH[ME] { def handle(e: ME) = {

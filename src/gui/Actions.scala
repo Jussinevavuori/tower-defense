@@ -124,14 +124,14 @@ object Actions {
   
   // Method to start new game
   def newGame() = {
-    Main.load("data/defaultdata.xml")
+    Main.loadGame(GameLoader("data/defaultdata.xml"))
     this.resetSettings()
   }
   
   
   // Method to load saved game
   def loadGame() = {
-    Main.load("data/savedata.xml")
+    Main.loadGame(GameLoader("data/savedata.xml"))
     this.resetSettings()
   }
   

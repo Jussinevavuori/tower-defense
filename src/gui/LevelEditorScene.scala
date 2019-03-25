@@ -19,6 +19,15 @@ import scalafx.scene.image.Image
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.image.WritableImage
 import scalafx.scene.shape.StrokeLineCap
+import scalafx.scene.shape.Rectangle
+import scalafx.scene.Group
+import scalafx.scene.control.Menu
+import scalafx.scene.control.MenuBar
+import scalafx.scene.control.MenuItem
+import scalafx.scene.control.SeparatorMenuItem
+import scalafx.Includes.eventClosureWrapperWithParam
+import scalafx.Includes.jfxActionEvent2sfx
+
 
 object LevelEditorScene extends AnimationScene {
   
@@ -104,7 +113,46 @@ object LevelEditorScene extends AnimationScene {
     path = null
     bg = renderMap()
   }
+  
+  
+  /*
+   * BUTTONS
+   */
    
+  val buttons = new Group()
+  val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {  // Toggle music
+    this.pickOnBounds = true
+    var muted = false
+    val onImg = Render.loadImage("note_on")
+    val offImg = Render.loadImage("note_off")
+    override def onClick() = {
+      Music.mute()
+      this.image = { if (Music.muted) offImg else onImg }
+    }
+  }
+  val scl1 = Rectangle(0, 0, 0, 0)      
+  val scl2 = Rectangle(1920, 1080, 0, 0) 
+  buttons.children = List(b_music, scl1, scl2)
+  
+  
+  /*
+   * MENU
+   */
+  
+  
+  val menuBar = new MenuBar { visible = false }
+  val menu    = new Menu("Menu"); menuBar.menus.add(menu)
+  val mSave   = new MenuItem("Save");      menu.items.addAll(mSave, new SeparatorMenuItem)
+  val mReset  = new MenuItem("Reset");     menu.items.addAll(mReset, new SeparatorMenuItem)
+  val mMenu   = new MenuItem("Main menu"); menu.items.addAll(mMenu, new SeparatorMenuItem)
+  val mExit   = new MenuItem("Exit");      menu.items.addAll(mExit)
+  mSave.onAction = (e: AE) => if (!constructing) LevelSaver.saveCustomLevel(path)
+  mReset.onAction = (e: AE) => resetPath()
+  mExit.onAction = (e: AE) => sys.exit(0)
+  mMenu.onAction = (e: AE) => {
+    Music.changeMusic("warriors")
+    Main.changeStatus(ProgramStatus.MainMenu)
+  }  
   
   /*
    * ANIMATION TIMER (MAINLY RENDERING)
@@ -120,8 +168,13 @@ object LevelEditorScene extends AnimationScene {
     val w = LevelEditorScene.getWidth / Main.currentGame.cols
     val h = (840 * (LevelEditorScene.getHeight / 1080)) / Main.currentGame.rows
     gfx.drawImage(selection, selX * w, selY * h, w, h)
+    resize()
   }}
 
+  
+  def resize() = {
+    b_music.resize(this.getWidth, this.getHeight)
+  }
   
   /*
    * SCENE LAYOUT
@@ -129,7 +182,7 @@ object LevelEditorScene extends AnimationScene {
   
   
   val stack = new StackPane()
-  stack.children = List(canvas)
+  stack.children = List(canvas, buttons, menuBar)
   stack.setAlignment(Pos.TopLeft)
   root = stack
   
@@ -165,11 +218,10 @@ object LevelEditorScene extends AnimationScene {
   }
   this.onMouseMoved = new EH[ME] {
     def handle(me: ME) = {
+      menuBar.visible = me.getSceneY < 32 // Show and hide menubar
       selX = me.getSceneX.toInt / (LevelEditorScene.getWidth.toInt  / Main.currentGame.cols)
       selY = me.getSceneY.toInt / ((840 * (LevelEditorScene.getHeight / 1080)).toInt / Main.currentGame.rows)
-      if (selY >= Main.currentGame.rows) {
-        selY = -1
-      }
+      if (selY >= Main.currentGame.rows) selY = -1
     }
   }
   this.onMousePressed = new EH[ME] {
@@ -179,8 +231,6 @@ object LevelEditorScene extends AnimationScene {
       }
     }
   }
-  
-  
   
   /*
    * RENDERING FUNCTIONS

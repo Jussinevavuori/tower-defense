@@ -24,23 +24,23 @@ object LevelSaver {
   def saveCustomLevel(p: Path) = {
     
     val levels: NodeSeq = try {
-      XML.loadFile(new File("data/customdata.xml")) \ "level"
+      XML.loadFile(new File("data/customdata.xml")) \ "game"
     } catch {
       case e: Throwable => { e.printStackTrace(); println("Error loading customdata.xml"); NodeSeq.Empty }
     }
-    val num: Elem = <num>{(levels \ "num").length}</num>
-    val cols: Elem = <cols>{Main.currentGame.cols}</cols>
-    val rows: Elem = <rows>{Main.currentGame.rows}</rows>
-    val wave: Elem = <wave>{0}</wave>
-    val player: Elem = <player><health>{100}</health><money>{500}</money></player>
-    val path: Elem = {
+    val path:   Elem = {
       <path>{p.toArray().map(p => {
         this.createXMLElement("segment", Array("x" -> p.pos.x.toInt.toString(), "y" -> p.pos.y.toInt.toString()))
       })}</path>
     }
+    val num:    Elem = <num>{(levels \ "num").length}</num>
+    val cols:   Elem = <cols>{Main.currentGame.cols}</cols>
+    val rows:   Elem = <rows>{Main.currentGame.rows}</rows>
+    val wave:   Elem = <wave>{0}</wave>
+    val player: Elem = <player><health>{100}</health><money>{500}</money></player>
     val towers: Elem = <towers></towers>
-    val level: Elem = <level>{num}{cols}{rows}{wave}{player}{path}</level>
-    val data: Elem = <data>{levels}{level}</data>
+    val level:  Elem = <game>{num}{cols}{rows}{wave}{player}{path}</game>
+    val data:   Elem = <data>{levels}{level}</data>
 
     try {
       XML.save("data/customdata.xml", data, "UTF-8", true, null)
@@ -66,7 +66,7 @@ object LevelSaver {
    */
   def loadLevelList() = {
     try {
-      XML.loadFile(new File("data/customdata.xml")) \\ "level" \ "num"
+      XML.loadFile(new File("data/customdata.xml")) \\ "game" \ "num"
     } catch {
       case e: Throwable => { e.printStackTrace(); println("Error loading customdata.xml"); NodeSeq.Empty }
     }
