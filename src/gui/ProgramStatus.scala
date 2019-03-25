@@ -23,11 +23,13 @@ object ProgramStatus {
   final val scenes = Array(
     MainMenuScene,
     InGameScene,
-    LevelEditorScene
+    LevelEditorScene,
+    LoadGameScene
   )
   def start(s: Int = this.status) =
     if (this.scenes(s).isInstanceOf[AnimationScene]) {
         this.scenes(s).asInstanceOf[AnimationScene].start()
+        this.scenes(s).asInstanceOf[AnimationScene].loadUp()
   }
   def stop(s: Int = this.status) = {
     if (this.scenes(s).isInstanceOf[AnimationScene])
@@ -37,5 +39,5 @@ object ProgramStatus {
   final val MainMenu    = 0
   final val InGame      = 1
   final val LevelEditor = 2
-  
+  final val LoadGame    = 3
 }

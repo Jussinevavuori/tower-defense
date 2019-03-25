@@ -1,0 +1,58 @@
+
+
+
+SAVING AND LOADING FILES
+
+	Instead of having separate files for each map
+	create a single xml file that contains every
+	map. Each map should have a tag for whether
+	they're custom made or not. Only show custom
+	made maps in map loader.
+	
+	Must customize GameLoader and GameSaver to
+	work with new system.
+	
+						# XML mockup
+	<maps>
+		<map custom=0>	# default map
+			<data/>
+		<map/>
+		
+		<map custom=1>	# custom map
+			<data/>
+		<map/>
+	<maps/>
+	
+	
+	Deleting maps should also be allowed.
+	
+	
+LOAD GAME
+
+	Load game menu displays a scrolling list of maps
+	that have been created (only showing custom maps.)
+
+NEW GAME
+
+	New game menu displayes several different default
+	maps from which the player can choose.
+	
+DIFFICULTY LEVELS
+
+	Three difficulty levels: easy, medium, hard.
+	Difficulty could have an effect on waves and health
+	and money.
+	
+GRAPHICS
+
+	Each level could also have graphics assigned to it.
+	Players could in the create level menu drag and drop
+	custom graphics, like trees that would be saved and
+	rendered by the game.
+	
+ALTERNATE GRAPHICS
+
+	There could be 1-3 different alternate graphics (grassy
+	summer, orange fall, white winter for example) that would
+	correspond to the different default maps. In a custom made
+	level the player could choose which skin to use in the map.

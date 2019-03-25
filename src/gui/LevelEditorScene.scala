@@ -92,7 +92,6 @@ object LevelEditorScene extends AnimationScene {
     }
     // Else finish construction
     else {
-      println("Done")
       constructing = false
       false
     }
@@ -144,6 +143,12 @@ object LevelEditorScene extends AnimationScene {
     def handle(ke: KeyEvent) = { ke.getCode() match {
       
         case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
+        
+        case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
+        
+        case KeyCode.ENTER => if (!constructing) LevelSaver.saveCustomLevel(path)
+        
+        case KeyCode.DELETE => LevelSaver.resetCustomLevels()
         
         case KeyCode.R     => resetPath()
         

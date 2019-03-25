@@ -11,6 +11,7 @@ import scalafx.animation.AnimationTimer
 
 abstract class AnimationScene extends Scene {
   
+  def loadUp() = ()
   def stop()  = this.animation.stop() 
   def start() = this.animation.start()
   var animation: AnimationTimer

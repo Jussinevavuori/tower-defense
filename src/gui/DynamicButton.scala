@@ -132,6 +132,3 @@ class MovableDynamicButton(img: Image,
     this._y = newY
   }
 }
-
-
-

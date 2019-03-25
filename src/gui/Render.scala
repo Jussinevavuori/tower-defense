@@ -457,20 +457,54 @@ object Render {
       for (j <- 1 to game.rows) {
         val (dx, dy) = canvasCoords(i - 1, j - 1)
         val (sx, sy): (Int, Int) = {
-          if (grid(i)(j))                            (1, 1)
-          else if (grid(i - 1)(j) && grid(i)(j + 1)) (3, 2)
-          else if (grid(i + 1)(j) && grid(i)(j + 1)) (5, 2)
-          else if (grid(i + 1)(j) && grid(i)(j - 1)) (5, 0)
-          else if (grid(i - 1)(j) && grid(i)(j - 1)) (3, 0)
-          else if (grid(i)(j + 1))                   (1, 0)
-          else if (grid(i + 1)(j))                   (0, 1)
-          else if (grid(i)(j - 1))                   (1, 2)
-          else if (grid(i - 1)(j))                   (2, 1)
-          else if (grid(i - 1)(j + 1))               (2, 0)
-          else if (grid(i + 1)(j + 1))               (0, 0)
-          else if (grid(i + 1)(j - 1))               (0, 2)
-          else if (grid(i - 1)(j - 1))               (2, 2)
-          else                                       (0, 3)
+          
+          // This, left, right, up, down: true if path exists
+          val t = grid(i)(j)
+          val l = grid(i - 1)(j)
+          val r = grid(i + 1)(j)
+          val u = grid(i)(j - 1)
+          val d = grid(i)(j + 1)
+          val ld = grid(i - i)(j + 1)
+          val rd = grid(i + 1)(j + 1)
+          val lu = grid(i - 1)(j - 1)
+          val ru = grid(i + 1)(j - 1)
+          
+          // Path
+          if (t)          (1, 1)
+          
+          // Full surround
+          else if (l & d & r & u) (6, 0)
+          
+          // Peninsulas
+          else if (l & d & r) (6, 2)
+          else if (l & d & u) (7, 0)
+          else if (l & r & u) (6, 1)
+          else if (d & r & u) (8, 0)
+                
+          // Inner corners
+          else if (l & d) (3, 2)
+          else if (r & d) (5, 2)
+          else if (r & u) (5, 0)
+          else if (l & u) (3, 0)
+          
+          // Double edges
+          else if (l & r) (7, 1)
+          else if (u & d) (7, 2)
+          
+          // Single edges
+          else if (d) (1, 0)
+          else if (r) (0, 1)
+          else if (u) (1, 2)
+          else if (l) (2, 1)
+          
+          // Outer corners
+          else if (ld) (2, 0)
+          else if (rd) (0, 0)
+          else if (ru) (0, 2)
+          else if (lu) (2, 2)
+          
+          // Grass
+          else (0, 3)
         }
         val (sw, sh) = (60, 60)
         gfx.drawImage(spritesheet, sx * sw, sy * sh, sw, sh, dx, dy, this.gridW, this.gridH)

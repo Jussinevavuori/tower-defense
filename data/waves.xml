@@ -134,7 +134,7 @@
 	<wave prize="100">21
 		<enemies>
 			<enemy count="20" id="n4"/>
-			<enemy count="20" id="n3"/>
+			<enemy count="20 " id="n3"/>
 		</enemies>
 	</wave>
 </waves>

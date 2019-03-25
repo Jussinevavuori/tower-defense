@@ -41,27 +41,29 @@ object MainMenuScene extends AnimationScene {
   val moreButtons = new Group()
   mainButtons.alignment = Pos.Center
   
-  val b_play = new DynamicHoverButton("mmNewgameButton") {  // New game
+  val b_play = new DynamicDefaultButton("NEW GAME") {  // New game
     override def onClick() = {
       Actions.newGame()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }
   }
-  val b_cont = new DynamicHoverButton("mmContinueButton") {  // Continue game
-    
-  }
-  val b_load = new DynamicHoverButton("mmLoadgameButton") {  // Load game
+  val b_cont = new DynamicDefaultButton("CONTINUE") {  // Continue game
     override def onClick() = {
       Actions.loadGame()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }
   }
-  val b_lvle = new DynamicHoverButton("mmLeveleditorButton") {  // Level editor
+  val b_load = new DynamicDefaultButton("LOAD LEVEL") {  // Load game
+    override def onClick() = {
+      Main.changeStatus(ProgramStatus.LoadGame)
+    }
+  }
+  val b_lvle = new DynamicDefaultButton("LEVEL EDITOR") {  // Level editor
     override def onClick() = Main.changeStatus(ProgramStatus.LevelEditor)
   }
-  val b_exit = new DynamicHoverButton("mmExitButton") {  // Exit
+  val b_exit = new DynamicDefaultButton("EXIT") {  // Exit
     override def onClick() = sys.exit()
   }
   val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {  // Toggle music
@@ -77,14 +79,12 @@ object MainMenuScene extends AnimationScene {
   }
   
   // For scaling purposes
-  val empty1 = new DynamicHoverButton("mmNewgameButton") { this.visible = false }
-  val empty2 = new DynamicHoverButton("mmNewgameButton") { this.visible = false }
   val scl1 = Rectangle(0, 0, 0, 0)      
   val scl2 = Rectangle(1920, 1080, 0, 0) 
   
-  mainButtons.children = List(empty1, empty2, b_play, b_cont, b_load, b_lvle, b_exit)
+  mainButtons.children = List(b_play, b_cont, b_load, b_lvle, b_exit)
   moreButtons.children = List(b_music, scl1, scl2)
-  
+
   
   /*
    * MAIN ANIMATION LOOP
