@@ -59,7 +59,7 @@ object MainMenuScene extends AnimationScene {
     }
   }
   val b_lvle = new DynamicHoverButton("mmLeveleditorButton") {  // Level editor
-    
+    override def onClick() = Main.changeStatus(ProgramStatus.LevelEditor)
   }
   val b_exit = new DynamicHoverButton("mmExitButton") {  // Exit
     override def onClick() = sys.exit()

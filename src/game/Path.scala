@@ -29,6 +29,15 @@ case class Path(_x: Double, _y: Double,
   def hasNext: Boolean = this._next.isDefined
   
   
+  /* Returns the last path in the chain
+   */
+  def last: Path = {
+    var p = this
+    while (p.hasNext) { p = p.next.get }
+    p
+  }
+  
+  
   /* Assigns a path to be the next path for this one.
    * A path that already has another path assigned to it
    * cannot be reassigned.
