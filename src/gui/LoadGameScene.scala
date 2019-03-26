@@ -55,7 +55,7 @@ object LoadGameScene extends AnimationScene {
    */
   
   var levels = new VBox(32)
-  var levelButtons = List[Node]()
+  var levelButtons = List[Node]() 
   levels.alignment = Pos.Center
   override def loadUp() = {
     val len = LevelSaver.loadLevelList().length
