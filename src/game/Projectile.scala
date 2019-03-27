@@ -18,7 +18,7 @@ abstract class Projectile(_x: Double, _y: Double, val damage: Double, val range:
   
   /* Hits all enemies that haven't been already hit that are within range
    */
-  def hit(enemies: Seq[Enemy]): Unit = { // Try to hit an enemy
+  def hit(enemies: Iterator[Enemy]): Unit = { // Try to hit an enemy
     
     if (this.pos.distanceSqrd(origin) > range * range) {  // If outside of range, finish
       
@@ -26,31 +26,31 @@ abstract class Projectile(_x: Double, _y: Double, val damage: Double, val range:
     
     } else {
       
-      for (e <- enemies) {
-        
+      enemies.foreach(e => {
+
         val withinRadius = this.pos.distanceSqrd(e.pos) < e.size * e.size
         val notYetHit    = !this.hitEnemies.contains(e)
         
         if (withinRadius && notYetHit) {
           
           e.damage(this.damage)
-          this.hitEnemies = e +: this.hitEnemies
+          this.hitEnemies = this.hitEnemies + e
           gui.Audio.play("hit.wav", 0.1)
           return  // Break loop
         }
-      }
+      })
     }
   }
   
   
   /* Contains all the hit enemies, specifically made for boomerangs
    */
-  var hitEnemies = Seq[Enemy]()
+  var hitEnemies = Set[Enemy]()
   
   
   /* Resets hit enemies upon calling, allowing for enemies to be hit twice
    */
-  def resetHitEnemies = this.hitEnemies = Seq[Enemy]()
+  def resetHitEnemies = this.hitEnemies = Set[Enemy]()
   
   
   /* Function for projectile types to implement

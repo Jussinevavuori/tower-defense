@@ -49,7 +49,7 @@ abstract class Tower(_x: Double, _y: Double,
    * if it doesnt already have one.
    */
   
-  def updateTarget(enemies: Buffer[Enemy]) = {
+  def updateTarget(enemies: Iterator[Enemy]) = {
     
     // The radius, squared for lighter calculated comparison
     val radiusSqrd = this.radius * this.radius
@@ -58,25 +58,18 @@ abstract class Tower(_x: Double, _y: Double,
     val hasViableTarget: Boolean = {
       this.target.isDefined &&
       this.target.get.alive &&
-      (this.target.get.pos.distanceSqrd(this.pos) < radiusSqrd)
+      this.target.get.pos.distanceSqrd(this.pos) < radiusSqrd
     }
     
     // If this tower has a viable target, do nothing. Else, find a new target
     // and remove the current target
     if (!hasViableTarget) {
-      
-      // Remove current target
       this.target = None
-    
-      // Find all viable enemies that are within range
-      val viable = enemies.filter(_.pos.distanceSqrd(this.pos) < radiusSqrd).sortBy(_.size * -1)
-      
-      // Only if there are viable enemies, pick one. Else, let target remain unchaned
-      if (!viable.isEmpty) {
-      
-        // It is irrelevant, which one we pick, so we pick the first viable enemy
-        this.target = Some(viable.head)
-      
+    }
+    while (!hasViableTarget && enemies.hasNext) {
+      val candidate = enemies.next
+      if (candidate.pos.distanceSqrd(this.pos) < radiusSqrd) {
+        this.target = Some(candidate)
       }
     }
   }

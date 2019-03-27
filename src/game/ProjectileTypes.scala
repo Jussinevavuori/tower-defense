@@ -46,9 +46,11 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
       this.vel = target.pos - this.pos   // direction of movement
     }
     
-    this.vel.scaleTo {                   // Scale movement to accelerate until max speed
-      speed + { 
-        if (speed < maxSpeed) acceleration else 0
+    if (this.vel.size != 0) {
+      this.vel.scaleTo {                 // Scale movement to accelerate until max speed
+        speed + { 
+          if (speed < maxSpeed) acceleration else 0
+        }
       }
     }
     
@@ -58,37 +60,28 @@ class HomingProjectile(x: Double, y: Double, str: Double, rng: Double,
   
   /* Hits all enemies that haven't been already hit that are within range
    */
-  override def hit(enemies: Seq[Enemy]): Unit = { // Try to hit an enemy
+  override def hit(enemyIterator: Iterator[Enemy]): Unit = { // Try to hit an enemy
+    
+    val enemiesCopy = enemyIterator.toArray
+    val enemies = enemiesCopy.iterator
     
     if (this.pos.distanceSqrd(origin) > range * range) {  // If outside of range, finish
       
       this.isOutOfRange = true
     
     } else {
-      
-      for (e <- enemies) {
-        
-        val withinRadius = this.pos.distanceSqrd(e.pos) < e.size * e.size
-        val notYetHit    = !this.hitEnemies.contains(e)
-        
-        if (withinRadius && notYetHit) {
-          
-          val radius = this.blastRadius * this.blastRadius
-          
-          val withinBlastRadius = enemies.filter(e => {
-            val distance = e.pos.distanceSqrd(this.pos)
-            distance < radius
-          })
-          
-          withinBlastRadius.foreach(_.damage(this.damage))
-          
-          this.hitEnemies = this.hitEnemies ++ withinBlastRadius
-          
+      enemies.foreach(e => {
+        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {          
+          enemiesCopy
+            .filter(_.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius)
+            .foreach(ee => {
+              ee.damage(this.damage)
+            })
+          this.hitEnemies = Set(e)
           gui.Effects.addExplosionEffect(e)
-          
-          return  // Break loop
+          return
         }
-      }
+      })
     }
   }
   
