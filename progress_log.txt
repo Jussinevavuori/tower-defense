@@ -1,0 +1,76 @@
+
+
+Raportti 27.3.
+
+
+Heti alkuun, projekti on ollut käytännössä pitkään jo täysin toimintavalmis,
+mutta viimepäivinä etenkin olen lisäillyt projektiin paljon ominaisuuksia. Jo
+ensimmäisen tapaamisen aikaan kaikki tarpeelliset pelimekaniikat olivat paikallaan,
+eikä niitä ole juurikaan muokattu lukuunottamatta pelin tasapainotusta ja/tai
+tornien / vihollisten pieniä muutoksia.
+
+
+Suuria lisättyjä ominaisuuksia on viimeaikoina:
+
+	Skaalautuva ikkuna, jonka (pitäisi) toimia kaikilla näytöillä, fullscreen tai windowed
+	(tämän testaaminen ei ole kuitenkaan ollut 100 % mahdollista, sillä minulla on vain
+	1920 x 1080 näyttöjä käytössäni.) Tämä on toteutettu osittain ScalaFX:n omilla
+	toiminnoilla, osittain muokkaamalla ScalaFX:ssä jo olemassaolevia luokkia omiin
+	tarkoituksiini ja helposti skaalattaviksi ja pelin piirtämisen kohdalla raa'asti
+	laskien.
+	
+	Responsiivinen ja helposti moneen taipuva menusysteemi, jonka avulla saadaan eristettyä
+	päävalikot, peli, sivuvalikot ja level editor toisistaan ja vaihdettua niiden välillä
+	helposti. Tämä on toteutettu luomalla erilliset 'Scenet' jokaiselle valikolle tai ohjelman
+	tilalle (peli, päävalikko, level editor jne...). Aktiivista sceneä (ikkunassa näkyvää ja
+	päällä olevaa) pystyy vaihtamaan suoraan pääsovelluksen kautta yhdellä komennolla.
+	
+	Level editor, jonka sisällä voi itse rakentaa omia tasojaan, tallentaa niitä ja myöhemmin
+	load game -valikon kautta ladata omia tasojaan ja pelata niitä.
+	
+	
+Tällä hetkellä pelissä ei tunnettuja bugeja tai ongelmia ole, lukuunottamatta pelin hitautta.
+Valitettavasti hitaammilla koneilla ja/tai suurilla objektimäärillä (ja etenkin nopeutettuna)
+peli saattaa hidastua ja jopa kerran kaatoi koneeni syötyään kaiken muistin. Tätä yritän
+koko ajan korjata ja miettiä, miten joitain pelin osia voisi toteuttaa fiksummin. Tämä on
+ainoa suuri ongelma pelissä tällä hetkellä.
+
+
+Pelistä ainoita puuttuvia ominaisuuksia ovat:
+
+	Level editorissa tasot tulisi pystyä tallentamaan ja nimeämään samalla, jotta ne voisi
+	myös tunnistaa myöhemmin.
+	
+	Load game -valikossa tulisi pystyä myös poistamaan tallennettuja omia tasojaan.
+	
+
+Näiden lisäksi saatan lisäillä peliin graafisia ominaisuuksia, pieniä korjauksia ja
+lisäominaisuuksia esimerkiksi valikoihin tai uusia mekaniikoita, kuten vaikeustaso. Tämä
+kaikki siis jos jaksan ja haluan.
+
+
+Paljon on myös ollut refaktorointia, koodin siistimistä, pieniä ominaisuuksia, musiikkeja ja
+grafiikoita, joita olen projektin kuluessa tehnyt.
+
+
+Testauksen kannalta voin sanoa, että testaamista olen hyvin paljon suorittanut itse, pelaamalla
+peliä ja yrittämällä luoda ongelmallisia tilanteita ja antamalla muiden pelata, sillä he vasta
+ongelmallisia tilanteita ovat keksineetkin. Valitettavasti yksikkötestausta en ole harrastanut.
+Toisaalta, edelleenkin pelin luonne on hyvin graafinen ja kaikki pelin metodit ja toiminnot
+näkee kyllä, kun ne toimii oikein. Etenkin pätee viimeaikoina edistettyyn ja suuresti muokattuun
+GUI:hin. Toisaalta esimerkiksi tiedostojen tallentamista ja lataamista on joutunut testailemaan
+manuaalisesti ja pritnln komentojen kanssa, mutta myös ne olen saanut toimimaan moitteettomasti.
+
+
+Käytetty työmäärä 5 tunnin tarkkuudella... rehellinen vastaus, ei harmainta aavistustakaan.
+Useita kymmeniä tunteja varmasti. Todella paljon aikaa olen projektiin käyttänyt, mutta ajan
+mittaamista en ole harrastanut ja voin vain arvioida että luku saattaa olla mahdollisesti
+20-50 tunnin paikkeilla. Projektin aikataulussa olen reilusti edellä ja viimeaikaisimmat
+kehitykset ovat olleet enemmänkin omasta ilosta jatkokehitystä ja projekti on pitkään jo ollut
+valmis.
+
+
+
+
+
+
