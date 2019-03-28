@@ -21,7 +21,7 @@ import scalafx.scene.Node
  *  other scene. MainMenuScene contains buttons to other scenes and the titlescreen.
  */
 object MainMenuScene extends AnimationScene {
-  
+    
   /** The main canvas for the main menu. */
   val canvas = new Canvas(1920, 1080)
   

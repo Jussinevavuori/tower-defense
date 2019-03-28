@@ -134,58 +134,42 @@ object LevelEditorScene extends AnimationScene {
   val scl2 = Rectangle(1920, 1080, 0, 0) 
   
   /** A button to toggle the music. */
-  val b_music = Music.button(1856, 880)
+  val b_music = Music.button(1856, 890)
   
   /** A save button. */
-  val b_save = new MovableDefaultButton("Save", 44, 972) {
+  val b_save = new MovableDefaultButton("Save", 44, 982) {
     override def onClick() = {
       if (!constructing) {
-        // TODO: Prompt the user with a name
-        LevelSaver.saveCustomLevel(path)
+        LevelSaver.saveCustomLevel(path, input.value)
         Audio.play("iosfx.wav")
       }
       else Audio.play("error.wav")
     }
   }
   
-  /** A group for all the buttons. */
-  val buttons = new Group() { children = List(b_music, b_save, scl1, scl2) }
-  
-  /** List of all elements to resize. */
-  val resizeList = List(b_music, b_save)
-  
-  /** Menu option to reset current level. */
-  val mReset = new MenuItem("Reset") {
-    onAction = (e: AE) => {
+  /** A reset button. */
+  val b_reset = new MovableDefaultButton("Reset", 772, 896) {
+    override def onClick() = {
       resetPath()
+      Audio.play("iosfx.wav")
     }
   }
   
-  /** Menu option to return to main menu. */
-  val mMenu = new MenuItem("Main menu") {
-    onAction = (e: AE) => {
-      Music.changeMusic("warriors")
+  /** A return to main menu button. */
+  val b_menu = new MovableDefaultButton("Main menu", 772, 982) {
+    override def onClick() = {
       Main.changeStatus(ProgramStatus.MainMenu)
     }
   }
   
-  /** Menu option to close program. */
-  val mExit = new MenuItem("Exit") {
-    onAction = (e: AE) => {
-      sys.exit(0)
-    }
-  }
+  /** A group for all the buttons. */
+  val buttons = new Group() { children = List(b_music, b_save, b_reset, b_menu, scl1, scl2) }
   
-  /** The menu containing all the options. */
-  val menu = new Menu("Menu") {
-    items = List(mReset, sep, mMenu, sep, mExit)
-  }
+  /** List of all elements to resize. */
+  val resizeList = List(b_music, b_save, b_menu, b_reset)
   
-  /** The menubar. */
-  val menuBar = new MenuBar {
-    visible = false
-    menus = List(menu)
-  }
+  /** The input bar. */
+  val input = new InputBar("Enter name", 44, 896)
   
   /** Main animation timer. */
   var animation = AnimationTimer { now => {
@@ -216,10 +200,12 @@ object LevelEditorScene extends AnimationScene {
     val W = this.getWidth
     val H = this.getHeight
     resizeList.foreach(_.resize(W, H))
+    this.input.resize(W, H)
   }
   
+  /** Building the stack. */
   root = new StackPane() {
-    children = List(canvas, buttons, menuBar)
+    children = List(canvas, buttons, input)
     alignment = Pos.TopLeft
   }    
 
@@ -249,10 +235,7 @@ object LevelEditorScene extends AnimationScene {
   /** On mouse moved. */
   this.onMouseMoved = new EH[ME] {
     def handle(me: ME) = {
-      
-      /** Update menubar visibility. */
-      menuBar.visible = me.getSceneY < 32
-      
+
       /** Update selection box coordinates. */
       selX = me.getSceneX.toInt / (LevelEditorScene.getWidth.toInt  / Main.currentGame.cols)
       selY = me.getSceneY.toInt / ((840 * (LevelEditorScene.getHeight / 1080)).toInt / Main.currentGame.rows)
@@ -261,8 +244,11 @@ object LevelEditorScene extends AnimationScene {
   }
   
   /** On mouse pressed. */
-  this.onMousePressed = new EH[ME] {
+  this.canvas.onMousePressed = new EH[ME] {
     def handle(me: ME) = {
+      
+      /** Request focus. */
+      LevelEditorScene.canvas.requestFocus()
       
       /** If valid, create a path at selection. */
       if (selY > - 1) createPath(selX, selY)

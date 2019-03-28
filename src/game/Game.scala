@@ -73,7 +73,7 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
           this.towers.remove(i - rem)
           rem += 1
         }
-        tower.updateTarget(this.enemies.reverse.iterator)
+        tower.updateTarget(this.enemies.iterator)
         this.projectiles ++= tower.shoot(elapsedTime)
       }}
       

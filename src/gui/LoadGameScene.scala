@@ -45,6 +45,14 @@ object LoadGameScene extends AnimationScene {
   canvas.graphicsContext2D.fill = Color.Black
   canvas.graphicsContext2D.fillRect(0, 0, 1920, 1080)
   
+  /** Drawing an overlay canvas. */
+  val overlay: Canvas = new Canvas(1920, 1080) { this.pickOnBounds = false }
+  def resizeOverlay(W: Double, H: Double) = {
+    overlay.graphicsContext2D.fill = Color(0.1, 0.1, 0.1, 1.0)
+    overlay.graphicsContext2D.fillRect(0, 0, Int.MaxValue, Int.MaxValue)
+    overlay.translateY = 944 * (H / 1080)
+  }
+  
   /** Menu y position minimum coordinate. */
   def menuYmax = 125.0
   
@@ -57,10 +65,8 @@ object LoadGameScene extends AnimationScene {
   /** Class for delete buttons. */
   class DelButton(var n: Int) extends ImageButton(ImageLoader("deleteSquare")) {
     override def onClick() = {
-      println("Deleting " + n)
       lvlButtons = lvlButtons.takeWhile(_.n != this.n) ++ lvlButtons.dropWhile(_.n != this.n).drop(1)
       delButtons = delButtons.takeWhile(_.n != this.n) ++ delButtons.dropWhile(_.n != this.n).drop(1)
-//      delButtons.filter(_.n > this.n).foreach(_.n -= 1)
       if (lvlButtons.isEmpty) {
         lvlButtons = List(new LvlButton("No custom levels", -1) { override val interactive = false } )
         delButtons = List(new DelButton(-1) { override val interactive = false })
@@ -74,7 +80,6 @@ object LoadGameScene extends AnimationScene {
   /** Class for load buttons. */
   class LvlButton(name: String, val n: Int) extends DefaultButton(name) {
     override def onClick() = {
-      println("Clicked " + n)
       Main.loadGame(GameLoader.loadCustomGame(n))
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
@@ -112,7 +117,7 @@ object LoadGameScene extends AnimationScene {
       // Create each level button seperately
       for ((name, num) <- list) {
         delButtons = delButtons :+ new DelButton(num)
-        lvlButtons = lvlButtons :+ new LvlButton(s"Level ($num)", num)
+        lvlButtons = lvlButtons :+ new LvlButton(name, num)
       }
     } 
     
@@ -134,13 +139,19 @@ object LoadGameScene extends AnimationScene {
   /** A button to toggle music. */
   val b_music = Music.button()
   
+  /** A button to return to main menu. */
+  val b_mainmenu = new MovableDefaultButton("Main menu", 36, 980) {
+    override def onClick() = {
+      Main.changeStatus(ProgramStatus.MainMenu)
+    }
+  }
+  
   /** The group for the buttons. */
-  val buttons = new Group() { children = List(b_music, scl1, scl2) }
+  val buttons = new Group() { children = List(b_music, b_mainmenu, scl1, scl2) }
   
   /** Return to main menu option. */
   val mMenu   = new MenuItem("Main menu") {
     onAction = (e: AE) => {
-      Music.changeMusic("warriors")
       Main.changeStatus(ProgramStatus.MainMenu)
     }
   }
@@ -171,12 +182,14 @@ object LoadGameScene extends AnimationScene {
     dels.translateX = 368 * (W / 1920)
     lvlButtons.foreach(_.resize(W, H))
     delButtons.foreach(_.resize(W, H))
+    resizeOverlay(W, H)
     b_music.resize(W, H)
+    b_mainmenu.resize(W, H)
   }
   
   /** Creating the stack. */
   root = new StackPane() {
-    children = List(canvas, lvls, dels, buttons, menuBar)
+    children = List(canvas, lvls, dels, overlay, buttons, menuBar)
     alignment = Pos.TopLeft
   }
   

@@ -30,15 +30,13 @@ object LevelSaver {
     val path:   Elem = <path>{p.toArray()
       .map(p=>createXMLElement("segment",Array("x" ->p.pos.x.toInt.toString(),"y"->p.pos.y.toInt.toString())))}</path>
     val num:    Elem = <num>{((levels \ "num").map(_.text.toInt) :+ -1).max + 1}</num>
-    val name:   Elem = <name>{title}</name>
+    val name:   Elem = <name>{if (title.nonEmpty) title else "unnamed level"}</name>
     val cols:   Elem = <cols>{Main.currentGame.cols}</cols>
     val rows:   Elem = <rows>{Main.currentGame.rows}</rows>
     val wave:   Elem = <wave>{0}</wave>
     val player: Elem = <player><health>{100}</health><money>{500}</money></player>
     val towers: Elem = <towers></towers>
-      
-    println(num.text)
-      
+            
     // All the elements combined to a level
     val level:  Elem = <game>{num}{name}{cols}{rows}{wave}{player}{path}</game>
     
