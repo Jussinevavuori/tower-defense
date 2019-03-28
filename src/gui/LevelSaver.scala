@@ -17,9 +17,7 @@ object LevelSaver {
   }
   
   /** Takes a path and saves it as a custom level. */
-  def saveCustomLevel(p: Path) = {
-    
-    // TODO: Prompt the user to name the level
+  def saveCustomLevel(p: Path, title: String = "unnamed level") = {
     
     // Loading the current levels
     val levels: NodeSeq = try {
@@ -31,15 +29,18 @@ object LevelSaver {
     // Creating the new elements
     val path:   Elem = <path>{p.toArray()
       .map(p=>createXMLElement("segment",Array("x" ->p.pos.x.toInt.toString(),"y"->p.pos.y.toInt.toString())))}</path>
-    val num:    Elem = <num>{(levels \ "num").length}</num>
+    val num:    Elem = <num>{((levels \ "num").map(_.text.toInt) :+ -1).max + 1}</num>
+    val name:   Elem = <name>{title}</name>
     val cols:   Elem = <cols>{Main.currentGame.cols}</cols>
     val rows:   Elem = <rows>{Main.currentGame.rows}</rows>
     val wave:   Elem = <wave>{0}</wave>
     val player: Elem = <player><health>{100}</health><money>{500}</money></player>
     val towers: Elem = <towers></towers>
       
+    println(num.text)
+      
     // All the elements combined to a level
-    val level:  Elem = <game>{num}{cols}{rows}{wave}{player}{path}</game>
+    val level:  Elem = <game>{num}{name}{cols}{rows}{wave}{player}{path}</game>
     
     // Combining previous levels and this level
     val data:   Elem = <data>{levels}{level}</data>
@@ -51,18 +52,39 @@ object LevelSaver {
       case e: Throwable => println("Something went wrong when trying to save customdata.xml to file")
     }
   }
-  
-  /** TODO Function to delete custom levels. */
-  def deleteCustomLevel() = {
+ 
+  /** Deletes a custom level with the given num. */
+  def deleteCustomLevel(n: Int) = {
     
+    // Loading the data
+    val levels: NodeSeq = try {
+      XML.loadFile(new File("data/customdata.xml")) \ "game"
+    } catch {
+      case e: Throwable => { e.printStackTrace(); println("Error loading customdata.xml"); NodeSeq.Empty }
+    }
+    
+    // Filtering the deleted out
+    val deleted = levels.filter(l => (l \ "num").text.toInt != n)
+    
+    // Combining the rest back together
+    val data = <data>{deleted}</data>
+    
+    // Saving the levels
+    try {
+      XML.save("data/customdata.xml", data, "UTF-8", true, null)
+    } catch {
+      case e: Throwable => println("Something went wrong when trying to save customdata.xml to file")
+    }
   }
   
   /** Function that loads list of all levels in customadata. */
-  def loadLevelList() = {
+  def loadLevelList(): Array[(String, Int)] = {
     try {
-      XML.loadFile(new File("data/customdata.xml")) \\ "game" \ "num"
+      val names = (XML.loadFile(new File("data/customdata.xml")) \\ "game" \ "name").map(_.text).toArray
+      val nums  = (XML.loadFile(new File("data/customdata.xml")) \\ "game" \ "num").map(_.text.toInt).toArray
+      names zip nums
     } catch {
-      case e: Throwable => { e.printStackTrace(); println("Error loading customdata.xml"); NodeSeq.Empty }
+      case e: Throwable => { e.printStackTrace(); println("Error loading customdata.xml"); Array() }
     }
   }
   

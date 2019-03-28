@@ -45,7 +45,8 @@ object GameLoader {
     try {
       
       // Selecting the chosen level from customdata
-      val n = (XML.loadFile(new File("data/customdata.xml")) \\ "data" \ "game")(level)
+      val n = (XML.loadFile(new File("data/customdata.xml")) \\ "data" \ "game")
+        .find(l => (l \ "num").text.toInt == level).get
       val xml = Elem(null, n.label, n.attributes, n.scope, false, n.child:_*)
       
       // Loading the game properties

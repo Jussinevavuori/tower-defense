@@ -45,50 +45,53 @@ object LoadGameScene extends AnimationScene {
   canvas.graphicsContext2D.fill = Color.Black
   canvas.graphicsContext2D.fillRect(0, 0, 1920, 1080)
   
-  /** The vertical alignment box for all the levels buttons. */
-  var levels = new VBox(32) {
-    alignment = Pos.TopCenter
-  }
-  
-  /** The vertical alignment box for all the delete buttons. */
-  var deletes = new VBox(32) {
-    alignment = Pos.TopCenter
-  }
-  
-  /** Delete button image. */
-  val deleteImage = ImageLoader("deleteSquare")
-  
-  /** Class for delete buttons. */
-  class DeleteButton(var n: Int) extends ImageButton(deleteImage) {
-    override def onClick() = {
-      levelButtons = levelButtons.take(n) ++ levelButtons.drop(n + 1)
-      deleteButtons = deleteButtons.take(n) ++ deleteButtons.drop(n + 1)
-      deleteButtons.filter(_.n > this.n).foreach(_.n -= 1)
-      if (levelButtons.isEmpty) {
-        levelButtons = List(new DefaultButton("No custom levels", false))
-        deleteButtons = List(new DeleteButton(-1) { override val interactive = false })
-      }
-      levels.children = levelButtons
-      deletes.children = deleteButtons
-      
-      // TODO: Add level deletion functionality
-    }
-  }
-  
   /** Menu y position minimum coordinate. */
   def menuYmax = 125.0
   
   /** Menu y position maximum coordinate. */
-  def menuYmin = -1 * (levelButtons.size - 9) * 80
+  def menuYmin = -1 * (lvlButtons.size - 9) * 80
   
   /** Menu y position. */
   var menuY = menuYmax
+
+  /** Class for delete buttons. */
+  class DelButton(var n: Int) extends ImageButton(ImageLoader("deleteSquare")) {
+    override def onClick() = {
+      println("Deleting " + n)
+      lvlButtons = lvlButtons.takeWhile(_.n != this.n) ++ lvlButtons.dropWhile(_.n != this.n).drop(1)
+      delButtons = delButtons.takeWhile(_.n != this.n) ++ delButtons.dropWhile(_.n != this.n).drop(1)
+//      delButtons.filter(_.n > this.n).foreach(_.n -= 1)
+      if (lvlButtons.isEmpty) {
+        lvlButtons = List(new LvlButton("No custom levels", -1) { override val interactive = false } )
+        delButtons = List(new DelButton(-1) { override val interactive = false })
+      }
+      lvls.children = lvlButtons
+      dels.children = delButtons
+      LevelSaver.deleteCustomLevel(n)
+    }
+  }
+  
+  /** Class for load buttons. */
+  class LvlButton(name: String, val n: Int) extends DefaultButton(name) {
+    override def onClick() = {
+      println("Clicked " + n)
+      Main.loadGame(GameLoader.loadCustomGame(n))
+      Main.changeStatus(ProgramStatus.InGame)
+      Music.changeMusic("celebration")
+    }
+  }
+    
+  /** The vertical alignment box for all the levels buttons. */
+  var lvls = new VBox(32) { alignment = Pos.TopCenter; this.pickOnBounds = false }
+  
+  /** The vertical alignment box for all the delete buttons. */
+  var dels = new VBox(32) { alignment = Pos.TopCenter; this.pickOnBounds = false }
   
   /** A list for all the level buttons to update them all. */
-  var levelButtons = List[ImageButton]() 
+  var lvlButtons = List[LvlButton]() 
   
   /** A list for all the delete buttons to update them all. */
-  var deleteButtons = List[DeleteButton]()
+  var delButtons = List[DelButton]()
   
   /** The loadup function to create the level buttons each time. */
   override def loadUp() = {
@@ -97,37 +100,31 @@ object LoadGameScene extends AnimationScene {
     b_music.update()
     
     // The amount of custom levels
-    val len = LevelSaver.loadLevelList().length
+    val list = LevelSaver.loadLevelList()
     
     // If there are custom levels
-    if (len != 0) {
+    if (list.nonEmpty) {
       
       // Clear the list
-      levelButtons = List[ImageButton]()
-      deleteButtons = List[DeleteButton]()
+      lvlButtons = List[LvlButton]()
+      delButtons = List[DelButton]()
       
       // Create each level button seperately
-      for (i <- 0 until len) {
-        levelButtons = levelButtons :+ new DefaultButton(s"Load level ${i+1}") {
-          override def onClick() = {
-            Main.loadGame(GameLoader.loadCustomGame(i))
-            Main.changeStatus(ProgramStatus.InGame)
-            Music.changeMusic("celebration")
-          }
-        }
-        deleteButtons = deleteButtons :+ new DeleteButton(i)
+      for ((name, num) <- list) {
+        delButtons = delButtons :+ new DelButton(num)
+        lvlButtons = lvlButtons :+ new LvlButton(s"Level ($num)", num)
       }
     } 
     
     // Else create blank, non-interactive button
     else {
-      levelButtons = List(new DefaultButton("No custom levels", false))
-		  deleteButtons = List(new DeleteButton(-1) { override val interactive = false })
+      lvlButtons = List(new LvlButton("No custom levels", -1) { override val interactive = false } )
+		  delButtons = List(new DelButton(-1)                     { override val interactive = false } )
     }
     
     // Set buttons to vertical alignment
-    levels.children = levelButtons
-    deletes.children = deleteButtons
+    lvls.children = lvlButtons
+    dels.children = delButtons
   }
   
   /** Two invisible rectangles for scaling purposes. */
@@ -168,18 +165,18 @@ object LoadGameScene extends AnimationScene {
   def resize() = {
     val W = this.getWidth
     val H = this.getHeight
-    levels.translateY = menuY
-    deletes.translateY = menuY
-    levels.translateX = -48 * (W / 1920)
-    deletes.translateX = 368 * (W / 1920)
+    lvls.translateY = menuY
+    dels.translateY = menuY
+    lvls.translateX = -48 * (W / 1920)
+    dels.translateX = 368 * (W / 1920)
+    lvlButtons.foreach(_.resize(W, H))
+    delButtons.foreach(_.resize(W, H))
     b_music.resize(W, H)
-    levelButtons.foreach(_.resize(W, H))
-    deleteButtons.foreach(_.resize(W, H))    
   }
   
   /** Creating the stack. */
   root = new StackPane() {
-    children = List(canvas, levels, deletes, buttons, menuBar)
+    children = List(canvas, lvls, dels, buttons, menuBar)
     alignment = Pos.TopLeft
   }
   

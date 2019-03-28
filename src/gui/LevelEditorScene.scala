@@ -140,6 +140,7 @@ object LevelEditorScene extends AnimationScene {
   val b_save = new MovableDefaultButton("Save", 44, 972) {
     override def onClick() = {
       if (!constructing) {
+        // TODO: Prompt the user with a name
         LevelSaver.saveCustomLevel(path)
         Audio.play("iosfx.wav")
       }
@@ -148,9 +149,7 @@ object LevelEditorScene extends AnimationScene {
   }
   
   /** A group for all the buttons. */
-  val buttons = new Group() {
-    children = List(b_music, b_save, scl1, scl2)
-  }
+  val buttons = new Group() { children = List(b_music, b_save, scl1, scl2) }
   
   /** List of all elements to resize. */
   val resizeList = List(b_music, b_save)
@@ -233,9 +232,6 @@ object LevelEditorScene extends AnimationScene {
       
       /** Escape returns to main menu. */
       case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
-      
-      /** Delete deletes all existing paths. */
-      case KeyCode.DELETE => LevelSaver.resetCustomLevels()
       
       /** R resets path. */
       case KeyCode.R     => resetPath()
