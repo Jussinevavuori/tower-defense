@@ -29,38 +29,48 @@ import scalafx.scene.control.Menu
 import scalafx.scene.control.MenuBar
 import scalafx.scene.control.MenuItem
 
-
+/** LoadGameScene is a menu for selecting and loading one of the custom made saved levels. */
 object LoadGameScene extends AnimationScene {
   
-  
-  var animation = AnimationTimer { now => resize() }
-  
-  // The main elements
-  val canvas: Canvas = new Canvas(1920, 1080)
-  val gfx = canvas.graphicsContext2D
-  gfx.fill = Color.Black
-  gfx.fillRect(0, 0, 1920, 1080)
-  
-  def resize() = {
-    val W = this.getWidth
-    val H = this.getHeight
-    b_music.resize(W, H)
-    levelButtons.foreach(_.resize(W, H))
-  }
-
-  
   /*
-   * LOADUP FUNCTION
-   * Loads the buttons based on the currently saved levels
+   * INITIALIZATION
    */
   
-  var levels = new VBox(32)
+  /** The main animation timer. */
+  var animation = AnimationTimer { now =>
+    Time.updateElapsedTime(now)
+    resize()
+  }
+  
+  /** Drawing a black background canvas. */
+  val canvas: Canvas = new Canvas(1920, 1080)
+  canvas.graphicsContext2D.fill = Color.Black
+  canvas.graphicsContext2D.fillRect(0, 0, 1920, 1080)
+  
+  /** The vertical alignment box for all the levels buttons. */
+  var levels = new VBox(32) {
+    alignment = Pos.Center
+  }
+  
+  /** A list for all the buttons to update them all. */
   var levelButtons = List[Node]() 
-  levels.alignment = Pos.Center
+  
+  /** The loadup function to create the level buttons each time. */
   override def loadUp() = {
+    
+    // Update music button
+    b_music.update()
+    
+    // The amount of custom levels
     val len = LevelSaver.loadLevelList().length
+    
+    // If there are custom levels
     if (len != 0) {
+      
+      // Clear the list
       levelButtons = List[Node]()
+      
+      // Create each level button seperately
       for (i <- 0 until len) {
         levelButtons = levelButtons :+ {new DefaultButton(s"Load level ${i+1}") {
           override def onClick() = {
@@ -70,84 +80,100 @@ object LoadGameScene extends AnimationScene {
           }
         }}
       }
-    } else {
-      levelButtons = List[Node](new DefaultButton(s"No custom levels"))
+    } 
+    
+    // Else create blank, non-interactive button
+    else {
+      levelButtons = List[Node](new DefaultButton("No custom levels", false))
     }
+    
+    // Set buttons to vertical alignment
     levels.children = levelButtons
   }
-  
   
   /*
    * BUTTONS
    */
   
-  
-  val buttons = new Group()
-  val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {  // Toggle music
-    this.pickOnBounds = true
-    var muted = false
-    val onImg = Render.loadImage("note_on")
-    val offImg = Render.loadImage("note_off")
-    override def onClick() = {
-      Music.mute()
-      this.image = { if (Music.muted) offImg else onImg }
-    }
-  }
+  /** Two invisible rectangles for scaling purposes. */
   val scl1 = Rectangle(0, 0, 0, 0)      
   val scl2 = Rectangle(1920, 1080, 0, 0) 
-  buttons.children = List(b_music, scl1, scl2)
   
+  /** A button to toggle music. */
+  val b_music = Music.button
+  
+  /** The group for the buttons. */
+  val buttons = new Group() { children = List(b_music, scl1, scl2) }
   
   /*
    * MENU
    */
+
+  /** Return to main menu option. */
+  val mMenu   = new MenuItem("Main menu") {
+    onAction = (e: AE) => {
+      Music.changeMusic("warriors")
+      Main.changeStatus(ProgramStatus.MainMenu)
+    }
+  }
   
+  /** Exit option. */
+  val mExit   = new MenuItem("Exit") {
+    onAction = (e: AE) => {
+      sys.exit(0)
+    }
+  }
   
-  val menuBar = new MenuBar { visible = false }
-  val menu    = new Menu("Menu")
-  val mMenu   = new MenuItem("Main menu")
-  val mExit   = new MenuItem("Exit")
-  menuBar.menus.add(menu)
-  menu.items.addAll(mMenu, new SeparatorMenuItem, mExit)
-  mExit.onAction = (e: AE) => sys.exit(0)
-  mMenu.onAction = (e: AE) => {
-    Music.changeMusic("warriors")
-    Main.changeStatus(ProgramStatus.MainMenu)
+  /** The menu containing the options. */
+  val menu = new Menu("Menu") { items = List(mMenu, sep, mExit) }
+  
+  /** The menubar containing the menu. */
+  val menuBar = new MenuBar {
+    visible = false
+    menus = List(menu)
   }
 
-  
   /*
    * LAYOUT
    */
   
+  /** Function to resize all elements. */
+  def resize() = {
+    val W = this.getWidth
+    val H = this.getHeight
+    b_music.resize(W, H)
+    levelButtons.foreach(_.resize(W, H))
+  }
   
-  val stack = new StackPane()
-  stack.children = List(canvas, levels, buttons, menuBar)
-  stack.setAlignment(Pos.TopLeft)
-  root = stack
-  
-  
+  /** Creating the stack. */
+  root = new StackPane() {
+    children = List(canvas, levels, buttons, menuBar)
+    alignment = Pos.TopLeft
+  }
   
   /*
    * INPUT
    */
   
-  
+  /** Key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {
     def handle(ke: KeyEvent) = { ke.getCode() match {
       
+        /** [F11] toggles fullscreen. */
         case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
         
+        /** Escape returns to main menu. */
         case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
-       
-        case KeyCode.F1    => Main.changeStatus(0)
-        case KeyCode.F2    => Main.changeStatus(1)
-        case KeyCode.F3    => Main.changeStatus(2)
+
         case _ => 
     }}
   }
+  
+  /** Mouse moved. */
   this.onMouseMoved = new EH[ME] {
     def handle(me: ME) = {
+      
+      /** Toggle menubar visibility. */
       menuBar.visible = me.getSceneY < 32 // Show and hide menubar
     }
   }

@@ -1,89 +1,49 @@
 package game
 
-class Player( initialHealth: Int = 100,   // Default health on a new player is 100
-              initialMoney: Int = 1000    // Default money on a new player is 1000
-            ) {
+/** A player describes the player of a game. A player consists of health and money
+ *  and functions to handle health and money.
+ */
+class Player(initialHealth: Int = 100, initialMoney: Int = 1000) {
   
-  /* The player's health as an integer and a flag
-   * to keep track whether the player is still alive.
-   * Once the player dies, the player cannot be revived.
-   */
-  
+  /** The players current health. */
   private var _health: Int = initialHealth
   
-  
-  /* Function to return the player's health and state
-   * without the ability to alter it.
-   */
-  
+  /** The players current health, cutting at zero. */
   def health: Int     = this._health max 0
-  def alive:  Boolean = this._health > 0
-  def dead:   Boolean = !this.alive
   
+  /** Returns true when the player is alive. */
+  def alive: Boolean = this._health > 0
   
-  /* Functions to damage or heal the player by the given amount
-   * only if the player is still alive. Only positive integers.
-   */
+  /** Returns true when the player is dead. */
+  def dead: Boolean = !this.alive
   
-  def damage(amount: Int) = {
-    require(amount > 0)
-    this._health -= amount
-  }
-      
-  def heal(amount: Int) = {
-    require(amount > 0)
-    if (this.alive)
-      this._health += amount
-  }
+  /** Damages the player by the given positive amount. */
+  def damage(amount: Int) = if (amount > 0) this._health -= amount
   
+  /** Heals the player by the given poistive amount, if the player is alive. */
+  def heal(amount: Int) = if (this.alive && amount > 0) this._health += amount
   
-  /* The player's money. Money can never go below zero.
-   */
-  
+  /** The player's money. Money can never go below zero. */
   private var _money: Int = initialMoney
   
-  
-  /* Function to return the player's money amount without
-   * the ability to alter it.
-   */
-  
+  /** The player's money. */
   def money: Int = this._money
   
-  
-  /* Decreases the player's money by the chosen amount if
-   * possible and returns true. If the player does not have
-   * enough money, returns false and does not change the
-   * player's money amount. Only positive integers.
-   */
-  
+  /** Rewards the player the given positive amount of money. */
+  def reward(amount: Int) = if (amount > 0) this._money += amount
+    
+  /** Returns true if player has enough money. */
+  def canAfford(amount: Int) = this._money >= amount
+    
+  /** If the player has enough money, deducts the given positive amount from the player. 
+   *  Returns true if charge succeeded (player had enough money). */
   def charge(amount: Int): Boolean = {
     val valid = amount > 0 && this._money >= amount
     if (valid) this._money -= amount
     valid
   }
-  
-  
-  /* Increase the player's money by the chosen amount.
-   * Only positive integers.
-   */
-  
-  def reward(amount: Int) = {
-    if (amount > 0) this._money += amount
-  }
-    
-  
-  /* Returns true if player has enough money to purchase
-   * the tower.
-   */
-  def canAfford(amount: Int) = {
-    this._money >= amount
-  }
-    
-  
-  /* Returns a textual description of the player's current
-   * status.
-   */
-  override def toString(): String = 
-    s"Player: ${this._health} HP, ${this._money} $$"
+
+  /** Returns a textual description of the player's current status. */
+  override def toString(): String = s"Player: ${this._health} HP, ${this._money} $$"
   
 }

@@ -1,20 +1,19 @@
 package game
 
 import java.io._
-
 import xml._
 import scala.collection.mutable.Buffer
 
+/** The GameLoader object has useful functions for loading games from XML files. */
 object GameLoader {
+    
+  /** Loads a new game and returns it. */
+  def loadNewGame(): Game = this.loadGame("data/defaultdata.xml")
   
+  /** Loads the previoulsy saved game and returns it. */
+  def loadSavedGame(): Game = this.loadGame("data/savedata.xml")
   
-  
-  // Load a game by calling the GameLoader object directly. 
-  def apply(filepath: String): Game = this.loadGame(filepath)
-  
-  
-  
-  // Loads the current game saved in the gamedata.xml and returns it.
+  /** LoadGame attempts to create and return a game based on the given filepath. */
   def loadGame(filepath: String): Game = {
     
     try {
@@ -29,70 +28,60 @@ object GameLoader {
       val path         = this.loadPath(xml)
       val towers       = this.loadTowers(xml)
       
+      // Returning the created and loaded game
       new Game(rows, cols, path, wave, player, towers)
       
     } catch {
-      case e: Throwable => {  // Catch all throwables
-        println(s"Error loading $filepath")
-        e.printStackTrace()
-      }
       
-      // In error cases return a broken temp game
-      new Game(1, 1, new Path(0, 0, None))
+      case e: Throwable => { println(s"Error loading $filepath"); e.printStackTrace() }
+      
+      new Game(1, 1, new Path(0, 0, None))  // In error cases return a broken temp game
     }
   }
   
-  // Loads the current game saved in the gamedata.xml and returns it.
+  /** Loads a custom game from the saved custom levels. */
   def loadCustomGame(level: Int): Game = {
     
     try {
       
-      val prettyPrinter = new PrettyPrinter(80, 4)
-      println(s"${"-"*40}\nLOADING LEVEL\n${"-"*40}\n")
+      // Selecting the chosen level from customdata
       val n = (XML.loadFile(new File("data/customdata.xml")) \\ "data" \ "game")(level)
       val xml = Elem(null, n.label, n.attributes, n.scope, false, n.child:_*)
-      println(prettyPrinter.format(xml))
       
-      // Game properties
+      // Loading the game properties
       val (rows, cols) = this.loadGameDimensions(xml)
       val player       = this.loadPlayer(xml)
       val wave         = this.loadWave(xml)
       val path         = this.loadPath(xml)
       val towers       = this.loadTowers(xml)
             
+      // Returning the created and loaded game
       new Game(rows, cols, path, wave, player, towers)
       
     } catch {
-      case e: Throwable => {  // Catch all throwables
-        println(s"Error loading custom data level $level")
-        e.printStackTrace()
-      }
       
-      // In error cases return a broken temp game
-      new Game(1, 1, new Path(0, 0, None))
+      case e: Throwable => { println(s"Error loading customdata.xml"); e.printStackTrace() }
+      
+      new Game(1, 1, new Path(0, 0, None))  // In error cases return a broken temp game
     }
   }
   
   
-  // Functions for loading gamedata from an xml and returning game objects
-  
-  // Returns the rows and cols of the game (the dimensions)
+  /** Helper function to load the columns and rows in that order from a game data file. */
   private def loadGameDimensions(xml: Elem): (Int, Int) = {
     ((xml \\ "game" \ "rows").text.toInt, (xml \\ "game" \ "cols").text.toInt)
   }
 
-  // Returns the player
+  /** Helper function to load a player from a game data file. */
   private def loadPlayer(xml: Elem): Player = {
-    new Player(
-      (xml \\ "game" \\ "player" \ "health").text.toInt,
-      (xml \\ "game" \\ "player" \ "money" ).text.toInt
-    )
+    new Player((xml \\ "game" \\ "player" \ "health").text.toInt,
+      (xml \\ "game" \\ "player" \ "money" ).text.toInt)
   }
   
-  // Returns the wave number
+  /** Helper function to load the wave number from a game data file. */
   private def loadWave(xml: Elem): Int = (xml \\ "game" \ "wave").text.toInt
   
-  // Returns the fully created path
+  /** Helper function to load and create a full path from a game data file. */
   private def loadPath(xml: Elem): Path = {
     
     // Loading coordinate tuples in reverse order
@@ -104,13 +93,12 @@ object GameLoader {
     // Linking the path chain
     var previous: Option[Path] = None
     for (i <- 0 until pairs.length) {
-      val pair = (pairs(i)._1.toInt, pairs(i)._2.toInt)
-      previous = Some(new Path(pair._1, pair._2, previous))
+      previous = Some(new Path(pairs(i)._1.toInt, pairs(i)._2.toInt, previous))
     }
     previous.get 
   }
   
-  // Returns all the towers in a buffer
+  /** Helper function to load all towers to a buffer from a game data file. */
   private def loadTowers(xml: Elem): Buffer[Tower] = {
     ((xml \\ "game" \\ "towers") \ "tower").map(t => {
       val (x, y, id) = ((t \@ "x").toDouble, (t \@ "y").toDouble, (t \@ "id"))
@@ -118,8 +106,8 @@ object GameLoader {
         case "c1" => new CannonTower1(x, y)
         case "c2" => new CannonTower2(x, y)
         case "c3" => new CannonTower3(x, y)
-        case "b1" => new BoomerangTower1(x, y)
-        case "b2" => new BoomerangTower2(x, y)
+        case "b1" => new BoomerTower1(x, y)
+        case "b2" => new BoomerTower2(x, y)
         case "h1" => new HomingTower1(x, y)
         case "h2" => new HomingTower2(x, y)
         case _ => throw new CorruptedSavedataException("Unrecognized tower id")
@@ -127,18 +115,13 @@ object GameLoader {
     }).toBuffer
   }
   
-  
+  /** Helper function to throw a corrupted savedata error with a given message upon a condition failing. */
   private def checkSavedata(condition: Boolean, msg: String = "") = {
     if (!condition) throw new CorruptedSavedataException(msg)
   }
 }
 
-
-
-
-
-
-// Exception classes
+/** An exception class for savedata. */
 class CorruptedSavedataException(msg: String) extends Exception(msg)
 
 

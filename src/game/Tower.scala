@@ -2,108 +2,83 @@ package game
 
 import scala.collection.mutable.Buffer
 
-/* Towers represent the towers that the player can
- * purchase and place on the battlefield. The towers
- * automatically shoot at the enemies, when they get
- * near enough.
- * 
- * Each different tower type extends the Tower class.
+/** Towers represents the objects on the player field that the player can purchase and place
+ *  to automatically shoot at the enemies to stop them from reaching the end.
  */
-
-abstract class Tower(_x: Double, _y: Double,
-                     val typeid:   String,
-                     val strength: Double,
-                     val radius:   Double,
-                     val cooldown: Double,
-                     val price:    Int,
-                     val upgrade:  Option[Tower] = None) {
+abstract class Tower(x: Double, y: Double) {
   
+  /** The tower's position. */
+  val pos: Vec = Vec(x, y)
   
-  /* The position of a tower
-   */
+  /** The tower class' unique type id for each implementing tower type. */
+  val typeid: String
   
-  val pos: Vec = Vec(_x, _y)
+  /** The tower's strength (dealt damage) for each implementing tower type. */
+  val strength: Double
   
+  /** The tower's radius of vision for each implementing tower type. */
+  val radius: Double
   
-  /* Each tower may have a target enemy it tries to
-   * shoot at. If it doesn't, it is constantly looking
-   * for an enemy, which is within its radius.
-   */
+  /** The tower's radius squared for lighter calculations while upgrading. */
+  lazy val radiusSqrd = this.radius * this.radius
   
+  /** The tower's cooldown period for shooting  for each implementing tower type. */
+  val cooldown: Double
+  
+  /** The tower's price for each implementing tower type. */
+  val price: Int
+  
+  /** The tower (if any) to which this tower can be upgraded to for each implementing tower type. */
+  val upgrade: Option[Tower]
+  
+  /** The tower's current target. */
   var target: Option[Enemy] = None
   
-  
-  /* Returns true if the tower has a target.
-   */
-  
+  /** Returns true if the tower has a target. */
   def hasTarget: Boolean = this.target.isDefined
   
-  
-  /* Flag that is set to true when the tower will is upgraded
-   * to delete the tower
-   */
-  
+  /** Flag that is set to true, once this tower is upgraded so this tower can be removed. */
   var upgraded = false
   
- /* The method the tower uses to find its targets
-   * if it doesnt already have one.
-   */
-  
-  def updateTarget(enemies: Iterator[Enemy]) = {
+  /** List of all projectiles this tower generates each time it shoots for each implementing tower type. */
+  def generateProjectiles(target: Enemy): Buffer[Projectile]
     
-    // The radius, squared for lighter calculated comparison
-    val radiusSqrd = this.radius * this.radius
+  /** The tower's current "heat" which has to return to zero before tower can shoot again. */
+  private var heat = 0.0
+  
+  /** Method to attempt update the current target. */
+  def updateTarget(enemies: Iterator[Enemy]): Unit = {
     
     // Check if this tower has a viable target
     val hasViableTarget: Boolean = {
-      this.target.isDefined &&
-      this.target.get.alive &&
+      this.target.isDefined && this.target.get.alive &&
       this.target.get.pos.distanceSqrd(this.pos) < radiusSqrd
     }
+
+    // Reset target if has no current viable target
+    if (!hasViableTarget) { this.target = None }
     
-    // If this tower has a viable target, do nothing. Else, find a new target
-    // and remove the current target
-    if (!hasViableTarget) {
-      this.target = None
-    }
+    // Attempt to find a new target
     while (!hasViableTarget && enemies.hasNext) {
       val candidate = enemies.next
       if (candidate.pos.distanceSqrd(this.pos) < radiusSqrd) {
         this.target = Some(candidate)
+        return
       }
     }
   }
-  
-  
-  /* Method that 'shoots' and damages the target enemy
-   */
-  
-  private var heat = 0.0
+
+  /** Method to shoot. Returns a buffer that contains all the projectiles that were shot. */
   def shoot(elapsedTime: Double): Buffer[Projectile] = {
-    
-    // If ready to shoot and has target, shoot
     if (this.heat <= 0 && this.target.isDefined) {
-      
-      this.heat = this.cooldown  // Reset cooldown timer
+      this.heat = this.cooldown
       this.generateProjectiles(this.target.get)
-      
-    } else {
-      this.heat -= elapsedTime // When not shooting, cool down
+    }
+    else {
+      this.heat -= elapsedTime
       Buffer()
     }
   }
-  
-  /* Method for generating projectiles upon the shot */
-  
-  def generateProjectiles(target: Enemy): Buffer[Projectile]
-  
-  /* Returns true when the tower has just shot. Used for rendering
-   * purposes.
-   */
-  
-  def hasShot = this.heat == this.cooldown
-  
-    
 }
 
 

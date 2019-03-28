@@ -30,24 +30,40 @@ import scalafx.Includes.jfxActionEvent2sfx
 
 
 object LevelEditorScene extends AnimationScene {
+    
+  /** Loadup function. */
+  override def loadUp() = {
+    b_music.update()
+  }
   
-  // The main elements
+  /** The level editor canvas. */
   val canvas: Canvas = new Canvas(1920, 1080)
+  
+  /** The level editor graphics. */
   val gfx = canvas.graphicsContext2D
   
-  // The path elements
+  /** Set to false when path is done. */
   var constructing = true
+  
+  /** The current path. */
   var path: Path = null
+  
+  /** The current path boolean grid. */
   var grid = Array.fill[Boolean](Main.currentGame.cols + 2, Main.currentGame.rows + 2)(false)
+  
+  /** The currented selected grid spot's integer coordinates. */
   var (selX, selY) = (-1, -1)
+  
+  /** The latest created path's integer coordinates. */
   var (latestX, latestY) = (-1, -1)
   
-  // Graphic elements
+  /** The background created with a function. */
   var bg = this.renderMap()
+  
+  /** The selection box graphics. */
   var selection = this.renderSelectionBox()
   
-  
-  // Function to create a path to given coordinates
+  /** Function to create a new path segment to the given integer grid coordinates. */
   def createPath(x: Int, y: Int): Boolean = {
     
     // If constructing and coordinates on gamefield
@@ -106,7 +122,7 @@ object LevelEditorScene extends AnimationScene {
     }
   }
   
-  // Resets the path
+  /** Function to reset the path. */
   def resetPath() = {
     grid = grid.map(_.map(x => false))
     constructing = true
@@ -114,121 +130,158 @@ object LevelEditorScene extends AnimationScene {
     bg = renderMap()
   }
   
-  
   /*
    * BUTTONS
    */
    
-  val buttons = new Group()
-  val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {  // Toggle music
-    this.pickOnBounds = true
-    var muted = false
-    val onImg = Render.loadImage("note_on")
-    val offImg = Render.loadImage("note_off")
-    override def onClick() = {
-      Music.mute()
-      this.image = { if (Music.muted) offImg else onImg }
-    }
-  }
+  /** Two invisible rectangles for scaling purposes. */
   val scl1 = Rectangle(0, 0, 0, 0)      
   val scl2 = Rectangle(1920, 1080, 0, 0) 
-  buttons.children = List(b_music, scl1, scl2)
   
+  /** A button to toggle the music. */
+  val b_music = Music.button
+  
+  /** A group for all the buttons. */
+  val buttons = new Group() {
+    children = List(b_music, scl1, scl2)
+  }
   
   /*
    * MENU
    */
   
+  /** Menu option to save current level. */
+  val mSave = new MenuItem("Save") {
+    onAction = (e: AE) => {
+      if (!constructing) LevelSaver.saveCustomLevel(path)
+    }
+  }
   
-  val menuBar = new MenuBar { visible = false }
-  val menu    = new Menu("Menu"); menuBar.menus.add(menu)
-  val mSave   = new MenuItem("Save");      menu.items.addAll(mSave, new SeparatorMenuItem)
-  val mReset  = new MenuItem("Reset");     menu.items.addAll(mReset, new SeparatorMenuItem)
-  val mMenu   = new MenuItem("Main menu"); menu.items.addAll(mMenu, new SeparatorMenuItem)
-  val mExit   = new MenuItem("Exit");      menu.items.addAll(mExit)
-  mSave.onAction = (e: AE) => if (!constructing) LevelSaver.saveCustomLevel(path)
-  mReset.onAction = (e: AE) => resetPath()
-  mExit.onAction = (e: AE) => sys.exit(0)
-  mMenu.onAction = (e: AE) => {
-    Music.changeMusic("warriors")
-    Main.changeStatus(ProgramStatus.MainMenu)
-  }  
+  /** Menu option to reset current level. */
+  val mReset = new MenuItem("Reset") {
+    onAction = (e: AE) => {
+      resetPath()
+    }
+  }
   
-  /*
-   * ANIMATION TIMER (MAINLY RENDERING)
-   */
+  /** Menu option to return to main menu. */
+  val mMenu = new MenuItem("Main menu") {
+    onAction = (e: AE) => {
+      Music.changeMusic("warriors")
+      Main.changeStatus(ProgramStatus.MainMenu)
+    }
+  }
   
+  /** Menu option to close program. */
+  val mExit = new MenuItem("Exit") {
+    onAction = (e: AE) => {
+      sys.exit(0)
+    }
+  }
   
+  /** The menu containing all the options. */
+  val menu = new Menu("Menu") {
+    items = List(mSave, sep, mReset, sep, mMenu, sep, mExit)
+  }
+  
+  /** The menubar. */
+  val menuBar = new MenuBar {
+    visible = false
+    menus = List(menu)
+  }
+  
+  /** Main animation timer. */
   var animation = AnimationTimer { now => {
-    gfx.globalAlpha = 1.0
+    
+    // Update time
+    Time.updateElapsedTime(now)
+    
+    // Dimensions
     val W = LevelEditorScene.getWidth
     val H = LevelEditorScene.getHeight
+    val w = W / Main.currentGame.cols
+    val h = (840 * (H / 1080)) / Main.currentGame.rows
+    
+    // Draw background
+    gfx.globalAlpha = 1.0
     gfx.drawImage(this.bg, 0, 0, W, H)
+    
+    // Draw selection box
     gfx.globalAlpha = 0.4
-    val w = LevelEditorScene.getWidth / Main.currentGame.cols
-    val h = (840 * (LevelEditorScene.getHeight / 1080)) / Main.currentGame.rows
     gfx.drawImage(selection, selX * w, selY * h, w, h)
+    
+    // Resize
     resize()
   }}
 
-  
-  def resize() = {
-    b_music.resize(this.getWidth, this.getHeight)
-  }
-  
+ 
   /*
    * SCENE LAYOUT
    */
   
+  /** Function to resize elements. */
+  def resize() = {
+    b_music.resize(this.getWidth, this.getHeight)
+  }
   
-  val stack = new StackPane()
-  stack.children = List(canvas, buttons, menuBar)
-  stack.setAlignment(Pos.TopLeft)
-  root = stack
-  
-      
+  root = new StackPane() {
+    children = List(canvas, buttons, menuBar)
+    alignment = Pos.TopLeft
+  }    
   
   /*
    * INPUT
    */
   
+  /** On key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {
     def handle(ke: KeyEvent) = { ke.getCode() match {
       
-        case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
-        
-        case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
-        
-        case KeyCode.ENTER => if (!constructing) LevelSaver.saveCustomLevel(path)
-        
-        case KeyCode.DELETE => LevelSaver.resetCustomLevels()
-        
-        case KeyCode.R     => resetPath()
-        
-        case KeyCode.UP    => if (!createPath(latestX, latestY - 1)) createPath(latestX, latestY - 2)
-        case KeyCode.DOWN  => if (!createPath(latestX, latestY + 1)) createPath(latestX, latestY + 2)
-        case KeyCode.LEFT  => if (!createPath(latestX - 1, latestY)) createPath(latestX - 2, latestY)
-        case KeyCode.RIGHT => if (!createPath(latestX + 1, latestY)) createPath(latestX + 2, latestY)
-        
-        case KeyCode.F1    => Main.changeStatus(0)
-        case KeyCode.F2    => Main.changeStatus(1)
-        case KeyCode.F3    => Main.changeStatus(2)
-        case _ => 
+      /** F11 toggles fullscreen. */
+      case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
+      
+      /** Escape returns to main menu. */
+      case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
+      
+      /** Enter saves current path. */
+      case KeyCode.ENTER => if (!constructing) LevelSaver.saveCustomLevel(path)
+      
+      /** Delete deletes all existing paths. */
+      case KeyCode.DELETE => LevelSaver.resetCustomLevels()
+      
+      /** R resets path. */
+      case KeyCode.R     => resetPath()
+      
+      /** Arrow keys control path. */
+      case KeyCode.UP    => if (!createPath(latestX, latestY - 1)) createPath(latestX, latestY - 2)
+      case KeyCode.DOWN  => if (!createPath(latestX, latestY + 1)) createPath(latestX, latestY + 2)
+      case KeyCode.LEFT  => if (!createPath(latestX - 1, latestY)) createPath(latestX - 2, latestY)
+      case KeyCode.RIGHT => if (!createPath(latestX + 1, latestY)) createPath(latestX + 2, latestY)
+      
+      case _ => 
     }}
   }
+  
+  /** On mouse moved. */
   this.onMouseMoved = new EH[ME] {
     def handle(me: ME) = {
-      menuBar.visible = me.getSceneY < 32 // Show and hide menubar
+      
+      /** Update menubar visibility. */
+      menuBar.visible = me.getSceneY < 32
+      
+      /** Update selection box coordinates. */
       selX = me.getSceneX.toInt / (LevelEditorScene.getWidth.toInt  / Main.currentGame.cols)
       selY = me.getSceneY.toInt / ((840 * (LevelEditorScene.getHeight / 1080)).toInt / Main.currentGame.rows)
       if (selY >= Main.currentGame.rows) selY = -1
     }
   }
+  
+  /** On mouse pressed. */
   this.onMousePressed = new EH[ME] {
     def handle(me: ME) = {
-      if (selY > - 1) {
-        createPath(selX, selY)
-      }
+      
+      /** If valid, create a path at selection. */
+      if (selY > - 1) createPath(selX, selY)
     }
   }
   
@@ -236,20 +289,24 @@ object LevelEditorScene extends AnimationScene {
    * RENDERING FUNCTIONS
    */
   
-  
-  
+  /** Renders the background as an image. */
   def renderMap() = {
     
+    // Loading a new canvas for the background to be drawn on
     val snapshotCanvas = new Canvas(1920, 1080)
     
+    // Loading the canvas graphics
     val sgfx = snapshotCanvas.graphicsContext2D
-    val spritesheet: Image = Render.loadImage("ss_ground")
+    
+    // Loading the spritesheet
+    val spritesheet: Image = ImageLoader("ss_ground")
+    
+    // Looping through the boolean grid
     for (i <- 1 to Main.currentGame.cols) {
       for (j <- 1 to Main.currentGame.rows) {
-        val (dx, dy) = ( (i-1)*60, (j-1)*60 )
         val (sx, sy): (Int, Int) = {
           
-          // This, left, right, up, down: true if path exists
+          // Record the truth values for this and the eight neighboring grid cells
           val t = grid(i)(j)
           val l = grid(i - 1)(j)
           val r = grid(i + 1)(j)
@@ -260,74 +317,52 @@ object LevelEditorScene extends AnimationScene {
           val lu = grid(i - 1)(j - 1)
           val ru = grid(i + 1)(j - 1)
           
-          // Path
-          if (t)          (1, 1)
+          // Find the correct spot in the spritesheet based on the neighbors
           
-          // Full surround
-          else if (l & d & r & u) (6, 0)
-          
-          // Peninsulas
-          else if (l & d & r) (6, 2)
-          else if (l & d & u) (7, 0)
-          else if (l & r & u) (6, 1)
-          else if (d & r & u) (8, 0)
-                
-          // Inner corners
-          else if (l & d) (3, 2)
-          else if (r & d) (5, 2)
-          else if (r & u) (5, 0)
-          else if (l & u) (3, 0)
-          
-          // Double edges
-          else if (l & r) (7, 1)
-          else if (u & d) (7, 2)
-          
-          // Single edges
-          else if (d) (1, 0)
-          else if (r) (0, 1)
-          else if (u) (1, 2)
-          else if (l) (2, 1)
-          
-          // Outer corners
-          else if (ld) (2, 0)
-          else if (rd) (0, 0)
-          else if (ru) (0, 2)
-          else if (lu) (2, 2)
-          
-          // Grass
-          else (0, 3)
+          if      (t)             (1, 1)  //  |Path
+          else if (l & d & r & u) (6, 0)  //  |Full surround
+          else if (l & d & r)     (6, 2)  //  |Peninsulas
+          else if (l & d & u)     (7, 0)  //  | |
+          else if (l & r & u)     (6, 1)  //  | |
+          else if (d & r & u)     (8, 0)  //  | |
+          else if (l & d)         (3, 2)  //  |Inner corners
+          else if (r & d)         (5, 2)  //  | |
+          else if (r & u)         (5, 0)  //  | |
+          else if (l & u)         (3, 0)  //  | |
+          else if (l & r)         (7, 1)  //  |Double edges
+          else if (u & d)         (7, 2)  //  | |
+          else if (d)             (1, 0)  //  |Single edges
+          else if (r)             (0, 1)  //  | |
+          else if (u)             (1, 2)  //  | |
+          else if (l)             (2, 1)  //  | |
+          else if (ld)            (2, 0)  //  |Outer corners
+          else if (rd)            (0, 0)  //  | |
+          else if (ru)            (0, 2)  //  | |
+          else if (lu)            (2, 2)  //  | |
+          else                    (0, 3)  //  |Grass
         }
-        sgfx.drawImage(spritesheet, sx * 60, sy * 60, 60, 60, dx, dy, 60, 60)
+        
+        // Draw the correct sprite to the correct location
+        sgfx.drawImage(spritesheet, sx * 60, sy * 60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
       }
     }
+        
+    // Draw the sidebar
+    sgfx.drawImage(ImageLoader("llSidebar"), 0, 840)
     
-    if (this.path != null) {
-      sgfx.lineWidth = 4.0
-      sgfx.stroke = Color(1.0, 1.0, 1.0, 0.5)
-      sgfx.beginPath()
-      var p: Option[Path] = Some(this.path)
-      do {
-        sgfx.lineTo((p.get.pos.x + 0.5) * 60, (p.get.pos.y + 0.5) * 60)
-        p = p.get.next
-      } while(p.isDefined)
-      sgfx.strokePath()
-    }
-    
-    // Rendering the sidebar graphics
-    sgfx.drawImage(Render.loadImage("llSidebar"), 0, 840)
-    
-    // Creating a snapshot and saving it
+    // Creating a new image to write to
     val image = new WritableImage(1920, 1080)
+    
+    // Snapshotting the canvas and returning the image
     snapshotCanvas.snapshot(new SnapshotParameters(), image)
   }
   
+  /** Function that renders a small, see-through, white selection box and returns it. */
   def renderSelectionBox() = {
     val c = new Canvas(60, 60)
-    val g = c.graphicsContext2D
-    val img = new WritableImage(60, 60)
-    g.fill = Color(1.0, 1.0, 1.0, 0.5)
-    g.fillRect(0, 0, 60, 60)
-    c.snapshot(new SnapshotParameters(), img)
+    c.graphicsContext2D.fill = Color(1.0, 1.0, 1.0, 0.5)
+    c.graphicsContext2D.fillRect(0, 0, 60, 60)
+    c.snapshot(new SnapshotParameters(), new WritableImage(60, 60))
   }
 }
 

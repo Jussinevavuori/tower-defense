@@ -21,273 +21,39 @@ import scalafx.scene.shape.Rectangle
 import scalafx.scene.Group
 import scalafx.geometry.Pos
 
+/** InGameScene is the scene for the in game action, running the main game loop and rendering the
+ *  main game elements and handling the game input.
+ */
 object InGameScene extends AnimationScene {
   
-  
   /*
-   * INITIALIZING VARIABLES AND ELEMETS
+   * INITIALIZING
    */
-
   
-  // Initializing canvases
+  /** The main game canvas. */
   val gameCanvas = new Canvas(1920, 1080)
-  val interactionCanvas = new Canvas(1920, 1080)
-  val gameoverCanvas = new Canvas(1920, 1080)
   gameCanvas.requestFocus()
-  interactionCanvas.disable = true
-  gameoverCanvas.disable = true
-  gameoverCanvas.visible = false
-  Render.prerender(gameCanvas, Main.currentGame)
-
-  // Initializing useful variables and helper functions
-  var godmode = false
-  private var selectedTower: Option[Tower] = None
-  private var muted = false
-  private var showFPS = false
-  private var mouseX = 0.0
-  private var mouseY = 0.0
-  private def gridX = this.toGridX(this.mouseX)
-  private def gridY = this.toGridY(this.mouseY)
-  private def toGridX(x: Double) = x / Render.gridW
-  private def toGridY(y: Double) = y / Render.gridH
   
-  
-  /*
-   * RESIZABILITY
-   */
-
-  
-  // Function to resize all dynamic elements on resize
-  def resize() = {
-    val W = this.getWidth
-    val H = this.getHeight
-    gameCanvas.width         = W
-    gameCanvas.height        = H
-    interactionCanvas.width  = W 
-    interactionCanvas.height = H
-    gameoverCanvas.width     = W
-    gameoverCanvas.height    = H
-    b_shop1.resize(W, H)
-    b_shop2.resize(W, H)
-    b_shop3.resize(W, H)
-    b_upgrd.resize(W, H)
-    b_nextw.resize(W, H)
-    b_fastf.resize(W, H)
-    b_lock1.resize(W, H)
-    b_lock2.resize(W, H)
-    b_lock3.resize(W, H)
-    b_music.resize(W, H)
-  }
-
-  
-  /*
-   * CREATING MENUBAR AND MENU BUTTONS
-   */
-  
-  
-  // Creating the menubar with all the options
-  val menuBar   = new MenuBar { visible = false }
-  val gameMenu  = new Menu("Game"); menuBar.menus.add(gameMenu)
-  val gmNew     = new MenuItem("New game");  gameMenu.items.addAll(gmNew,     new SeparatorMenuItem)
-  val gmSave    = new MenuItem("Save");      gameMenu.items.addAll(gmSave,    new SeparatorMenuItem)
-  val gmControl = new MenuItem("Controls");  gameMenu.items.addAll(gmControl, new SeparatorMenuItem)
-  val gmShowFPS = new MenuItem("Show FPS");  gameMenu.items.addAll(gmShowFPS, new SeparatorMenuItem)
-  val gmGodmode = new MenuItem("Godmode");   gameMenu.items.addAll(gmGodmode, new SeparatorMenuItem)
-  val gmMmenu   = new MenuItem("Main menu"); gameMenu.items.addAll(gmMmenu,   new SeparatorMenuItem)
-  val gmExit    = new MenuItem("Exit");      gameMenu.items.addAll(gmExit)
-  gmSave.onAction    = (e: AE) => Actions.save
-  gmNew.onAction     = (e: AE) => Actions.newGame()
-  gmExit.onAction    = (e: AE) => sys.exit(0)
-  gmShowFPS.onAction = (e: AE) => this.showFPS = !this.showFPS
-  gmGodmode.onAction = (e: AE) => Actions.activateGodmode(Main.currentGame)
-  gmControl.onAction = (e: AE) => Render.toggleControls
-  gmMmenu.onAction   = (e: AE) => {
-    if (Main.currentGame.wave.number > 1) Actions.save
-    Music.changeMusic("warriors")
-    Main.changeStatus(ProgramStatus.MainMenu)
+  /** The interaction canvas on top of the game canvas for interacting with the game. */
+  val interactionCanvas = new Canvas(1920, 1080) {
+    disable = true
   }
   
-  
-  
-  /*
-   * CREATING DYNAMIC GUI BUTTON ELEMENTS
-   */
-
-
-  val scl1 = Rectangle(0, 0, 0, 0)       // For scaling purposes
-  val scl2 = Rectangle(1920, 1080, 0, 0) // For scaling purposes
-  
-  val b_shop1 = new MovableDynamicHoverButton("shopButton", 701, 887) {
-    override def onClick() = Actions.buyCannonTower(Main.currentGame, godmode)
-  }
-  val b_shop2 = new MovableDynamicHoverButton("shopButton", 901, 887) {
-    override def onClick() = Actions.buyBoomerangTower(Main.currentGame, godmode)
-  }
-  val b_shop3 = new MovableDynamicHoverButton("shopButton", 1101, 887) {
-    override def onClick() = Actions.buyHomingTower(Main.currentGame, godmode)
-  }
-  val b_upgrd = new MovableDynamicHoverButton("upgradeButton", 0.0, 0.0) {
-    this.visible = false
-    override def onClick() = {
-      selectedTower = Actions.upgradeTower(Main.currentGame, selectedTower)
-      this.visible = selectedTower.isDefined && !selectedTower.get.upgrade.isEmpty
-    }
-  }
-  val b_nextw = new MovableDynamicHoverButton("nextwaveButton", 1729, 972) {
-    override def onClick() = Actions.loadNextWave(Main.currentGame)
-  }
-  val b_fastf = new MovableDynamicHoverButton("fastforwardButton", 1600, 972) {
-    override def onClick()   = Actions.toggleFastForward(Main.currentGame, true)
-    override def onRelease() = Actions.toggleFastForward(Main.currentGame, false)
-    override def onExit()    = Actions.toggleFastForward(Main.currentGame, false)
-  }
-  val b_music = new MovableDynamicButton(Render.loadImage("note_on"), 1856, 32) {
-    this.pickOnBounds = true
-    var muted = false
-    val onImg = Render.loadImage("note_on")
-    val offImg = Render.loadImage("note_off")
-    override def onClick() = {
-      Music.mute()
-      this.image = { if (Music.muted) offImg else onImg }
-    }
-  }
-  val b_lock1 = new MovableDynamicButton(Render.loadImage("shopLocked"), 701, 887) {
-    this.visible = false
-    override def onClick() = Audio.play("error.wav")
-  }
-  val b_lock2 = new MovableDynamicButton(Render.loadImage("shopLocked"), 901, 887) {
-    this.visible = true
-    override def onClick() = Audio.play("error.wav")    
-  }
-  val b_lock3 = new MovableDynamicButton(Render.loadImage("shopLocked"), 1101, 887) {
-    this.visible = true
-    override def onClick() = Audio.play("error.wav")
+  /** The gameover canvas on top of all canvases for when the game is over. */
+  val gameoverCanvas = new Canvas(1920, 1080) {
+    disable = true
+    visible = false
   }
   
-  
-  
-  /* 
-   * MOUSE INPUT
-   */
-
-  
-  
-  // Mouse moved
-  gameCanvas.onMouseMoved = new EH[ME] {
-    def handle(me: ME) = {
-      mouseX = me.getSceneX // Update mouse coordinates
-      mouseY = me.getSceneY
-      menuBar.visible = mouseY < 32 // Show and hide menubar
-    }
-  }
-
-  // Click on main canvas
-  gameCanvas.onMouseClicked = new EH[ME] {
-    def handle(me: ME): Unit = {
-
-      // Shop purchases
-      val (x, y) = (toGridX(me.getSceneX), toGridY(me.getSceneY)) // Mouse coordinates
-      if (Main.currentGame.shop.active) Actions.purchaseTower(Main.currentGame, x, y) // Shop purchases
-  
-      // Tower selections
-      else {
-        var (sel, sx, sy) = Actions.selectTower(Main.currentGame, x - 0.5, y - 0.5)
-        selectedTower = sel
-        b_upgrd.moveTo(sx, sy)
-        b_upgrd.visible = !(sx == 0.0 && sy == 0.0)
-      }
-    }
-  }
-  
-  // Gameover click starts new game
-  gameoverCanvas.onMouseClicked = new EH[ME] {
-    def handle(e: ME) = {
-      Actions.newGame()
-    }
-  }
-
-
-  /*
-   * KEYBOARD INPUT
-   */
-  
-  
-  this.onKeyPressed = new EH[KeyEvent] {
-    def handle(ke: KeyEvent) = {
-      ke.getCode() match {
-
-        // Fullscreen
-        case KeyCode.F11    => Main.stage.fullScreen = !Main.stage.fullScreen.value
-
-        // Switch
-        case KeyCode.F1     => Main.changeStatus(0)
-        case KeyCode.F2     => Main.changeStatus(1)
-        case KeyCode.F3     => Main.changeStatus(2)
-
-        // Buy towers
-        case KeyCode.DIGIT1 => Actions.buyCannonTower(Main.currentGame, godmode)
-        case KeyCode.DIGIT2 => Actions.buyBoomerangTower(Main.currentGame, godmode)
-        case KeyCode.DIGIT3 => Actions.buyHomingTower(Main.currentGame, godmode)
-
-        // On game over all keys load a new game
-        case k if (Main.gameover) => Actions.newGame()
-
-        // Shortcut to next wave
-        case KeyCode.SPACE if (Main.currentGame.enemies.isEmpty) => {
-          Actions.loadNextWave(Main.currentGame)
-        }
-
-        // Shortcut to fast forward
-        case KeyCode.SPACE => Actions.toggleFastForward(Main.currentGame, true)
-
-        // Shortcut to tower upgrade
-        case KeyCode.ENTER => selectedTower = Actions.upgradeTower(Main.currentGame, selectedTower)
-
-        case _ =>
-      }
-    }
-  }
-  this.onKeyReleased = new EH[KeyEvent] {
-    def handle(ke: KeyEvent) = {
-      ke.getCode() match {
-
-        // Toggle fast forward off
-        case KeyCode.SPACE => Actions.toggleFastForward(Main.currentGame, false)
-        case _             =>
-      }
-    }
-  }
-
-
-
-  /*
-   * ARRANGING THE LAYOUT
-   */
-
-  
-  val buttons = new Group()
-  val stack = new StackPane()
-  buttons.children = List(
-    scl1, scl2, b_shop1, b_shop2, b_shop3, b_fastf,
-    b_lock1, b_lock2, b_lock3, b_nextw, b_upgrd, b_music)
-  stack.children = List(
-    gameCanvas, buttons, interactionCanvas, menuBar, gameoverCanvas)
-  stack.setAlignment(Pos.TopLeft)
-  root = stack
-  
-  
-  
-  /*
-   * GAME ANIMATION LOOP
-   */
-  
-
+  /** Main animation loop. */
   var animation = AnimationTimer { now =>
 
     Time.updateElapsedTime(now)
     
     Main.currentGame.update(Time.elapsedTime)
 
+    resize()
+    
     // Render the game
     Animate.advance()
     Effects.advance()
@@ -299,7 +65,6 @@ object InGameScene extends AnimationScene {
     if (selectableTower.isDefined) Render.renderSelectableTower(this.interactionCanvas, Main.currentGame, selectableTower.get)
     if (selectedTower.isDefined) Render.renderSelectedTower(this.interactionCanvas, selectedTower.get)
     if (Main.currentGame.shop.active) Render.renderActiveTower(this.interactionCanvas, Main.currentGame, gridX, gridY)
-    if (this.showFPS) Render.fps(Time.elapsedTime, this.interactionCanvas)
     Render.renderShopTowers(this.interactionCanvas)
 
     // Game over on death
@@ -307,13 +72,292 @@ object InGameScene extends AnimationScene {
       gameoverCanvas.disable = false
       gameoverCanvas.visible = true
       Music.stopLoop()
-      if (!Main.gameover) Audio.play("gameover.wav", 0.5)
       Main.currentGame.enemies.foreach(_.damage(Int.MaxValue))
       Render.renderGameover(gameoverCanvas)
+      if (!Main.gameover) {
+        Audio.play("gameover.wav", 0.5)
+      }
     }
-
-    resize()
   }
+  
+  /** Loadup function. */
+  override def loadUp() = {
+    b_music.update()
+  }
+
+  /** Set to true upon entering godmode. */
+  var godmode = false
+  
+  /** The currently selected tower. */
+  private var selectedTower: Option[Tower] = None
+ 
+  /** Function to convert a screen coordinate to a game grid coordinate. */
+  private def toGridX(x: Double) = x / Render.gridW
+  private def toGridY(y: Double) = y / Render.gridH
+  
+  /** The mouse X and Y coordinates, updated each time mouse is moved. */
+  private var mouseX = 0.0
+  private var mouseY = 0.0
+  
+  /** The mouse X and Y coordinates as game grid coordinates. */
+  private def gridX = this.toGridX(this.mouseX)
+  private def gridY = this.toGridY(this.mouseY)
+  
+  /*
+   * CREATING MENUBAR AND MENU BUTTONS
+   */
+  
+  /** Menu option to save the game. */
+  val mSave = new MenuItem("Save") {
+    onAction = (e: AE) => {
+      Actions.save()
+    }
+  }
+  
+  /** Menu option to load new game. */
+  val mNew = new MenuItem("New game") {
+    onAction = (e: AE) => {
+      Actions.newGame()
+    }
+  }
+  
+  /** Menu option to show controls. */
+  val mControl = new MenuItem("Controls") {
+    onAction = (e: AE) => {
+      Render.toggleControls()
+    }
+  }
+  
+  /** Menu option to show FPS. */
+  val mShowFPS = new MenuItem("Show FPS") {
+    onAction = (e: AE) => {
+      Render.toggleFPS()
+    }
+  }
+  
+  /** Menu option to activate godmode. */
+  val mGodmode = new MenuItem("Godmode") {
+    onAction = (e: AE) => {
+      Actions.activateGodmode(Main.currentGame)
+    }
+  }
+  
+  /** Menu option to return to main menu. */
+  val mMainmenu = new MenuItem("Main menu") {
+    onAction = (e: AE) => {
+      if (Main.currentGame.wave.number > 1) Actions.save
+      Music.changeMusic("warriors")
+      Main.changeStatus(ProgramStatus.MainMenu)
+    }
+  }
+  
+  /** Menu option to close window. */
+  val mExit = new MenuItem("Exit") {
+    onAction = (e: AE) => {
+      sys.exit(0)
+    }
+  }
+
+  /** A new menu for all the menu options. */
+  val menu = new Menu("Menu") { items =
+    List(mSave, sep, mNew, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
+  }
+  
+  /** A menubar for the menu. */
+  val menuBar = new MenuBar {
+    menus = List(menu)
+    visible = false
+  }
+  
+  /*
+   * BUTTONS
+   */
+
+  /** Two invisible rectangles for scaling purposes. */
+  val scl1 = Rectangle(0, 0, 0, 0)
+  val scl2 = Rectangle(1920, 1080, 0, 0)
+  
+  /** The cannon tower shop button. */
+  val b_shop1 = new MovableImageButton(ImageLoader("shopButton"), 701, 887) {
+    override def onClick() = {
+      Actions.buyCannonTower(Main.currentGame, godmode)
+    }
+  }
+  
+  /** The boomerang tower shop button. */
+  val b_shop2 = new MovableImageButton(ImageLoader("shopButton"), 901, 887) {
+    override def onClick() = {
+      Actions.buyBoomerTower(Main.currentGame, godmode)
+    }
+  }
+  
+  /** The homing tower shop button. */
+  val b_shop3 = new MovableImageButton(ImageLoader("shopButton"), 1101, 887) {
+    override def onClick() = {
+      Actions.buyHomingTower(Main.currentGame, godmode)
+    }
+  }
+  
+  /** The upgrade button. */
+  val b_upgrd = new MovableImageButton(ImageLoader("upgradeButton"), 0.0, 0.0) {
+    this.visible = false
+    override def onClick() = {
+      selectedTower = Actions.upgradeTower(Main.currentGame, selectedTower)
+      this.visible = selectedTower.isDefined && !selectedTower.get.upgrade.isEmpty
+    }
+  }
+  
+  /** The next wave button. */
+  val b_nextw = new MovableImageButton(ImageLoader("nextwaveButton"), 1729, 972) {
+    override def onClick() = {
+      Actions.loadNextWave(Main.currentGame)
+    }
+  }
+  
+  /** The fast forward button. */
+  val b_fastf = new MovableImageButton(ImageLoader("fastforwardButton"), 1600, 972) {
+    override def onClick()   = {
+      Actions.toggleFastForward(Main.currentGame, true)
+    }
+    override def onRelease() = {
+      Actions.toggleFastForward(Main.currentGame, false)
+    }
+    override def onExit()    = {
+      Actions.toggleFastForward(Main.currentGame, false)
+    }
+  }
+  
+  /** The cannon tower lock. */
+  val b_lock1 = new MovableImageButton(ImageLoader("shopLocked"), 701, 887) {
+    override val interactive = false
+    this.visible = false
+    override def onClick() = Audio.play("error.wav")
+  }
+  
+  /** The boomerang tower lock. */
+  val b_lock2 = new MovableImageButton(ImageLoader("shopLocked"), 901, 887) {
+    override val interactive = false
+    this.visible = true
+    override def onClick() = Audio.play("error.wav")    
+  }
+  
+  /** The homing tower lock. */
+  val b_lock3 = new MovableImageButton(ImageLoader("shopLocked"), 1101, 887) {
+    override val interactive = false
+    this.visible = true
+    override def onClick() = Audio.play("error.wav")
+  }
+  
+  /** Button to toggle the music. */
+  val b_music = Music.button
+  
+  /** A list of all resizable elements. */
+  val resizeList = List[ImageButton](b_shop1, b_shop2, b_shop3, b_upgrd, b_nextw, b_fastf, b_lock1, b_lock2, b_lock3, b_music)
+  
+  /** A new group for all the buttons. */
+  val buttons = new Group() { children = resizeList ++ List(scl1, scl2) }
+  
+  /* 
+   * INPUT
+   */
+  
+  /** Mouse moved. */
+  gameCanvas.onMouseMoved = new EH[ME] {
+    def handle(me: ME) = {
+      
+      /** Update mouse coordinates. */
+      mouseX = me.getSceneX
+      mouseY = me.getSceneY
+      
+      /** Update menubar visibility. */
+      menuBar.visible = mouseY < 32
+    }
+  }
+
+  /** Mouse click. */
+  gameCanvas.onMouseClicked = new EH[ME] {
+    def handle(me: ME): Unit = {
+
+      /** Calculate game grid coordinates. */
+      val (x, y) = (toGridX(me.getSceneX), toGridY(me.getSceneY))
+      
+      /** Handle tower purchases. */
+      if (Main.currentGame.shop.active) Actions.purchaseTower(Main.currentGame, x, y) // Shop purchases
+  
+      /** Handle tower slections. */
+      else {
+        var (sel, sx, sy) = Actions.selectTower(Main.currentGame, x - 0.5, y - 0.5)
+        selectedTower = sel
+        b_upgrd.moveTo(sx, sy)
+        b_upgrd.visible = !(sx == 0.0 && sy == 0.0)
+      }
+    }
+  }
+
+  /** Key pressed. */  
+  this.onKeyPressed = new EH[KeyEvent] {
+    def handle(ke: KeyEvent) = {
+      ke.getCode() match {
+
+        /** F11 toggles fullscreen. */
+        case KeyCode.F11    => Main.stage.fullScreen = !Main.stage.fullScreen.value
+
+        /** 1, 2 and 3 buy towers. */
+        case KeyCode.DIGIT1 => Actions.buyCannonTower(Main.currentGame, godmode)
+        case KeyCode.DIGIT2 => Actions.buyBoomerTower(Main.currentGame, godmode)
+        case KeyCode.DIGIT3 => Actions.buyHomingTower(Main.currentGame, godmode)
+
+        /** All keys start new game. */
+        case k if (Main.gameover) => Actions.newGame()
+
+        /** Space loads next wave. */
+        case KeyCode.SPACE if (Main.currentGame.enemies.isEmpty) => Actions.loadNextWave(Main.currentGame)
+
+        /** Space fast forwards. */
+        case KeyCode.SPACE => Actions.toggleFastForward(Main.currentGame, true)
+
+        /** Enter upgrades selected tower. */
+        case KeyCode.ENTER => selectedTower = Actions.upgradeTower(Main.currentGame, selectedTower)
+        
+        /** Escape returns to main menu. */
+        case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
+        
+        case _ =>
+      }
+    }
+  }
+  
+  /** Key released. */
+  this.onKeyReleased = new EH[KeyEvent] {
+    def handle(ke: KeyEvent) = {
+      ke.getCode() match {
+
+        // Toggle fast forward off
+        case KeyCode.SPACE => Actions.toggleFastForward(Main.currentGame, false)
+        
+        case _ =>
+      }
+    }
+  }
+  
+  /*
+   * ARRANGING THE LAYOUT
+   */
+  
+  /** Creating the stack. */
+  root = new StackPane() {
+    children = List(gameCanvas, buttons, interactionCanvas, menuBar, gameoverCanvas)
+    alignment = Pos.TopLeft
+  }
+  
+  // Function to resize all dynamic elements on resize
+  def resize() = {
+    val W = this.getWidth
+    val H = this.getHeight
+    this.resizeList.foreach(_.resize(W, H))
+  }
+  
+
 
 }
 

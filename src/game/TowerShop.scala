@@ -2,17 +2,17 @@ package game
 
 class TowerShop {
   
-  // The current tower being placed down
+  /** The current bought tower that is being placed down if any. */
   var activeTower: Option[Tower] = None
   
-  // True when a tower is being placed down
+  /** True when the user has an active tower being bought. */
   def active: Boolean = this.activeTower.isDefined
   
-  // Function to choose a tower to be the active tower by its id
+  /** Function to create and choose an active tower based on the typeid. */
   def choose(id: String, game: Game) = {
     val choice = id match {
         case "c1" => new CannonTower1(-1, -1)
-        case "b1" => new BoomerangTower1(-1, -1)
+        case "b1" => new BoomerTower1(-1, -1)
         case "h1" => new HomingTower1(-1, -1)
         case _ => throw new IllegalArgumentException("Unrecognized tower id")
     }
@@ -23,7 +23,7 @@ class TowerShop {
     }
   }
   
-  // Function to buy and place down the active tower
+  /** Function to place the active tower down at the chosen location and buy it. Returns true when succesful. */
   def purchase(game: Game, x: Double, y: Double): Boolean = {
     if (this.activeTower.isDefined && game.isValidSpot(x, y) && (y < game.rows - 1)) {
       val purchased = this.activeTower.get
@@ -35,11 +35,11 @@ class TowerShop {
     } else false
   }
   
-  // Function to upgrade the chosen tower
+  /** Function to upgrade the selected tower. Returns the upgraded tower if any. */
   def upgrade(game: Game, tower: Tower): Option[Tower] = {
     if (tower.upgrade.isDefined && game.player.canAfford(tower.upgrade.get.price)) {
-      tower.upgraded = true
       val upgraded = tower.upgrade.get
+      tower.upgraded = true
       game.towers += upgraded
       upgraded.pos.moveTo(tower.pos)
       game.player.charge(upgraded.price)
@@ -48,10 +48,4 @@ class TowerShop {
       None
     }
   }
-  
-  // Function to undo the chosen tower
-  def forget() = {
-    this.activeTower = None
-  }
-  
 }

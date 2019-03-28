@@ -1,67 +1,75 @@
 package game
 
-/* Enemies are represented by an abstract enemy class.
- * Each of the different enemytypes extend this class.
- * 
- * Each enemy type has its own specific health, strength
- * and speed stats.
- */
 
-abstract class Enemy(
-    val         typeid:  String,
-    private var _health: Double,
-    val         speed:   Double,
-    val         size:    Double,
-    val         reward:  Int,
-    _x: Double, _y: Double,
-    var         target:  Option[Path] ) {
+/* Enemies are represented by an abstract class that contains most of the enemies
+ * functionality.
+ * 
+ * Upon creating an enemy, an initial position and target must be given.
+ * 
+ * The functions and values typeid, speed, size, reward and death must be
+ * implemented by each extending enemytype class.
+ */
+abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   
+  /** A unique string for each extending enemy type. */
+  val typeid: String
   
-  /* The position of the enemy.
-   */
+  /** The speed of this enemy for each extending enemy type. */
+  val speed: Double
   
-  val pos: Vec = Vec(_x, _y)
+  /** The size of each extending enemy type. */
+  val size: Double
   
+  /** The reward awarded to the player upon killing this enemy for each extending enemy type. */
+  val reward: Int
   
-  /* Maximum health of the enemy, also the initial health.
-   */
+  /** Maximum health of the enemy for each extending enemy type..*/
+  def maxhp: Double
   
-  val maxHealth = _health
+  /** The position of the enemy as a position vector. */
+  val pos: Vec = Vec(x, y)
   
+  /** The enemy's current health. */
+  private var _health = this.maxhp
   
-  /* Is set to true when enemy has reached goal and cannot
-   * move any more
-   */
-  
+  /** Is set to true when enemy has reached goal and cannot move any more */
   var finished = false
-  
-  
-  /* Function that when called moves the enemy towards its
-   * next target. Returns true if the enemy reaches the goal,
-   * false otherwise.
-   */
-  
-  def advance(elapsedTime: Double): Boolean = {
     
-    // Do not do anything else, but return true, when the enemy reaches
-    // the last path segment. Consequences are handled elsewhere.
+  /** Returns the enemy's current health. */
+  def health: Double = this._health
+  
+  /** Returns true when the enemy is alive */
+  def alive: Boolean = this._health > 0.0
+  
+  /** Returns true when the enemy is dead */
+  def dead: Boolean = !this.alive
+  
+  /** Function that damages the enemy by the given (positive) amount */
+  def damage(amount: Double): Unit = {
+    if (amount > 0) this._health -= amount
+  }
+  
+  /** Function that contains all the enemies spawned upon this enemy's death
+   *  for each extending enemy type individually. */
+  def death(): Iterator[Enemy]
+  
+  /** Function that moves the enemy. Returns true if the enemy reaches the goal */
+  def advance(elapsedTime: Double): Boolean = {
+        
+    // When the enemy has no target, it has reached the end. Return true.
     if (this.target.isEmpty) {
       this.finished = true
       this._health = 0
       return true
     }
     
-    // Else, calculate the direction vector to the target and scale
-    // it to the enemy's speed to get a velocity vector
+    // Calculate the velocity towards the next target and scale it down to the enemy's speed
     val velocity: Vec = this.target.get.pos - this.pos
-    
-    // Only scale whenever the magnitude of velocity is greater than the speed
     if (velocity.size > this.speed) {
       velocity.scaleTo(this.speed)
     }
     
-    // When velocity is effectively zero, enemy has reached the target.
-    // Now the enemy requests its current target for the next target
+    // When the enemy stops, it has reached its target and asks the target for the next target
     if (velocity.size < 0.000001) {
       this.target = this.target.get.next
     }
@@ -70,51 +78,10 @@ abstract class Enemy(
     this.pos += velocity
     
     // By default return false
-    false
-    
+    return false
   }
 
-  
-  /* Function to access the enemy's health without modifying
-   * it.
-   */
-  
-  def health: Double = this._health
-  
-  
-  /* Function to check if enemy is alive.
-   */
-  
-  def alive: Boolean = this._health > 0
-
-  
-  /* Function to check if enemy is dead.
-   */
-  
-  def dead: Boolean = this._health <= 0
-  
-  
-  
-  /* Function for the enemy to take damage by a given amount.
-   * Only positive numbers allowed.
-   */
-  
-  def damage(amount: Double): Unit = {
-    if (amount > 0) this._health -= amount
-  }
-  
-  /* Function that is performed upon the death of this enemy.
-   * The function returns an array of enemies, which are defined
-   * for each enemy type seperately. Those defined enemies are
-   * then spawned into the game upon death.
-   */
-  
-  def death(): Array[Enemy]
-  
-  
-  /* Returns a textual description of the enemy
-   */
-  
+  /** Returns a textual description of the enemy */
   override def toString() = s"${this.typeid} (${this._health} HP) @ (${this.pos.x}, ${this.pos.y})"
 
 }

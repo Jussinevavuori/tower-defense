@@ -8,64 +8,50 @@ import java.io.File
 import scala.collection.mutable.Map
 
 
-// Object that can play individual sound files
+/** Audio can play individual .wav files in assets/sfx. */
 object Audio {
   
-  def play(filename: String, loudness: Double = 0.5) = {
-    val player = new MediaPlayer(this.loadAudio(filename))
+  /** Plays the chosen .wav audiofile at the given loudness. */
+  def play(filename: String, loudness: Double = 0.3) = {
+    val player = new MediaPlayer(this.audiofiles(filename))
     player.volume = loudness
     player.play()
   }
   
-  def playTimes(filename: String, times: Int, loudness: Double = 0.5) = {
-    val player = new MediaPlayer(this.loadAudio(filename))
+  /** Plays the chosen .wav audiofile at the given loudness the chosen amount of times. */
+  def playTimes(filename: String, times: Int, loudness: Double = 0.3) = {
+    val player = new MediaPlayer(this.audiofiles(filename))
     player.cycleCount = times
     player.volume = loudness
     player.play()
   }
   
+  /** All the existing audio clips in a map, so they do not have to be loaded each time. */
+  private val audiofiles = Map[String, Media](
+      "coin.wav"        -> this.loadAudio("coin.wav"       ),
+      "coincluster.wav" -> this.loadAudio("coincluster.wav"),
+      "damage.wav"      -> this.loadAudio("damage.wav"     ),
+      "damage2.wav"     -> this.loadAudio("damage2.wav"    ),
+      "error.wav"       -> this.loadAudio("error.wav"      ),
+      "explosion.wav"   -> this.loadAudio("explosion.wav"  ),
+      "fanfare.wav"     -> this.loadAudio("fanfare.wav"    ),
+      "gameover.wav"    -> this.loadAudio("gameover.wav"   ),
+      "hit.wav"         -> this.loadAudio("hit.wav"        ),
+      "impact.wav"      -> this.loadAudio("impact.wav"     ),
+      "iosfx.wav"       -> this.loadAudio("iosfx.wav"      ),
+      "menu.wav"        -> this.loadAudio("menu.wav"       ),
+      "newwave.wav"     -> this.loadAudio("newwave.wav"    ),
+      "shot1.wav"       -> this.loadAudio("shot1.wav"      ),
+      "shot2.wav"       -> this.loadAudio("shot2.wav"      ),
+      "shot3.wav"       -> this.loadAudio("shot3.wav"      ),
+      "throw.wav"       -> this.loadAudio("throw.wav"      ),
+      "titlescreen.wav" -> this.loadAudio("titlescreen.wav")
+  )
+  
+  /** Function to load a chosen audio clip. */
   private def loadAudio(filename: String) = {
     val filepath = "assets/sfx/" + filename
     val file = new File(filepath).toURI().toString()
     new Media(file)
   }
-   
-  
-}
-
-// Plays the music in the background. Music can be started, stopped or muted
-object Music {
-  
-  
-  private var player: MediaPlayer = null
-  
-  def changeMusic(title: String) = {
-    var muted = if (this.player != null) {
-      this.player.stop()
-      this.player.mute.value
-    } else false
-    val filepath = "assets/sfx/" + title + ".mp3"
-    val file = new File(filepath).toURI().toString()
-    val media = new Media(file)
-    this.player = new MediaPlayer(media)
-    player.volume = 0.12
-    player.cycleCount = MediaPlayer.Indefinite
-    this.player.play()
-    this.player.mute = muted
-  }
-  this.changeMusic("warriors")
-
-  def startLoop() = {
-    this.player.play()
-    if (this.muted) {
-      
-    }
-  }
-  
-  def stopLoop() = this.player.pause()
-  
-  def muted = this.player.mute.value
-  
-  def mute() = this.player.mute = !this.player.mute.value
-
 }

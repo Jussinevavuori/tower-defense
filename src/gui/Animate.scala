@@ -8,64 +8,43 @@ import java.io.FileInputStream
 import scalafx.scene.canvas.GraphicsContext
 import java.io.File
 
-/* Animate can be called by the Render object
- * to render animated sprites on the canvas
- */
-
+/** Animate contains functions necessary to animate graphics from animation sheets. */
 object Animate {
   
-  
-  /* Animates the sprite animation
-   * 
-   * @param	 The id or the filename of the image to be animated
-   * @param	 The amount of frames should have
-   * @param	 The x coordinate for the image to be drawn to on the canvas
-   * @param	 The y coordinate for the image to be drawn to on the canvas
-   * @param	 The width of a single grid unit
-   * @param	 The height of a single grid unit
-   * @param	 The graphics context used for drawing
-   * @param	 The delay for each frame. Optional
+  /** Animates a chosen sprite with the given id to the given canvas (x, y)-coordinates
+   *  using the given gfx, animating with a given framedelay (by default 20 frames).
    */
-  
-  def animate(id: String, canvasX: Double, canvasY: Double, gfx: GraphicsContext,
-              delay: Int = 20, currentFrame: Int = this.frame): Unit = {
+  def animate(id: String, cx: Double, cy: Double, gfx: GraphicsContext, delay: Int = 20, frame: Int = this.frame): Unit = {
     
     // Handle wrong ids
     if (!this.animations.contains(id)) throw new RenderingException(
         s"Given animation spritesheet as_$id.png does not exist in the data")
     
-    // Spritesheet, sprite size, frame count
+    // Spritesheet, sprite width and height, frame count
     val (ss, w, h, count) = this.animations(id)
     
-    // Current frame
-    val frame = this.currentFrame(count, delay, currentFrame)
+    // Current sprite's frame number
+    val f = this.currentFrame(count, delay, frame)
     
     // Drawing the cropped image
-    gfx.drawImage(ss, frame * w, 0, w, h, canvasX, canvasY, w * Render.resizeW, h * Render.resizeW)
+    gfx.drawImage(ss, f * w, 0, w, h, cx, cy, w * Render.resizeW, h * Render.resizeW)
   }
   
-  
-  
-  // Called each frame to advance animation
-  def advance() = this.frame += 1
+  /** The current frame count. */
   var frame = 0
   
-  // Returns the ongoing frame of an animation with the given length and delay
-  private def currentFrame(length: Int, delay: Int, currentFrame: Int = this.frame) = { 
-    (currentFrame / delay) % length
-  }
+  /** Function to be called each frame to advance the animations. */
+  def advance() = this.frame += 1
+
+  /** Returns the index of the current frame of an animation with the given length delay. */
+  private def currentFrame(len: Int, delay: Int, f: Int = this.frame) = (f / delay) % len
   
-  // Shortcut to the animate method
-  def apply(id: String, canvasX: Double, canvasY: Double, gfx: GraphicsContext,
-            delay: Int = 20, currentFrame: Int = this.frame): Unit = {
+  /** Shortcut to the animate method. */
+  def apply(id: String, canvasX: Double, canvasY: Double, gfx: GraphicsContext, delay: Int = 20): Unit = {
     this.animate(id, canvasX, canvasY, gfx)
   }
   
-  
-
-  
-  // All animation frames stored in a map so they don't have to be loaded each frame
-  // Animation ID -> Spritesheet, Spritewidth, Spriteheight, Framecount
+  /** All the animation sheets stored in a map by their ids (ID -> Spritesheet, width, height, length). */
   private val animations = Map[String, (Image, Int, Int, Int)]( 
     "koala1"     -> this.loadAnimation("koala1",       60,   60, 2),
     "koala2"     -> this.loadAnimation("koala2",       60,   60, 2),
@@ -78,7 +57,7 @@ object Animate {
     "gameover"   -> this.loadAnimation("gameover",   1920, 1080, 2)
   )
   
-  // Gets the animation frame for the given id of frames length animation
+  /** Loads an animation and returns all it's attributes: spritesheet, width, height and length. */
   private def loadAnimation(id: String, spriteHeight: Int, spriteWidth: Int, frameCount: Int) = {
     val filepath = "assets/gfx/as_" + id + ".png"
     val inputStream = new FileInputStream(filepath)

@@ -1,30 +1,39 @@
 package game
 
-abstract class Projectile(_x: Double, _y: Double, val damage: Double, val range: Double) {
+/** Abstract class projectile describes projectiles, which are shot by towers and can
+ *  hit and damage enemies. Each different extending projectile moves and damages
+ *  enemies in differents ways. A projectile is initialized with coordinates for its
+ *  position, amount of damage it can deal and range it can fly.
+ */
+abstract class Projectile(x: Double, y: Double, val damage: Double, val range: Double) {
   
+  /** The projectiles current position. */
+  val pos = Vec(x, y)
   
-  /* The current and original position of the projectile
-  */
-  val pos = Vec(_x, _y)
-  val origin = Vec(_x, _y)
+  /** The projectiles original position. */
+  val origin = Vec(x, y)
   
+  /** Set to true once projectile flies out of range. */
+  var outOfRange = false
+
+  /** Returns true when the projectile is finished and can be removed. */
+  def finished: Boolean = this.outOfRange || this.hitEnemies.nonEmpty
   
-  /* Methods for testing the state of the projectile
-   */
-  var isOutOfRange = false
-  def hasHitEnemy  = !this.hitEnemies.isEmpty
-  def finished: Boolean = this.isOutOfRange || this.hasHitEnemy
+  /** Contains all the hit enemies, specifically made for boomerangs */
+  var hitEnemies = Set[Enemy]()
   
+  /** Resets set of hit enemies, allowing for enemies to be hit twice. */
+  def resetHitEnemies = this.hitEnemies = Set[Enemy]()
   
-  /* Hits all enemies that haven't been already hit that are within range
-   */
-  def hit(enemies: Iterator[Enemy]): Unit = { // Try to hit an enemy
+  /** Function for all implementing projectile types to implement for moving. */
+  def move(): Unit
+  
+  /** Hits all enemies that haven't been already hit that are within range */
+  def hit(enemies: Iterator[Enemy]): Unit = {
     
-    if (this.pos.distanceSqrd(origin) > range * range) {  // If outside of range, finish
-      
-      this.isOutOfRange = true
+    this.outOfRange = this.pos.distanceSqrd(origin) > range * range
     
-    } else {
+    if (!this.outOfRange) {
       
       enemies.foreach(e => {
 
@@ -43,18 +52,6 @@ abstract class Projectile(_x: Double, _y: Double, val damage: Double, val range:
   }
   
   
-  /* Contains all the hit enemies, specifically made for boomerangs
-   */
-  var hitEnemies = Set[Enemy]()
-  
-  
-  /* Resets hit enemies upon calling, allowing for enemies to be hit twice
-   */
-  def resetHitEnemies = this.hitEnemies = Set[Enemy]()
-  
-  
-  /* Function for projectile types to implement
-   */
-  def move(): Unit
+
   
 }

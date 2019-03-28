@@ -1,91 +1,48 @@
 package game
 
-import scala.collection.mutable.Buffer
-
-/* A path describes a piece of the path that the enemies take.
- * The path objects are what the enemies use for navigating the
- * map. Each map contains a position and a reference to the next
- * path object, if there is any.
- * 
- * Path objects create a linked structure, that can be navigated
- * from the first path to the last path, but not backwards.
+/** A path describes a coordinate pair. Paths are chained in a one-directional chain,
+ *  with each path having a next path, which the enemies can then use to navigate.
  */
-
-case class Path(_x: Double, _y: Double,
-                private var _next: Option[Path] = None) {
+case class Path(x: Double, y: Double, private var _next: Option[Path] = None) {
   
-  /* Returns true if this is the last path in its
-   * chain, that is if it doesn't have a next path
-   * assigned to it.
-   */
-  
+  /** Returns true if no path follows this path: last in chain. */
   def isLast: Boolean = this._next.isEmpty
   
-  
-  /* Returns true if this path is followed by another
-   * path.
-   */
-  
+  /** Returns true if a path follows this path. */
   def hasNext: Boolean = this._next.isDefined
   
+  /** Assigns a path to follow this path if this path has no following path. */
+  def assignNext(assigned: Path) = if (this.isLast) this._next = Some(assigned)
+
+  /** Returns the following path wrapped in an option. */
+  def next: Option[Path] = this._next
   
-  /* Returns the last path in the chain
-   */
+  /** The position of this path as a position vector. */
+  private val _pos: Vec = Vec(x, y)
+  
+  /** Returns this path's position. */
+  def pos: Vec = this._pos
+  
+  /** Returns the last path in this path's chain. */
   def last: Path = {
     var p = this
     while (p.hasNext) { p = p.next.get }
-    p
+    return p
   }
   
-  
-  /* Assigns a path to be the next path for this one.
-   * A path that already has another path assigned to it
-   * cannot be reassigned.
-   */
-  
-  def assignNext(assigned: Path) = if (this.isLast) this._next = Some(assigned)
-
-  
-  /* Returns the next path for this path so that it
-   * cannot be modified.
-   */
-  
-  def next: Option[Path] = this._next
-  
-  
-  /* The position of this vector as a private variable so that
-   * it cannot be modified.
-   */
-  
-  val _pos: Vec = Vec(_x, _y)
-  
-  
-  /* Returns the position of this path, so that it cannot
-   * be modified.
-   */
-  
-  def pos: Vec = this._pos
-  
-  
-  /* Returns a textual description of the path segment
-   */
-  
-  override def toString(): String = s"Path (${this._pos.x}, ${this._pos.y})"
-  
-  
-  /* Generates an array of path segments, all followed by none
-   * from this path segment and the segments chained to it
-   */
-  
+  /** Generates an array of this path and all the paths following it in the chain. */
   def toArray(): Array[Path] = {
-    var segments = Buffer[Path]()
+    var segments = Array[Path]()
     var current: Option[Path] = Some(this)
     while (current.isDefined) {
-      segments += new Path(current.get.pos.x, current.get.pos.y, None)
-      current = current.get._next
+      segments = segments :+ new Path(current.get.pos.x, current.get.pos.y, None)
+      current = current.get.next
     }
     segments.toArray
   }
+  
+  /** Returns a textual description of this path segment. */
+  override def toString(): String = s"Path (${this._pos.x}, ${this._pos.y})"
   
 }
 

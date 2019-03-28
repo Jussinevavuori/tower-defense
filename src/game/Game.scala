@@ -1,53 +1,40 @@
 package game
 
 import scala.collection.mutable.Buffer
-import scalafx.scene.paint.Color
 
-/* A game object depicts an instance of a game. A game can be 
- * constructed from giving it the correct arguments, which can
- * be created from a file using the GameLoader.
- * 
- * By default, unless otherwise specified i.e. by GameLoader
- * - Player is always a fresh default player
- * - Player starts off with 0 towers
- * - Player starts at wave 0
- * 
+/** A game object describes an instance of a tower defense game and holds all the
+ *  necessary game elements and functions for updating the game state.
+ *  
+ *  A game is initialized with the dimensions of the game and a path. Alternatively
+ *  an initial wave number (default 0) can be passed in, as well as a readily made
+ *  player or a list of towers.
  */
-
-class Game( val rows: Int, val cols: Int,  // The size of the gamefield
-            val path: Path,                // A path must always be assigned
-            initWave: Int = 0,              // By default wave zero
-            val player: Player = new Player(),           // By default a new player
-            val towers: Buffer[Tower] = Buffer[Tower]()  // By default no towers
-          ) {
+class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0, 
+            val player: Player = new Player(), val towers: Buffer[Tower] = Buffer[Tower]()) {
   
   
-  // Each game contains enemies
+  /** The enemies in the current game. */
   var enemies: Buffer[Enemy] = Buffer[Enemy]()
-  
-  // The current wave
+
+  /** The projectiles in the current game. */
+  var projectiles = Buffer[Projectile]()
+
+  /** The current wave in the game. */
   var wave: Wave = WaveLoader.loadWave(initWave, this.path)  
   
-  // Each game has a towershop
+  /** The current game's towersho. */
   val shop = new TowerShop()
   
-  // Buffer of projectiles
-  var projectiles = Buffer[Projectile]()
-  
-  // Amount of money and projectiles at the start of the round for saving
+  /** The towers as they were at the start of each round for saving. */
   var saveTowers = this.towers
+  
+  /** The money as it was at the start of each round for saving. */
   var saveMoney  = this.player.money
   
-  
-  // True when game is over
+  /** Returns true when the player dies and the game is over. */
   def gameover = this.player.dead
 
-  
-    
-  /* Function that is called every frame and updates the game
-   * Takes the elapsed time between frames as an argument for
-   * scaling the movement
-   */
+  /** Updates the gamestate each frame with the given elapsed time in seconds. */
   def update(elapsedTime: Double): Unit = {
         
     // Loop five times for fast forward
@@ -58,23 +45,23 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
       // Update enemies
       val enemyIndexIterator = enemies.zipWithIndex.iterator
       enemyIndexIterator.foreach{case (enemy, i) => {
-        
+                
         // Remove dead enemies, reward player, play effect, spawn enemies
-        if (enemy.dead) {                        
-          this.player.reward(enemy.reward)                 
-          gui.Effects.addMoneyEffect(enemy)      
+        if (enemy.dead) {
+          this.player.reward(enemy.reward)
+          gui.Effects.addMoneyEffect(enemy)
           this.enemies.remove(i - rem)
           rem += 1
-          for (spawn <- enemy.death()) {         
-            this.enemies.append(spawn)           
-          }          
+          for (spawn <- enemy.death()) {
+            this.enemies.append(spawn)
+          }
         }
         
         // Move enemies, upon reaching end damage player and remove enemy
         else if (enemy.advance(elapsedTime)) {
-          this.player.damage(1)               
-          gui.Audio.play("damage2.wav")       
-          this.enemies.remove(i)              
+          this.player.damage(1)
+          gui.Audio.play("damage2.wav")
+          this.enemies.remove(i)
         }
       }}
     
@@ -86,26 +73,26 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
           this.towers.remove(i - rem)
           rem += 1
         }
-        tower.updateTarget(this.enemies.reverse.iterator)              
-        this.projectiles ++= tower.shoot(elapsedTime) 
+        tower.updateTarget(this.enemies.reverse.iterator)
+        this.projectiles ++= tower.shoot(elapsedTime)
       }}
       
       // Update projectiles, move, try to hit all enemies and remove finished
       rem = 0
       val projIndexIterator = projectiles.zipWithIndex.iterator
       projIndexIterator.foreach{case (proj, i) => {
-        proj.move()           
+        proj.move()
         proj.hit(this.enemies.iterator)
-        if (proj.finished) {  
+        if (proj.finished) {
           this.projectiles.remove(i - rem)
           rem += 1
         }
       }}
   
       // Spawn in the enemies each wave
-      if (!this.wave.finished) {      
-        val spawn = this.wave.spawn() 
-        if (spawn.isDefined)          
+      if (!this.wave.finished) {
+        val spawn = this.wave.spawn()
+        if (spawn.isDefined)
           this.enemies += spawn.get
       }
       
@@ -118,40 +105,31 @@ class Game( val rows: Int, val cols: Int,  // The size of the gamefield
     }
   }
   
-  /* Loads the next wave only if current wave is finished spawning enemies, all the enemies
-   * have been already killed and there is another wave to load in.
-   */
-  
+  /** If current wave is completed and killed, and another wave exists, loads the next wave. */
   def loadNextWave(): Boolean = {
-    if (this.wave.number < WaveLoader.maxWave && this.wave.finished && this.enemies.isEmpty) {
+    val ready = this.wave.number < WaveLoader.maxWave && this.wave.finished && this.enemies.isEmpty
+    if (ready) {
       this.wave = WaveLoader(this.wave.number + 1, this.path)
       this.saveMoney = this.player.money
       this.saveTowers = this.towers
-      true
-    } else {
-      false
     }
+    return ready
   }
   
-  
-  /* Sees if a valid spot on the grid is valid, that is it is within the game bounds and 
-   * not overlapping with the path too much
-   */
-  
+  /** For a given pair of coordinates, returns whether a tower can be placed in the spot. */
   def isValidSpot(x: Double, y: Double) = {
     x >= 0.0 && y >= 0.0 && x <= this.cols && y <= this.rows &&
     this.path.toArray().map(_.pos).forall(p => p.distance(Vec(x, y)) > 1.0)
   }
   
-  /* Toggles fast forward (game loop runs more loops per frame)
-   */
-  
+  /** The frames per update: while fast forwarding loop 3 times each frame, else loop once. */
   def framesPerUpdate = if (fastForward) 3 else 1
-  var fastForward = false
-  def toggleFastForward(setting: Boolean) = {
-    fastForward = setting
-  }
-
+  
+  /** Private variable to keep track of whether the game is being fast forwarded. */
+  private var fastForward = false
+  
+  /** Function to toggle the fast forward to the given setting. */
+  def toggleFastForward(setting: Boolean) = fastForward = setting
 
 }
 

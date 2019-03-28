@@ -2,104 +2,111 @@ package game
 
 import scala.collection.mutable.Buffer
 
-/** A tower type is created followingly
-  * 
-  * {{{
-  * 	
-  * class TowerType(_x: Double, _y: Double)
-
-  * 	extends Tower(_x, _y, id, strength, radius, cooldown, price, upgrade)
-  * 
-  * 	def generateProjectiles: Buffer[Projectile]
-  * 
-  * }}}
-  * 
-  */
-
-class CannonTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "c1", 10.0, 3.7, 1.00, 300, Some(new CannonTower2(_x, _y))) {
-  
+/** Cannon towers shoot normal bullets at a steady pace. First, cheapest towers. */
+class CannonTower1(x: Double, y: Double) extends Tower(x, y) {
+  val typeid   = "c1"
+  val strength = 10.0
+  val radius   = 3.7
+  val cooldown = 1.00
+  val price    = 300
+  val upgrade  = Some(new CannonTower2(x, y))
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
-    Buffer(
-      new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
+    Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
-class CannonTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "c2", 16.0, 4.2, 0.66, 500, Some(new CannonTower3(_x, _y))) {  
-  
+class CannonTower2(x: Double, y: Double) extends Tower(x, y) {
+  val typeid   = "c2"
+  val strength = 16.0
+  val radius   = 4.2
+  val cooldown = 0.66
+  val price    = 500
+  val upgrade  = Some(new CannonTower3(x, y))
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
-    Buffer(
-      new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
+    Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
-class CannonTower3(_x: Double, _y: Double)
-  extends Tower(_x, _y, "c3", 20.0, 4.7, 0.40, 800) {
-  
+class CannonTower3(x: Double, y: Double) extends Tower(x, y) {
+  val typeid   = "c3"
+  val strength = 20.0
+  val radius   = 4.7
+  val cooldown = 0.40
+  val price    = 800
+  val upgrade  = None
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot1.wav", 0.2)
-    Buffer(
-      new BulletProjectile(this.pos.x, this.pos.y, this.strength, this.radius, target))
+    Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
 
 
-
-class BoomerangTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "b1", 5.0, 3.0, 2.0, 600, Some(new BoomerangTower2(_x, _y))) {
-  
+/** Boomerang towers shoot boomerangs one at a time. */
+class BoomerTower1(x: Double, y: Double) extends Tower(x, y) {
+  val typeid   = "b1"
+  val strength = 7.5
+  val radius   = 3.3
+  val cooldown = 2.0
+  val price    = 600
+  val upgrade  = Some(new BoomerTower2(x, y))
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("throw.wav", 0.2)
-    Buffer(
-        new BoomerangProjectile(this.pos.x, this.pos.y, this.strength, target, 0.25))
+    Buffer(new Boomerang(this.pos.x, this.pos.y, this.strength, target, 0.25))
   }
 }
-class BoomerangTower2(_x: Double, _y: Double) 
-  extends Tower(_x, _y, "b2", 10.0, 4.0, 1.4, 1000) {
-  
+class BoomerTower2(x: Double, y: Double) extends Tower(x, y) {
+  val typeid   = "b2"
+  val strength = 12.0
+  val radius   = 4.0
+  val cooldown = 1.40
+  val price    = 500
+  val upgrade  = None
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("throw.wav", 0.2)
-    Buffer(
-      new BoomerangProjectile(this.pos.x, this.pos.y, this.strength, target, 0.28))
+    Buffer(new Boomerang(this.pos.x, this.pos.y, this.strength, target, 0.28))
   }
 }
 
 
+/** Homing towers shoot missiles at a slow pace, but deal great splash damage. */
+class HomingTower1(x: Double, y: Double) extends Tower(x, y) {
 
-
-
-class HomingTower1(_x: Double, _y: Double)
-  extends Tower(_x, _y, "h1", 40.0, 7, 2.4, 1200, Some(new HomingTower2(_x, _y))) {
-  
+  val typeid   = "h1"
+  val strength = 40.0
+  val radius   = 6.0
+  val cooldown = 2.4
+  val price    = 1200
+  val upgrade  = Some(new HomingTower2(x, y))
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
-    Buffer(
-      new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 1.5, target, 0.4, 0.002))
+    Buffer(new Missile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 1.5, target))
   }
 }
-class HomingTower2(_x: Double, _y: Double)
-  extends Tower(_x, _y, "h2", 60.0, 7.5, 1.9, 1200) {
-  
+class HomingTower2(x: Double, y: Double) extends Tower(x, y) {
+
+  val typeid   = "h2"
+  val strength = 60.0
+  val radius   = 6.6
+  val cooldown = 1.90
+  val price    = 1200
+  val upgrade  = None
   def generateProjectiles(target: Enemy) = {
     gui.Audio.play("shot2.wav", 0.2)
-    Buffer(
-      new HomingProjectile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 2.5, target, 0.4, 0.002))
+    Buffer(new Missile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 2.5, target))
   }
 }
 
 
-
-// Contains the unlock levels and prices
+/** Object that contains information about unlocking and buying towers. */
 object TowerInfo {
   
-  final val unlockCannon    = 0
-  final val unlockBoomerang = 5
-  final val unlockHoming    = 10
+  final val unlockCannon = 0
+  final val unlockBoomer = 5
+  final val unlockHoming = 10
 
-  final val priceCannon    = new CannonTower1(0, 0).price
-  final val priceBoomerang = new BoomerangTower1(0, 0).price
-  final val priceHoming    = new HomingTower1(0, 0).price
+  final val priceCannon = new CannonTower1(0, 0).price
+  final val priceBoomer = new BoomerTower1(0, 0).price
+  final val priceHoming = new HomingTower1(0, 0).price
   
 }
 

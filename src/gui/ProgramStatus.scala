@@ -1,43 +1,45 @@
 package gui
 
-/*
- * Program status keeps track of which status the program is in, for example
- * main menu or ingame or level editor. The program status has functions to
- * change the status, start and stop animations on the statuses and it also
- * knows which scene to display for each status.
+/** Program status keeps track of which scene is active and has methods for
+ *  interacting with the scenes.
  */
-
-
 object ProgramStatus {
   
+  /** The current status. */
   private var status: Int = ProgramStatus.MainMenu
+  
+  /** Function to change the status. */
   def setStatus(s: Int) = {
     require(s >= 0 && s < scenes.size, s"Program status $s does not exist")
     this.status = s
   }
   
+  /** Calling ProgramStatus returns the current status as an integer. */
   def apply() = this.status
   
+  /** Returns the current scene based on the current status. */
   def scene = this.scenes(this.status)
   
-  final val scenes = Array(
+  /** List of scenes. */
+  final val scenes = Array[AnimationScene](
     MainMenuScene,
     InGameScene,
     LevelEditorScene,
     LoadGameScene
   )
-  def start(s: Int = this.status) =
-    if (this.scenes(s).isInstanceOf[AnimationScene]) {
-        this.scenes(s).asInstanceOf[AnimationScene].start()
-        this.scenes(s).asInstanceOf[AnimationScene].loadUp()
-  }
-  def stop(s: Int = this.status) = {
-    if (this.scenes(s).isInstanceOf[AnimationScene])
-        this.scenes(s).asInstanceOf[AnimationScene].stop()
-  }
   
-  final val MainMenu    = 0
-  final val InGame      = 1
-  final val LevelEditor = 2
-  final val LoadGame    = 3
+  /** Function to start a scene, by default the current scene. */
+  def start(s: Int = this.status) = {
+    this.scenes(s).loadUp()
+    this.scenes(s).start()
+  }
+
+  /** Function to stop a scene, by default the current scene. */
+  def stop(s: Int = this.status) = this.scenes(s).stop()
+  
+  /** The indices (status integers) of each scene. */
+  final val MainMenu    = this.scenes.indexOf(MainMenuScene)
+  final val InGame      = this.scenes.indexOf(InGameScene)
+  final val LevelEditor = this.scenes.indexOf(LevelEditorScene)
+  final val LoadGame    = this.scenes.indexOf(LoadGameScene)
 }

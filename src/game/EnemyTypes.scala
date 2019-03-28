@@ -1,76 +1,74 @@
 package game
 
-import scala.util.Random.nextDouble
-
-/** An enemy type is created followingly
-  * 
-  * {{{
-  * 	
-  * class EnemyType(_x: Double, _y: Double, _target: Option[Path])
-  * 	extends Enemy("name", health, speed, size, reward, _x, _y, _target) {
-  * 
-  * 	def death: Array[Enemy]
-  * 
-  * }
-  * 
-  * }}}
-  * 
-  * ...where:
-  * 
-  * - The _x, _y and _target parameters specify the place, where the
-  * 	enemy type is created and the target is its first target.
-  * - Name is a string which describes the name of the enemy type
-  *	- Health is a double which describes how much health enemies of that type
-  *		initially have
-  *	- Size is a double, which describes (in grid units) how big of a radius
-  *		the enemy has
-  * - Death is a method, which returns the enemies, that spawn, when this
-  * 	enemy dies. 
-  * - Reward is amount of money rewarded to player upon killing the enemy
-  */
+import scala.util.Random.nextGaussian
+import scala.collection.Iterator
 
 
-// Normal first: smallest normal unit, does not spawn any units
-class EnemyN1(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n1", 10.0, Speed(0.02, 0.005), 0.30, 3, _x, _y, _target) {
-  def death = Array[Enemy]()  
-}
+/** All enemy types that extend the class enemy together with their respective attributes.
+ *  The vary function in each death is created to apply variance to the game and minimize
+ *  enemy overlap.
+ */
 
-// Normal second: spawns two smaller units
-class EnemyN2(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n2", 18.0, Speed(0.03, 0.005), 0.35, 2, _x, _y, _target) {
-  def death = Array[Enemy](
-      new EnemyN1(this.pos.x, this.pos.y, this.target),
-      new EnemyN1(this.pos.x, this.pos.y, this.target)
-  )
-}
 
-// Normal third: spawns two smaller units
-class EnemyN3(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n3", 40.0, Speed(0.07, 0.005), 0.40, 1, _x, _y, _target) {
-  def death = Array[Enemy](
-      new EnemyN2(this.pos.x, this.pos.y, this.target),
-      new EnemyN2(this.pos.x, this.pos.y, this.target)
-  )
-}
-
-// Normal fourth: spawns two smaller units
-class EnemyN4(_x: Double, _y: Double, _target: Option[Path])
-  extends Enemy("n4", 60.0, Speed(0.09, 0.005), 0.45, 1, _x, _y, _target) {
+/** Normal level 1 enemy: undivisible, smallest and weakest normal unit */
+class EnemyN1(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
   
-  def death = Array[Enemy](
-      new EnemyN3(this.pos.x, this.pos.y, this.target),
-      new EnemyN3(this.pos.x, this.pos.y, this.target)
+  def maxhp  = 10.0
+  val typeid = "n1"
+  val speed  = 0.02
+  val size   = 0.30
+  val reward = 3
+  def death  = Iterator.empty
+}
+
+
+/** Normal level 2 enemy: stronger, divides into 2 level 1 normal enemies */
+class EnemyN2(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+  
+  def maxhp  = 18.0
+  val typeid = "n"
+  val speed  = 0.03
+  val size   = 0.35
+  val reward = 2
+  def death  = Iterator[Enemy](
+    new EnemyN1(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target),
+    new EnemyN1(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target)
   )
 }
 
 
+/** Normal level 3 enemy: stronger, divides into 2 level 2 normal enemies */
+class EnemyN3(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+  
+  def maxhp  = 36.0
+  val typeid = "n3"
+  val speed  = 0.06
+  val size   = 0.40
+  val reward = 1
+  def death  = Iterator[Enemy](
+    new EnemyN2(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target),
+    new EnemyN2(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target)
+  )
+}
 
 
-// A function that returns the random number from the between
-// base + variance and base - variance to be used as a speed
+/** Normal level 4 enemy: stronger, divides into 2 level 3 normal enemies */
+class EnemyN4(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+  
+  def maxhp  = 52.0
+  val typeid = "n4"
+  val speed  = 0.08
+  val size   = 0.45
+  val reward = 1
+  def death  = Iterator[Enemy](
+    new EnemyN3(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target),
+    new EnemyN3(Vary(this.pos.x, 0.05), Vary(this.pos.y, 0.05), this.target)
+  )
+}
 
-object Speed {
-  def apply(base: Double, variance: Double) = base + 2 * variance * (nextDouble() - 0.5)
+
+/** Function that returns a gaussian random number in the range (b - v) to (b + v). */
+object Vary {
+  def apply(b: Double, v: Double) = b + 2 * v * (nextGaussian() - 0.5)
 }
 

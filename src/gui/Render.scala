@@ -1,12 +1,8 @@
 package gui
 
-
-
 import java.io.File
 import java.io.FileInputStream
-
 import scala.collection.mutable.Buffer
-
 import game._
 import scalafx.scene.SnapshotParameters
 import scalafx.scene.canvas.Canvas
@@ -23,9 +19,11 @@ import gui.Effects.TowerupEffect
 import gui.Effects.ExplosionEffect
 import scalafx.scene.shape.ArcType
 
+
+/** Render contains all the functions (except animations) necessary for rendering the game. */
 object Render {
   
-  
+  /** Render game renders the given game fully to the selected canvas, with a given selected tower. */
   def renderGame(game: Game, canvas: Canvas, selectedTower: Option[Tower]): Unit = {
     if (this.bg == null) throw new RenderingException(
       "Background is null. Prerender must be performed before rendering")
@@ -61,18 +59,29 @@ object Render {
     // Draw tower prices
     this.setFontSize(gfx, 20)
     gfx.textAlign = TextAlignment.Center  // Shop prices
-    gfx.fillText("$ " +    TowerInfo.priceCannon.toString,  760 * resizeW, 1044 * resizeH)
-    gfx.fillText("$ " + TowerInfo.priceBoomerang.toString,  960 * resizeW, 1044 * resizeH)
-    gfx.fillText("$ " +    TowerInfo.priceHoming.toString, 1160 * resizeW, 1044 * resizeH)
+    gfx.fillText("$ " + TowerInfo.priceCannon.toString,  760 * resizeW, 1044 * resizeH)
+    gfx.fillText("$ " + TowerInfo.priceBoomer.toString,  960 * resizeW, 1044 * resizeH)
+    gfx.fillText("$ " + TowerInfo.priceHoming.toString, 1160 * resizeW, 1044 * resizeH)
     
     // Show controls if necessary
-    if (this.showControls) {
-      this.renderControls(gfx)
-    }
+    if (this.showControls) this.renderControls(gfx)
+    
+    // Show FPS if necessary
+    if (this.showFPS) this.fps(Time.elapsedTime, canvas)
   }
   
+  /** Function to set the font in the given graphics to the given size of gamegirl.ttf. */
+  def setFontSize(gfx: GraphicsContext, size: Double) =
+    gfx.setFont(Font.loadFont("file:assets/font/gamegirl.ttf", (size * (resizeW min resizeH)).toInt))
+
+  /** Converts any grid position to a coordinate position on the canvas. */
+  def canvasCoords(x: Double, y: Double) = (x * this.gridW, y * this.gridH)
   
-  // Renders the active tower in the towershop that is being purchased
+  /** Converts a radius to elliptical radii. */
+  def radius(r: Double) = (r * this.gridW, r * this.gridH)
+  
+  
+  /** Renders the active tower in the towershop that is being purchased */
   def renderActiveTower(canvas: Canvas, game: Game, gridX: Double, gridY: Double) = {
 
     val gfx = canvas.graphicsContext2D
@@ -102,7 +111,7 @@ object Render {
   
   
   
-  // Renders a selectable tower when mouse is hovering over it  
+  /** Renders a selectable tower when mouse is hovering over it. */
   def renderSelectableTower(canvas: Canvas, game: Game, tower: Tower): Unit = {
     
     val gfx = canvas.graphicsContext2D
@@ -115,7 +124,7 @@ object Render {
   
   
   
-  // Renders the selected tower  
+  /** Renders the selected tower. */ 
   def renderSelectedTower(canvas: Canvas, tower: Tower): Unit = {
     
     val gfx = canvas.graphicsContext2D
@@ -140,7 +149,7 @@ object Render {
   
   
   
-  // Renders towers in the shop
+  /** Renders towers in the shop. */
   def renderShopTowers(canvas: Canvas): Unit = {
     
     val gfx = canvas.graphicsContext2D
@@ -151,9 +160,8 @@ object Render {
   
   
   
-  // Renders the game over screen
+  /** Renders the game over screen. */
   def renderGameover(canvas: Canvas) = {
-    
     val gfx = canvas.graphicsContext2D
     gfx.clearRect(0, 0, Int.MaxValue, Int.MaxValue)
     Animate("gameover", 0, 0, gfx)
@@ -161,29 +169,23 @@ object Render {
 
   
   
-  // Renders the towers
+  /** Renders the towers. */
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
-    
     for (t <- towers.sortBy(_.pos.y)) {
-      
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
-      
       t.typeid match {
         case "c1" => Animate("cannondog1", x, y, gfx)
         case "c2" => Animate("cannondog2", x, y, gfx)
         case "c3" => Animate("cannondog3", x, y, gfx)
         case "c4" => Animate("cannondog2", x, y, gfx)
-        
         case "b1" => Animate("koala1", x, y, gfx)
         case "b2" => Animate("koala2", x, y, gfx)
         case "b3" => Animate("koala2", x, y, gfx)
         case "b4" => Animate("koala2", x, y, gfx)
-        
         case "h1" => Animate("panda1", x, y, gfx)
         case "h2" => Animate("panda1", x, y, gfx)
         case "h3" => Animate("panda1", x, y, gfx)
         case "h4" => Animate("panda1", x, y, gfx)
-        
         case _    => Animate("cannondog1", x, y, gfx)
       }
     }
@@ -191,16 +193,16 @@ object Render {
   
   
 
-  // Renders the projectiles  
+  /** Renders the projectiles. */
   private def renderProjectiles(gfx: GraphicsContext, projectiles: Buffer[Projectile]) = {
-    
+
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     
     for (p <- projectiles) {
       val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
       
-      if (p.isInstanceOf[HomingProjectile]) {
-        val angle = p.asInstanceOf[HomingProjectile].dir() 
+      if (p.isInstanceOf[Missile]) {
+        val angle = p.asInstanceOf[Missile].dir() 
         gfx.translate(x, y)
         gfx.rotate(angle)
         gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
@@ -208,12 +210,12 @@ object Render {
         gfx.translate(-x, -y)
       }
       
-      else if (p.isInstanceOf[BulletProjectile]) {
+      else if (p.isInstanceOf[Bullet]) {
         gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
       }
       
-      else if (p.isInstanceOf[BoomerangProjectile]) {
-        val angle = p.asInstanceOf[BoomerangProjectile].angle
+      else if (p.isInstanceOf[Boomerang]) {
+        val angle = p.asInstanceOf[Boomerang].angle
         gfx.translate(x, y)
         gfx.rotate(angle)
         gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
@@ -225,7 +227,7 @@ object Render {
 
 
   
-  // Renders the enemies as purple circles of the correct size.
+  /** Renders the enemies as coloured circles of the correct size with HP bars. */
   private def renderEnemies(gfx: GraphicsContext, enemies: Buffer[Enemy]) = {
     
     for (e <- enemies) {
@@ -235,7 +237,7 @@ object Render {
       val (sx, sy) = radius(e.size * 1.2)  // HP radius
       val (rx, ry) = radius(e.size)
       
-      val hp = (e.health / e.maxHealth) max 0
+      val hp = (e.health / e.maxhp) max 0
      
       gfx.stroke = Color(0, 0, 0, 0.8)
       gfx.lineWidth = 5
@@ -262,7 +264,7 @@ object Render {
   
   
   
-  // Renders the ongoing special effects in the effects object
+  /** Renders the ongoing special effects in the effects object. */
   def renderEffects(gfx: GraphicsContext) = {  
     
     this.setFontSize(gfx, 20)
@@ -290,7 +292,7 @@ object Render {
     }
   }
   
-  // Renders the controls
+  /** Renders the controls onscreen. */
   def renderControls(gfx: GraphicsContext) {
     this.controlsTimer += 1
     val (fadeStart, fadeStop) = (300, 480)
@@ -316,6 +318,8 @@ object Render {
     })
     gfx.setGlobalAlpha(1.0)
   }
+  
+  /** The controls. */
   private val controls = Array[String](
     "[Spacebar]: Fast forward",
     "[Spacebar]: Next Wave",
@@ -327,33 +331,20 @@ object Render {
   )
   
   
-  // Toggles controls
+  /** The current state of control visibility. */
   private var showControls = false
+  
+  /** The timer for controls: controls are only visible for a certain amount of time. */
   private var controlsTimer = 0
-  def toggleControls() = {
-    this.showControls = !this.showControls
-  }
+  
+  /** Function to toggle whether the controls are showing or not. */
+  def toggleControls() = this.showControls = !this.showControls
 
-  
-  
-  // Converts any grid position to a coordinate position on the canvas
-  def canvasCoords(x: Double, y: Double): (Double, Double) = {
-    (x * this.gridW, y * this.gridH)
-  }
-  
-  
-  
-  // Converts a radius to elliptical radii
-  private def radius(r: Double): (Double, Double) = {
-    (r * gridW, r * gridH)
-  }
-
-  
-  
-  // Renders the FPS in the top corner of the canvas
+  /** List of all previous frame rates. */
   var previousFrames = Array[Int]()
+
+  /** Renders the FPS to the corner of the screen as an average of the last 60 frames. */
   def fps(elapsedTime: Double, canvas: Canvas) = {
-    
     val gfx = canvas.graphicsContext2D
     val fps = (1.0 / elapsedTime).toInt
     this.setFontSize(gfx, 40)
@@ -366,99 +357,78 @@ object Render {
     gfx.fillText(avg.toString, 20, 50)
   }
   
+  /** The current state of FPS visibility. */
+  private var showFPS = false
   
+  /** Function to toggle FPS visibility. */
+  def toggleFPS() = this.showFPS = !this.showFPS
   
-  // Loads an image from "assets/sprites" 
-  def loadImage(filename: String): Image = {
-    
-    val filepath = "assets/gfx/" + filename + ".png"
-    val inputStream = new FileInputStream(filepath)
-    val image = new Image(inputStream)
-    inputStream.close()
-    image
-  }  
-  
-  
-
-  // Loads a random variation of a filename
-  def loadRandomImage(filename: String, chances: Array[Int]): Image = {
-    
-    val randomInt = scala.util.Random.nextInt(chances.sum) + 1
-    var filepath = ""
-    for (i <- 1 to chances.length) {
-      val lowerbound = chances.take(i - 1).sum
-      val upperbound = chances.take(i).sum
-      if (randomInt <= upperbound && randomInt > lowerbound) {
-        filepath = s"assets/gfx/$filename${i-1}.png"
-      }
-    }
-    val inputStream = new FileInputStream(filepath)
-    val image = new Image(inputStream)
-    inputStream.close()
-    image
-  }
-  
-  
-  
-  /* Prerenders the background and saves it as a png to the disk, so it doesn't
-   * have to be rendered each frame. Must be called with both the main and
-   * side canvas and the game when loading the came. Loads the variables declared
-   * below
-   */
-
-  // The screenshots from preload to be drawn on each frame
+  /** The background image constructed in the prerender. */
   private var bg: Image = null
   
-  // Other preloaded graphics
-  private var bulletProjImage:    Image = this.loadImage("bulletproj")
-  private var homingProjImage:    Image = this.loadImage("homingproj")
-  private var boomerangProjImage: Image = this.loadImage("boomerangproj")
+  /** Preloaded images for all projectiles. */
+  private var bulletProjImage:    Image = ImageLoader("bulletproj")
+  private var homingProjImage:    Image = ImageLoader("homingproj")
+  private var boomerangProjImage: Image = ImageLoader("boomerangproj")
 
-  // Shortcuts for width and height of the canvases and grid, calculated at prerender
+  /** The width W and height H of the current scene. Updated each frame. */
   var W: Double = 1920
   var H: Double = 1080
+  
+  /** The height of the main game area. */
   def mainH = 840 * (H / 1080)
+  
+  /** The heighto f the side area. */
   def sideH = 240 * (H / 1080)
+  
+  /** The grid width and height. */
   def gridW: Double = this.W / gCols
   def gridH: Double = this.mainH / gRows
+  
+  /** The amount of columns and rows in the game. Loaded in prerender. */
   var gCols: Int = 0
   var gRows: Int = 0  
+  
+  /** The resizing factors for width and height directions. */
   def resizeW = W / 1920
   def resizeH = H / 1080
-  
-  // Set the font to a certain size of gamegirl.ttf
-  def setFontSize(gfx: GraphicsContext, size: Double) = {
-    gfx.setFont(Font.loadFont("file:assets/font/gamegirl.ttf", (size * (resizeW min resizeH)).toInt))
-  }
 
+  /** Function to load the game dimensions and render the background image. */
+  def prerender(game: Game) = {
 
-  def prerender(canvas: Canvas, game: Game) = {
-
-    // Loading the graphics of the canvases
-    val gfx = canvas.graphicsContext2D
+    // Loading a canvas to paint the background on.
+    val canvas = new Canvas(1920, 1080)
+    
+    // Loading the canvas graphics to draw the background with.
+    val cgfx = canvas.graphicsContext2D
+    
+    // Loading the columns and rows of the game.
     gCols = game.cols
     gRows = game.rows 
     
-    // Creating a two dimensional array containing all the path locations
-    // and drawing the background based on the grid
-    var paths: Array[(Int, Int)] = {
-      game.path.toArray().map(p => (p.pos.x.toInt, p.pos.y.toInt))
-    }
-    val grid: Array[Array[Boolean]] = {
-      Array.ofDim[Boolean](game.cols + 2, game.rows + 2)
-    }
+    // Loading a list of all the path coordinate pairs
+    var paths: Array[(Int, Int)] = game.path.toArray().map(p => (p.pos.x.toInt, p.pos.y.toInt))
+    
+    // Creating a two-dimensional array of the locations of the paths as boolean trues, rest as falses
+    val grid: Array[Array[Boolean]] = Array.ofDim[Boolean](game.cols + 2, game.rows + 2)
+    
+    // Constructing the grid based on the path coordinates
     for (i <- 0 until game.cols) {
       for (j <- 0 until game.rows) {
         grid(i + 1)(j + 1) = paths.contains((i, j))
       }
     }
-    val spritesheet: Image = this.loadImage("ss_ground")
+    
+    // Loading the spritesheet
+    val spritesheet: Image = ImageLoader("ss_ground")
+    
+    // Draw each spot in the grid
     for (i <- 1 to game.cols) {
       for (j <- 1 to game.rows) {
-        val (dx, dy) = canvasCoords(i - 1, j - 1)
+        
         val (sx, sy): (Int, Int) = {
           
-          // This, left, right, up, down: true if path exists
+          // Record the truth values for this and the eight neighboring grid cells
           val t = grid(i)(j)
           val l = grid(i - 1)(j)
           val r = grid(i + 1)(j)
@@ -469,57 +439,47 @@ object Render {
           val lu = grid(i - 1)(j - 1)
           val ru = grid(i + 1)(j - 1)
           
-          // Path
-          if (t)          (1, 1)
+          // Find the correct spot in the spritesheet based on the neighbors
           
-          // Full surround
-          else if (l & d & r & u) (6, 0)
-          
-          // Peninsulas
-          else if (l & d & r) (6, 2)
-          else if (l & d & u) (7, 0)
-          else if (l & r & u) (6, 1)
-          else if (d & r & u) (8, 0)
-                
-          // Inner corners
-          else if (l & d) (3, 2)
-          else if (r & d) (5, 2)
-          else if (r & u) (5, 0)
-          else if (l & u) (3, 0)
-          
-          // Double edges
-          else if (l & r) (7, 1)
-          else if (u & d) (7, 2)
-          
-          // Single edges
-          else if (d) (1, 0)
-          else if (r) (0, 1)
-          else if (u) (1, 2)
-          else if (l) (2, 1)
-          
-          // Outer corners
-          else if (ld) (2, 0)
-          else if (rd) (0, 0)
-          else if (ru) (0, 2)
-          else if (lu) (2, 2)
-          
-          // Grass
-          else (0, 3)
+          if      (t)             (1, 1)  //  |Path
+          else if (l & d & r & u) (6, 0)  //  |Full surround
+          else if (l & d & r)     (6, 2)  //  |Peninsulas
+          else if (l & d & u)     (7, 0)  //  | |
+          else if (l & r & u)     (6, 1)  //  | |
+          else if (d & r & u)     (8, 0)  //  | |
+          else if (l & d)         (3, 2)  //  |Inner corners
+          else if (r & d)         (5, 2)  //  | |
+          else if (r & u)         (5, 0)  //  | |
+          else if (l & u)         (3, 0)  //  | |
+          else if (l & r)         (7, 1)  //  |Double edges
+          else if (u & d)         (7, 2)  //  | |
+          else if (d)             (1, 0)  //  |Single edges
+          else if (r)             (0, 1)  //  | |
+          else if (u)             (1, 2)  //  | |
+          else if (l)             (2, 1)  //  | |
+          else if (ld)            (2, 0)  //  |Outer corners
+          else if (rd)            (0, 0)  //  | |
+          else if (ru)            (0, 2)  //  | |
+          else if (lu)            (2, 2)  //  | |
+          else                    (0, 3)  //  |Grass
         }
-        val (sw, sh) = (60, 60)
-        gfx.drawImage(spritesheet, sx * sw, sy * sh, sw, sh, dx, dy, this.gridW, this.gridH)
+        
+        // Draws the correct part of the sprite to the correct coordinates
+        cgfx.drawImage(spritesheet, sx * 60, sy * 60, 60, 60, (i - 1) * 60, (j - 1) * 60, 60, 60)
       }
     }
-    // Rendering the sidebar graphics
-    gfx.drawImage(this.loadImage("sidebar"), 0, this.mainH)
+    // Drawing the sidebar
+    cgfx.drawImage(ImageLoader("sidebar"), 0, 840)
 
-    // Creating two new writable images and snapshotting the canvases
-    val image = new WritableImage(W.toInt, H.toInt)
-    this.bg = canvas.snapshot(new SnapshotParameters(), image)
+    // Creating a new writable image
+    val image = new WritableImage(1920, 1080)
+    
+    // Snapshotting the canvas and saving it as the background
+    this.bg = canvas.snapshot(new SnapshotParameters(), image)    
   }
 }
 
-// An exception class for rendering expections if needed
+/** An exception class for rendering expections if needed. */
 class RenderingException(msg: String) extends Exception(msg)
 
 

@@ -1,61 +1,28 @@
 package game
 
 
-/* Vec is a class, which represents a two-dimensional vector,
- * and has the necessary vector operations for the game.
+/** Vec class implements simple vectors and contains only the necessary vector operations
+ *  for the game.
  */
-
 case class Vec(var x: Double, var y: Double) {
   
-  /* Function to add two vectors together
-   * 
-   * @param	 Another vector
-   * @return The sum vector
-   */
-  
+  /** Adds two vectors together and returns the sum vector. */
   def +(that: Vec): Vec = Vec(this.x + that.x, this.y + that.y)
   
-  
-  /* Function to substract another vector from
-   * this vector.
-   * 
-   * @param	 Another vector
-   * @return The sum vector
-   */
-  
+  /** Subtracts another vector from this vector and returns the sum vector. */
   def -(that: Vec): Vec = Vec(this.x - that.x, this.y - that.y)
   
-  
-  /* Function to add another vector into this vector. Alters
-   * this vector, without altering the other vector.
-   * 
-   * @param	 Another vector
-   * @return Unit
-   */
-  
+  /** Changes this vector to be the sum of this and another vector. */
   def +=(that: Vec): Unit = {
     val sum = this + that
     this.x = sum.x
     this.y = sum.y
   }
   
-  
-  /* Returns the size (aka the length or the magnitude) of this
-   * vector.
-   * 
-   * @return The size of this vector
-   */
-  
+  /** Returns this vector's size/magnitude/length. */
   def size: Double = math.sqrt(this.x * this.x + this.y * this.y)
   
-  
-  /* Function to scale a vector to a given size. Alters this
-   * vector.
-   * 
-   * @param	 The magnitude this vector will be scaled to
-   * @return Unit
-   */
-  
+  /** Adjusts this vector's length to the given magnitude without changing the direction. */
   def scaleTo(mag: Double): Unit = {
     if (this.size != 0) {
       val factor = mag / this.size
@@ -66,39 +33,20 @@ case class Vec(var x: Double, var y: Double) {
     }
   }
   
-  
-  /* Function mainly for position vectors. Changes the position vector's
-   * coordinates to that of the given vector.
-   *
-   * @param	 The vector whose values are copied to this vector
-   * @return Unit
-   */
-  
+  /** Moves a (position) vector by changing it's coordinates to that of another vector's. */
   def moveTo(that: Vec): Unit = {
     this.x = that.x
     this.y = that.y
   }
   
-  
-  /* Finds and returns the distance to another position vector.
-   * 
-   * @param	 Another position vector
-   * @return The distance
-   */
-  
+  /** Returns the distance from this (position) vector to another (position) vector. */
   def distance(that: Vec): Double = {
     val dx = that.x - this.x
     val dy = that.y - this.y
     math.sqrt(dx * dx + dy * dy)
   }
   
-  
-  /* Finds and returns the distance squared for a lighter calculation.
-   * 
-   * @param  Another position vector
-   * @return The distance, squared
-   */
-  
+  /** Returns the distance squared from this (position) vector to another (position) vector. */
   def distanceSqrd(that: Vec): Double = {
     val dx = that.x - this.x
     val dy = that.y - this.y
