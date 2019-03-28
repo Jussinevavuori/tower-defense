@@ -19,6 +19,8 @@ object LevelSaver {
   /** Takes a path and saves it as a custom level. */
   def saveCustomLevel(p: Path) = {
     
+    // TODO: Prompt the user to name the level
+    
     // Loading the current levels
     val levels: NodeSeq = try {
       XML.loadFile(new File("data/customdata.xml")) \ "game"

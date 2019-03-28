@@ -102,8 +102,7 @@ object LevelEditorScene extends AnimationScene {
         }
         
         // Construct intersection
-        else if (distance < 2.1 && (sameRow || sameCol) 
-                && isNotOverlapping && pathInBetween) {
+        else if (distance < 2.1 && (sameRow || sameCol) && isNotOverlapping && pathInBetween) {
           p.assignNext(new Path(x, y))
           grid(x + 1)(y + 1) = true
           latestX = x
@@ -129,33 +128,32 @@ object LevelEditorScene extends AnimationScene {
     path = null
     bg = renderMap()
   }
-  
-  /*
-   * BUTTONS
-   */
-   
+
   /** Two invisible rectangles for scaling purposes. */
   val scl1 = Rectangle(0, 0, 0, 0)      
   val scl2 = Rectangle(1920, 1080, 0, 0) 
   
   /** A button to toggle the music. */
-  val b_music = Music.button
+  val b_music = Music.button(1856, 880)
+  
+  /** A save button. */
+  val b_save = new MovableDefaultButton("Save", 44, 972) {
+    override def onClick() = {
+      if (!constructing) {
+        LevelSaver.saveCustomLevel(path)
+        Audio.play("iosfx.wav")
+      }
+      else Audio.play("error.wav")
+    }
+  }
   
   /** A group for all the buttons. */
   val buttons = new Group() {
-    children = List(b_music, scl1, scl2)
+    children = List(b_music, b_save, scl1, scl2)
   }
   
-  /*
-   * MENU
-   */
-  
-  /** Menu option to save current level. */
-  val mSave = new MenuItem("Save") {
-    onAction = (e: AE) => {
-      if (!constructing) LevelSaver.saveCustomLevel(path)
-    }
-  }
+  /** List of all elements to resize. */
+  val resizeList = List(b_music, b_save)
   
   /** Menu option to reset current level. */
   val mReset = new MenuItem("Reset") {
@@ -181,7 +179,7 @@ object LevelEditorScene extends AnimationScene {
   
   /** The menu containing all the options. */
   val menu = new Menu("Menu") {
-    items = List(mSave, sep, mReset, sep, mMenu, sep, mExit)
+    items = List(mReset, sep, mMenu, sep, mExit)
   }
   
   /** The menubar. */
@@ -214,25 +212,18 @@ object LevelEditorScene extends AnimationScene {
     resize()
   }}
 
- 
-  /*
-   * SCENE LAYOUT
-   */
-  
   /** Function to resize elements. */
   def resize() = {
-    b_music.resize(this.getWidth, this.getHeight)
+    val W = this.getWidth
+    val H = this.getHeight
+    resizeList.foreach(_.resize(W, H))
   }
   
   root = new StackPane() {
     children = List(canvas, buttons, menuBar)
     alignment = Pos.TopLeft
   }    
-  
-  /*
-   * INPUT
-   */
-  
+
   /** On key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {
     def handle(ke: KeyEvent) = { ke.getCode() match {
@@ -242,9 +233,6 @@ object LevelEditorScene extends AnimationScene {
       
       /** Escape returns to main menu. */
       case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
-      
-      /** Enter saves current path. */
-      case KeyCode.ENTER => if (!constructing) LevelSaver.saveCustomLevel(path)
       
       /** Delete deletes all existing paths. */
       case KeyCode.DELETE => LevelSaver.resetCustomLevels()

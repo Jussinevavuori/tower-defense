@@ -249,7 +249,7 @@ object InGameScene extends AnimationScene {
   }
   
   /** Button to toggle the music. */
-  val b_music = Music.button
+  val b_music = Music.button()
   
   /** A list of all resizable elements. */
   val resizeList = List[ImageButton](b_shop1, b_shop2, b_shop3, b_upgrd, b_nextw, b_fastf, b_lock1, b_lock2, b_lock3, b_music)

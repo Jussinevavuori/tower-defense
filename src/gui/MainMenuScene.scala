@@ -22,10 +22,6 @@ import scalafx.scene.Node
  */
 object MainMenuScene extends AnimationScene {
   
-  /*
-   * INITIALIZATION
-   */
-  
   /** The main canvas for the main menu. */
   val canvas = new Canvas(1920, 1080)
   
@@ -68,10 +64,6 @@ object MainMenuScene extends AnimationScene {
     b_music.update()
   }
   
-  /*
-   * BUTTONS
-   */
-  
   /** The play button to start a new game. */
   val b_play = new DefaultButton("NEW GAME") {
     override def onClick() = {
@@ -112,7 +104,7 @@ object MainMenuScene extends AnimationScene {
   }
   
   /** Button to toggle music. */
-  val b_music = Music.button
+  val b_music = Music.button()
 
   /** Invisible rectangles in the corners to scale the buttons. */
   val scl1 = Rectangle(0, 0, 0, 0)
@@ -129,10 +121,6 @@ object MainMenuScene extends AnimationScene {
 
   /** List of all buttons for resizing purposes. */
   val resizeList = Seq[ImageButton](b_play, b_cont, b_load, b_lvle, b_exit, b_music)
-
-  /*
-   * INPUT
-   */  
       
   /** Key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {
@@ -148,10 +136,6 @@ object MainMenuScene extends AnimationScene {
     }}
   }
   
-  /*
-   * LAYOUR
-   */
-
   /** Function to resize all elements. */
   def resize(W: Double, H: Double) = {
     mainButtons.spacing = (32 * H) / 1080

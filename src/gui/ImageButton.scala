@@ -77,23 +77,23 @@ class ImageButton(var image: Image) extends Canvas(image.getWidth, image.getHeig
 class MovableImageButton(img: Image, _x: Double, _y: Double) extends ImageButton(img) {
   
   /** The static x coordinate. */
-  var ox = _x
+  var x = _x
   /** The static y coordinate. */
-  var oy = _y
+  var y = _y
   
   /** Function to automatically resize the button. */
   override def resize(W: Double, H: Double) = {
     this.width  = this.image.getWidth  * (W / 1920)
     this.height = this.image.getHeight * (H / 1080)
-    this.layoutX = this.ox * (W / 1920)
-    this.layoutY = this.oy * (H / 1080)
+    this.layoutX = this.x * (W / 1920)
+    this.layoutY = this.y * (H / 1080)
     this.render()
   }
   
   /** Changes the static coordinates, moving the image. */
   def moveTo(newX: Double, newY: Double) = {
-    this.ox = newX
-    this.oy = newY
+    this.x = newX
+    this.y = newY
   }
 }
 
@@ -132,6 +132,32 @@ class DefaultButton(val name: String, ia: Boolean = true) extends ImageButton(Im
     this.gfx.fillRect(0, 0, W, H)
     this.gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     this.gfx.fillText(this.name, W / 2, 0.75 * H, W)
+  }
+}
+
+
+/** A default button that has coordinates and can automatically resize them or be moved. */
+class MovableDefaultButton(name: String, _x: Double, _y: Double, ia: Boolean = true) extends DefaultButton(name, ia) {
+    
+  /** The static x coordinate. */
+  var x = _x
+  /** The static y coordinate. */
+  var y = _y
+  
+  /** Function to automatically resize the button. */
+  override def resize(W: Double, H: Double) = {
+    this.width  = this.image.getWidth  * (W / 1920)
+    this.height = this.image.getHeight * (H / 1080)
+    this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize * (H / 1080))
+    this.layoutX = this.x * (W / 1920)
+    this.layoutY = this.y * (H / 1080)
+    this.render()
+  }
+  
+  /** Changes the static coordinates, moving the image. */
+  def moveTo(newX: Double, newY: Double) = {
+    this.x = newX
+    this.y = newY
   }
 }
 

@@ -53,13 +53,15 @@ object Music {
   val offImage = ImageLoader("note_off")
   
   /** A button to toggle music. */
-  def button = new MovableImageButton( { if (Music.muted) offImage else onImage }, 1856, 48) {
-    this.pickOnBounds = false
-    override def onClick() = {
-      Music.mute()
-      this.image = { if (Music.muted) offImage else onImage }
+  def button(x: Double = 1856, y: Double = 48) = {
+    new MovableImageButton( { if (Music.muted) offImage else onImage }, x, y) {
+      this.pickOnBounds = false
+      override def onClick() = {
+        Music.mute()
+        this.image = { if (Music.muted) offImage else onImage }
+      }
+      def update() = this.image = { if (Music.muted) offImage else onImage }
     }
-    def update() = this.image = { if (Music.muted) offImage else onImage }
   }
 }
 
