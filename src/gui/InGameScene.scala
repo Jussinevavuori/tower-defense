@@ -114,13 +114,6 @@ object InGameScene extends AnimationScene {
     }
   }
   
-  /** Menu option to load new game. */
-  val mNew = new MenuItem("New game") {
-    onAction = (e: AE) => {
-      Actions.newGame()
-    }
-  }
-  
   /** Menu option to show controls. */
   val mControl = new MenuItem("Controls") {
     onAction = (e: AE) => {
@@ -160,7 +153,7 @@ object InGameScene extends AnimationScene {
 
   /** A new menu for all the menu options. */
   val menu = new Menu("Menu") { items =
-    List(mSave, sep, mNew, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
+    List(mSave, sep, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
   }
   
   /** A menubar for the menu. */
@@ -307,8 +300,12 @@ object InGameScene extends AnimationScene {
         case KeyCode.DIGIT2 => Actions.buyBoomerTower(Main.currentGame, godmode)
         case KeyCode.DIGIT3 => Actions.buyHomingTower(Main.currentGame, godmode)
 
-        /** All keys start new game. */
-        case k if (Main.gameover) => Actions.newGame()
+        /** All keys return to main menu upon game over. */
+        case k if (Main.gameover) => {
+          Main.changeStatus(ProgramStatus.MainMenu)
+          Music.changeMusic("warriors")
+          Actions.resetSettings()
+        }
 
         /** Space loads next wave. */
         case KeyCode.SPACE if (Main.currentGame.enemies.isEmpty) => Actions.loadNextWave(Main.currentGame)

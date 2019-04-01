@@ -119,7 +119,7 @@ object Actions {
   }
   
   /** Method to reset all game settings to initial. */
-  private def resetSettings() = {
+  def resetSettings() = {
     Music.stopLoop()
     Music.startLoop()
     Audio.play("iosfx.wav")

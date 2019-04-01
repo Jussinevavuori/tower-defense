@@ -11,7 +11,7 @@ import scala.collection.Iterator
 
 
 /** Normal level 1 enemy: undivisible, smallest and weakest normal unit */
-class EnemyN1(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+class EnemyN1(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) {
   
   def maxhp  = 10.0
   val typeid = "n1"
@@ -23,10 +23,10 @@ class EnemyN1(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, ta
 
 
 /** Normal level 2 enemy: stronger, divides into 2 level 1 normal enemies */
-class EnemyN2(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+class EnemyN2(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) {
   
   def maxhp  = 18.0
-  val typeid = "n"
+  val typeid = "n2"
   val speed  = 0.03
   val size   = 0.35
   val reward = 2
@@ -38,7 +38,7 @@ class EnemyN2(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, ta
 
 
 /** Normal level 3 enemy: stronger, divides into 2 level 2 normal enemies */
-class EnemyN3(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+class EnemyN3(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) {
   
   def maxhp  = 36.0
   val typeid = "n3"
@@ -53,7 +53,7 @@ class EnemyN3(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, ta
 
 
 /** Normal level 4 enemy: stronger, divides into 2 level 3 normal enemies */
-class EnemyN4(x: Double, y: Double, target: Option[Path]) extends Enemy(x, y, target) {
+class EnemyN4(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) {
   
   def maxhp  = 52.0
   val typeid = "n4"

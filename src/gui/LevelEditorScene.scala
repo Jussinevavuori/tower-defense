@@ -219,9 +219,6 @@ object LevelEditorScene extends AnimationScene {
       /** Escape returns to main menu. */
       case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
       
-      /** R resets path. */
-      case KeyCode.R     => resetPath()
-      
       /** Arrow keys control path. */
       case KeyCode.UP    => if (!createPath(latestX, latestY - 1)) createPath(latestX, latestY - 2)
       case KeyCode.DOWN  => if (!createPath(latestX, latestY + 1)) createPath(latestX, latestY + 2)

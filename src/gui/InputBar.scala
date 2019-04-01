@@ -14,7 +14,9 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import java.awt.event.KeyAdapter;
 
-
+/** An input bar is a custom movable element, like the default button, but instead it functions
+ *  as a responsive input field, into which the user can type.
+ */
 class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(640, 64) {
   
   /** The coordinates of this input bar. */
@@ -62,9 +64,7 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
   }
   
   /** Request for focus. */
-  this.setOnMousePressed(new EH[ME] { def handle(e: ME) = {
-    requestFocus()
-  }})
+  this.setOnMousePressed(new EH[ME] { def handle(e: ME) = requestFocus() })
   
   /** On key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {

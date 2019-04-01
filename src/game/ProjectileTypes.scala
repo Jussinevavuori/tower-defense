@@ -109,12 +109,14 @@ class Missile(x: Double, y: Double, dmg: Double, rng: Double, br: Double, trg: E
     
     if (!this.outOfRange) {
       enemies.foreach(e => {
-        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {          
-          enemiesCopy
-            .filter(_.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius)
-            .foreach(ee => {
-              ee.damage(this.damage)
-            })
+        if (this.pos.distanceSqrd(e.pos) < e.size * e.size) {
+          val iterator = enemiesCopy.clone.iterator
+          while (iterator.hasNext) {
+            val next = iterator.next
+            if (next.pos.distanceSqrd(this.pos) < this.blastRadius * this.blastRadius) {
+              next.damage(this.damage)
+            }
+          }
           this.hitEnemies = Set(e)
           gui.Effects.addExplosionEffect(e)
           return
