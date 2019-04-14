@@ -1,6 +1,7 @@
 package game
 
 import scala.collection.mutable.Buffer
+import scala.util.Random.nextInt
 
 /** A game object describes an instance of a tower defense game and holds all the
  *  necessary game elements and functions for updating the game state.
@@ -18,11 +19,17 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
 
   /** The projectiles in the current game. */
   var projectiles = Buffer[Projectile]()
+  
+  /** The current alternatives for the graphics. */
+  val alts = Array("ss_groundGrass", "ss_groundFall", "ss_groundSnow")
+  
+  /** The current alternative in this game, chosen by random. */
+  val alt: String = this.alts(nextInt(alts.size))
 
   /** The current wave in the game. */
   var wave: Wave = WaveLoader.loadWave(initWave, this.path)  
   
-  /** The current game's towersho. */
+  /** The current game's towershop. */
   val shop = new TowerShop()
   
   /** The towers as they were at the start of each round for saving. */
@@ -33,7 +40,16 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   
   /** Returns true when the player dies and the game is over. */
   def gameover = this.player.dead
+  
+  /** Each time a tower is bought / deleted, resort the towers by their y-position. */
+  var towersSorted = this.towers
+  
+  /** Function to tupdate sorted towers. */
+  def updateTowersSorted() = this.towersSorted = this.towers.sortBy(_.pos.y)
 
+  /** Initially updating the towers. */
+  updateTowersSorted()
+  
   /** Updates the gamestate each frame with the given elapsed time in seconds. */
   def update(elapsedTime: Double): Unit = {
         
@@ -72,6 +88,7 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
         if (tower.upgraded) {
           this.towers.remove(i - rem)
           rem += 1
+          this.updateTowersSorted()
         }
         tower.updateTarget(this.enemies.iterator)
         this.projectiles ++= tower.shoot(elapsedTime)

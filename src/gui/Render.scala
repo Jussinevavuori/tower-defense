@@ -25,9 +25,11 @@ object Render {
   
   /** Render game renders the given game fully to the selected canvas, with a given selected tower. */
   def renderGame(game: Game, canvas: Canvas, selectedTower: Option[Tower]): Unit = {
-    if (this.bg == null) throw new RenderingException(
-      "Background is null. Prerender must be performed before rendering")
-
+    
+    // Require that the background is not null: Prerendering must be done before
+    this.renderRequire(this.bg != null, "Background is null")
+    
+    // The graphics of the canvas
     val gfx = canvas.graphicsContext2D
 
     // Recalculate W and H
@@ -39,13 +41,13 @@ object Render {
     
     // Draw all game elements
     gfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
-    this.renderEnemies(gfx, game.enemies)
     this.renderProjectiles(gfx, game.projectiles)
+    this.renderEnemies(gfx, game.enemies)
     this.renderEffects(gfx)
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
     this.renderTowers(gfx, game.towers)
     
-    // Finally redraw bottom bar and its info
+    // Finally redraw bottom bar and its info ontop of game elements
     gfx.drawImage(this.bg, 0, 840, 1920, 240, 0, this.mainH, W, this.sideH)
     
     // Draw player HP and money
@@ -73,36 +75,37 @@ object Render {
     if (this.showFPS) this.fps(Time.elapsedTime, canvas)
   }
   
+  
+  
   /** Function to set the font in the given graphics to the given size of gamegirl.ttf. */
-  def setFontSize(gfx: GraphicsContext, size: Double) =
+  def setFontSize(gfx: GraphicsContext, size: Double) = {
     gfx.setFont(Font.loadFont("file:assets/font/gamegirl.ttf", (size * (resizeW min resizeH)).toInt))
-
+  }
+  
   /** Converts any grid position to a coordinate position on the canvas. */
-  def canvasCoords(x: Double, y: Double) = (x * this.gridW, y * this.gridH)
+  def canvasCoords(x: Double, y: Double): (Double, Double) = {
+    (x * this.gridW, y * this.gridH)
+  }
   
   /** Converts a radius to elliptical radii. */
-  def radius(r: Double) = (r * this.gridW, r * this.gridH)
+  def radius(r: Double): (Double, Double) = {
+    (r * this.gridW, r * this.gridH)
+  }
   
   
   /** Renders the active tower in the towershop that is being purchased */
   def renderActiveTower(canvas: Canvas, game: Game, gridX: Double, gridY: Double) = {
-
     val gfx = canvas.graphicsContext2D
-    
     val (x, y)   = this.canvasCoords(gridX, gridY)
     val (cx, cy) = this.canvasCoords(gridX + 0.5, gridY + 0.5)
-    
     if (game.shop.active) {
-      
       val tower = game.shop.activeTower.get
-      
-      tower.typeid match {
-        case "c1" => Animate("cannondog1", x, y, gfx)
-        case "b1" => Animate("koala1",     x, y, gfx)
-        case "h1" => Animate("panda1",     x, y, gfx)
-        case _    => Animate("cannondog1", x, y, gfx)
+      tower match {
+        case c: CannonTower1 => Animate("cannondog1", x, y, gfx)
+        case b: BoomerTower1 => Animate("koala1",     x, y, gfx)
+        case h: HomingTower1 => Animate("panda1",     x, y, gfx)
+        case _ => throw new RenderingException("Invalid tower type")
       }
-      
       val (rx, ry) = radius(tower.radius)
       gfx.fill   = Color(1.0, 1.0, 1.0, 0.07)
       gfx.stroke = Color(1.0, 1.0, 1.0, 0.70)
@@ -120,8 +123,7 @@ object Render {
     val (x, y) = this.canvasCoords(tower.pos.x + 0.5, tower.pos.y + 0.5)
     val (rx, ry) = radius(0.7)
     gfx.fill = Color(1.0, 1.0, 1.0, 0.2)
-    gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
-    
+    gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry) 
   }
   
   
@@ -172,22 +174,19 @@ object Render {
   
   /** Renders the towers. */
   private def renderTowers(gfx: GraphicsContext, towers: Buffer[Tower]) = {
-    for (t <- towers.sortBy(_.pos.y)) {
+    val towerIterator = Main.currentGame.towersSorted.iterator
+    while (towerIterator.hasNext) {
+      val t = towerIterator.next
       val (x, y) = this.canvasCoords(t.pos.x, t.pos.y)
-      t.typeid match {
-        case "c1" => Animate("cannondog1", x, y, gfx)
-        case "c2" => Animate("cannondog2", x, y, gfx)
-        case "c3" => Animate("cannondog3", x, y, gfx)
-        case "c4" => Animate("cannondog2", x, y, gfx)
-        case "b1" => Animate("koala1", x, y, gfx)
-        case "b2" => Animate("koala2", x, y, gfx)
-        case "b3" => Animate("koala2", x, y, gfx)
-        case "b4" => Animate("koala2", x, y, gfx)
-        case "h1" => Animate("panda1", x, y, gfx)
-        case "h2" => Animate("panda1", x, y, gfx)
-        case "h3" => Animate("panda1", x, y, gfx)
-        case "h4" => Animate("panda1", x, y, gfx)
-        case _    => Animate("cannondog1", x, y, gfx)
+      t match {
+        case t0: CannonTower1 => Animate("cannondog1", x, y, gfx)
+        case t1: CannonTower2 => Animate("cannondog2", x, y, gfx)
+        case t2: CannonTower3 => Animate("cannondog3", x, y, gfx)
+        case t3: BoomerTower1 => Animate("koala1", x, y, gfx)
+        case t4: BoomerTower2 => Animate("koala2", x, y, gfx)
+        case t5: HomingTower1 => Animate("panda1", x, y, gfx)
+        case t6: HomingTower2 => Animate("panda1", x, y, gfx)
+        case _ => throw new RenderingException("Invalid tower type")
       }
     }
   }
@@ -199,9 +198,11 @@ object Render {
 
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     
-    for (i <- 0 until projectiles.size) {
+    val proj = projectiles.iterator
+    
+    while (proj.hasNext) {
       
-      val p = projectiles(i)
+      val p = proj.next
       
       if (p != null) {
       
@@ -237,9 +238,11 @@ object Render {
   /** Renders the enemies as coloured circles of the correct size with HP bars. */
   private def renderEnemies(gfx: GraphicsContext, enemies: Buffer[Enemy]) = {
     
-    for (i <- 0 until enemies.size) {
+    val enem = enemies.iterator
+    
+    while (enem.hasNext) {
       
-      val e = enemies(i)
+      val e = enem.next
       
       if (e != null) {
       
@@ -278,28 +281,23 @@ object Render {
   
   /** Renders the ongoing special effects in the effects object. */
   def renderEffects(gfx: GraphicsContext) = {  
-    
     this.setFontSize(gfx, 20)
     gfx.fill = Color.White
-    
     for (eff <- Effects.effects) {
-      
-      if (eff.isInstanceOf[gui.Effects.MoneyEffect]) {
-        val m = eff.asInstanceOf[gui.Effects.MoneyEffect]
-        val (x, y) = this.canvasCoords(m.x, m.y)
-        gfx.fillText(m.text, x, y)
-      }
-      
-      else if (eff.isInstanceOf[gui.Effects.TowerupEffect]) {
-        val t = eff.asInstanceOf[gui.Effects.TowerupEffect]
-        val (x, y) = this.canvasCoords(t.x, t.y)
-        Animate.animate("towerup", x, y, gfx, 5, t.age)
-      }
-      
-      else if (eff.isInstanceOf[gui.Effects.ExplosionEffect]) {
-        val e = eff.asInstanceOf[gui.Effects.ExplosionEffect]
-        val (x, y) = this.canvasCoords(e.x, e.y)
-        Animate.animate("explosion", x - 30, y - 30, gfx, 3, e.age)
+      eff match {
+        case m: gui.Effects.MoneyEffect => {
+          val (x, y) = this.canvasCoords(m.x, m.y)
+          gfx.fillText(m.text, x, y)
+        }
+        case t: gui.Effects.TowerupEffect => {
+          val (x, y) = this.canvasCoords(t.x, t.y)
+          Animate.animate("towerup", x, y, gfx, 5, t.age)
+        }
+        case e: gui.Effects.ExplosionEffect => {
+          val (x, y) = this.canvasCoords(e.x, e.y)
+          Animate.animate("explosion", x - 30, y - 30, gfx, 3, e.age)
+        }
+        case _ => throw new RenderingException("Invalid effect type")
       }
     }
   }
@@ -431,8 +429,8 @@ object Render {
       }
     }
     
-    // Loading the spritesheet
-    val spritesheet: Image = ImageLoader("ss_ground")
+    // Loading the spritesheet based on the alternative of the game
+    val spritesheet: Image = ImageLoader(game.alt)
     
     // Draw each spot in the grid
     for (i <- 1 to game.cols) {
@@ -477,7 +475,7 @@ object Render {
         }
         
         // Draws the correct part of the sprite to the correct coordinates
-        cgfx.drawImage(spritesheet, sx * 60, sy * 60, 60, 60, (i - 1) * 60, (j - 1) * 60, 60, 60)
+        cgfx.drawImage(spritesheet, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
       }
     }
     // Drawing the sidebar
@@ -487,12 +485,18 @@ object Render {
     val image = new WritableImage(1920, 1080)
     
     // Snapshotting the canvas and saving it as the background
-    this.bg = canvas.snapshot(new SnapshotParameters(), image)    
+    this.bg = canvas.snapshot(new SnapshotParameters(), image)
+  }
+  
+  /** Function to throw a rendering exception if the given case fails. */
+  def renderRequire(requirement: => Boolean, msg: String) {
+    if (!requirement) throw new RenderingException(msg)
   }
 }
 
 /** An exception class for rendering expections if needed. */
 class RenderingException(msg: String) extends Exception(msg)
+
 
 
 

@@ -266,7 +266,7 @@ object LevelEditorScene extends AnimationScene {
     val sgfx = snapshotCanvas.graphicsContext2D
     
     // Loading the spritesheet
-    val spritesheet: Image = ImageLoader("ss_ground")
+    val spritesheet: Image = ImageLoader(Main.currentGame.alt)
     
     // Looping through the boolean grid
     for (i <- 1 to Main.currentGame.cols) {

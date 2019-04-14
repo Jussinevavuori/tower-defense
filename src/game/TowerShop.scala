@@ -31,6 +31,7 @@ class TowerShop {
       purchased.pos.moveTo(Vec(x, y))
       game.player.charge(purchased.price)
       game.towers += purchased
+      game.updateTowersSorted()
       true
     } else false
   }
@@ -42,6 +43,7 @@ class TowerShop {
       tower.upgraded = true
       game.towers += upgraded
       upgraded.pos.moveTo(tower.pos)
+      game.updateTowersSorted()
       game.player.charge(upgraded.price)
       Some(upgraded)
     } else {
