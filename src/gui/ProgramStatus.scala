@@ -35,7 +35,10 @@ object ProgramStatus {
   }
 
   /** Function to stop a scene, by default the current scene. */
-  def stop(s: Int = this.status) = this.scenes(s).stop()
+  def stop(s: Int = this.status) = {
+    this.scenes(s).shutDown()
+    this.scenes(s).stop()
+  }
   
   /** The indices (status integers) of each scene. */
   final val MainMenu    = this.scenes.indexOf(MainMenuScene)

@@ -81,7 +81,7 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
       rem = 0
       val projIndexIterator = projectiles.zipWithIndex.iterator
       projIndexIterator.foreach{case (proj, i) => {
-        proj.move()
+        proj.move(elapsedTime)
         proj.hit(this.enemies.iterator)
         if (proj.finished) {
           this.projectiles.remove(i - rem)
@@ -91,7 +91,7 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   
       // Spawn in the enemies each wave
       if (!this.wave.finished) {
-        val spawn = this.wave.spawn()
+        val spawn = this.wave.spawn(elapsedTime)
         if (spawn.isDefined)
           this.enemies += spawn.get
       }

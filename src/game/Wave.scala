@@ -8,12 +8,12 @@ import scala.collection.mutable.Queue
  *  for steady spawning of enemies.
  */
 class Wave(val number: Int, val enemies: Queue[Enemy], private val prizeSum: Int) {
-  
-  /** The wave's timer, which tracks the amount of passed game loops. */
-  private var timer = 0
-  
-  /** The frequency constant for how often an enemy should be spawned in. */
-  private val frequency = 30
+
+  /** The frequency constant for how often an enemy should be spawned in in seconds. */
+  private val frequency = 0.8
+
+  /** The wave's timer, which tracks amount of time left before next spawn. */
+  private var timer = frequency  
   
   /** Returns true when all the enemies in this wave have been spawned in. */
   def finished = this.enemies.isEmpty
@@ -29,11 +29,15 @@ class Wave(val number: Int, val enemies: Queue[Enemy], private val prizeSum: Int
   }
   
   /** Function that returns an enemy if any from the wave's enemies each frequency frames. */
-  def spawn(): Option[Enemy] = {    
-    this.timer += 1
-    if (!this.finished && (timer % frequency == 0)) {
-      Some(this.enemies.dequeue())
-    } else None
+  def spawn(elapsedTime: Double): Option[Enemy] = {    
+    this.timer -= elapsedTime
+    if (this.timer < 0) {
+      this.timer = frequency
+      if (!this.finished) {
+        return Some(this.enemies.dequeue())
+      } else return None
+    }
+    else return None
   }
   
   /** Returns a textual description of this wave. */

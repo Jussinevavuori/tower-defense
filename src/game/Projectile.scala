@@ -26,7 +26,7 @@ abstract class Projectile(x: Double, y: Double, val damage: Double, val range: D
   def resetHitEnemies = this.hitEnemies = Set[Enemy]()
   
   /** Function for all implementing projectile types to implement for moving. */
-  def move(): Unit
+  def move(elapsedTime: Double): Unit
   
   /** Hits all enemies that haven't been already hit that are within range */
   def hit(enemies: Iterator[Enemy]): Unit = {

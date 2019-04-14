@@ -2,6 +2,8 @@ package gui
 
 import game._
 import scalafx.application.JFXApp
+import javafx.event.{ EventHandler => EH }
+import javafx.stage.{ WindowEvent => WE }
 
 
 /** The main app and window. */
@@ -9,6 +11,9 @@ object Main extends JFXApp {
   
   /** The current game running in the GUI. */
   var currentGame = GameLoader.loadNewGame()
+  
+  /** Game runner thread for updating the game concurrently. */
+  val gamerunner = new Thread(GameRunner)
   
   /** Function to load a new game. */
   def loadGame(g: Game) = {
@@ -22,19 +27,16 @@ object Main extends JFXApp {
   /** The main stage. */
   stage = new JFXApp.PrimaryStage {
     
-    /** Window title. */
+    /** Default properties. */
     title = "Tower Defense"
-    /** Fullscreen false by default. */
-    fullScreen = false
-    /** Resizable. */
     resizable = true
-    /** Setting the default width. */
+    fullScreen = false
     width = 1280
-    /** Setting the default height. */
     height = 720
     
     /** Initializing with the default scene in program status. */
     scene = ProgramStatus.scene
+    
     /** Starting the animation in the default scene. */
     ProgramStatus.start()
   }

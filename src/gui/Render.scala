@@ -45,13 +45,10 @@ object Render {
     gfx.translate(-0.5 * this.gridW, -0.5 * this.gridH)
     this.renderTowers(gfx, game.towers)
     
-    // Draw wave number
-    gfx.fill = Color(1.0, 1.0, 1.0, 1.0)  // Draw game info
-    gfx.textAlign = TextAlignment.Center
-    this.setFontSize(gfx, 40)
-    gfx.fillText(s"${game.wave.number}", 1789 * resizeW, 950 * resizeH)
+    // Finally redraw bottom bar and its info
+    gfx.drawImage(this.bg, 0, 840, 1920, 240, 0, this.mainH, W, this.sideH)
     
-    // Draw HP and money
+    // Draw player HP and money
     this.setFontSize(gfx, 30)
     gfx.fillText(s"${game.player.health.toInt} HP", 192 * resizeW, 1024 * resizeH)
     gfx.fillText(s"${"$"} ${game.player.money}",    192 * resizeW,  941 * resizeH)
@@ -62,6 +59,12 @@ object Render {
     gfx.fillText("$ " + TowerInfo.priceCannon.toString,  760 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " + TowerInfo.priceBoomer.toString,  960 * resizeW, 1044 * resizeH)
     gfx.fillText("$ " + TowerInfo.priceHoming.toString, 1160 * resizeW, 1044 * resizeH)
+    
+    // Draw wave number
+    gfx.fill = Color(1.0, 1.0, 1.0, 1.0)  // Draw game info
+    gfx.textAlign = TextAlignment.Center
+    this.setFontSize(gfx, 40)
+    gfx.fillText(s"${game.wave.number}", 1789 * resizeW, 950 * resizeH)
     
     // Show controls if necessary
     if (this.showControls) this.renderControls(gfx)

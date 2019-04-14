@@ -53,9 +53,6 @@ object MainMenuScene extends AnimationScene {
     } else {
       Titlescreen.advance(this.titleCanvas, Time.elapsedTime)
       titleCanvas.opacity = Titlescreen.opacity
-      if (Titlescreen.fading) {
-        Music.startLoop()
-      }
     }
   }
   

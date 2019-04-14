@@ -44,6 +44,9 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   /** Returns true when the enemy is dead */
   def dead: Boolean = !this.alive
   
+  /** Minimum speed threshold under which the enemy is considered to have stopped. */
+  def minimumSpeed = 1.0 / 1e7
+  
   /** Function that damages the enemy by the given (positive) amount */
   def damage(amount: Double): Unit = {
     if (amount > 0) this._health -= amount
@@ -63,14 +66,13 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
       return true
     }
     
-    // Calculate the velocity towards the next target and scale it down to the enemy's speed
+    // Calculate the velocity towards the next target and limit it to the enemy's speed
     val velocity: Vec = this.target.get.pos - this.pos
-    if (velocity.size > this.speed) {
-      velocity.scaleTo(this.speed)
-    }
+    val scaledSpeed = this.speed * 60 * elapsedTime
+    velocity.limit(scaledSpeed)
     
     // When the enemy stops, it has reached its target and asks the target for the next target
-    if (velocity.size < 0.000001) {
+    if (velocity.size < minimumSpeed) {
       this.target = this.target.get.next
     }
     

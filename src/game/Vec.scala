@@ -22,6 +22,9 @@ case class Vec(var x: Double, var y: Double) {
   /** Returns this vector's size/magnitude/length. */
   def size: Double = math.sqrt(this.x * this.x + this.y * this.y)
   
+  /** Returns this vector's size/magnitude/length squared for lighter calculations. */
+  def sizeSqrd: Double = this.x * this.x + this.y * this.y
+  
   /** Adjusts this vector's length to the given magnitude without changing the direction. */
   def scaleTo(mag: Double): Unit = {
     if (this.size != 0) {
@@ -51,6 +54,13 @@ case class Vec(var x: Double, var y: Double) {
     val dx = that.x - this.x
     val dy = that.y - this.y
     dx * dx + dy * dy
+  }
+  
+  /** Limits the size of this vector: scales it down to the limit if limit is exceeded. */
+  def limit(lim: Double): Unit = {
+    if (this.sizeSqrd > lim * lim) {
+      this.scaleTo(lim)
+    }
   }
   
 }

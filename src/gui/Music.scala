@@ -40,7 +40,7 @@ object Music {
     val file = new File(filepath).toURI().toString()
     val media = new Media(file)
     this.player = new MediaPlayer(media)
-    player.volume = 0.12
+    player.volume = 0.07
     player.cycleCount = MediaPlayer.Indefinite
     this.player.play()
     this.player.mute = muted

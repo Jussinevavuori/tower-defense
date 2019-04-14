@@ -50,7 +50,8 @@ object InGameScene extends AnimationScene {
 
     Time.updateElapsedTime(now)
     
-    Main.currentGame.update(Time.elapsedTime)
+    // Updating of the game is now done in a concurrent thread from the GameRunner object
+    // Main.currentGame.update(Time.elapsedTime)
 
     resize()
     
@@ -83,6 +84,12 @@ object InGameScene extends AnimationScene {
   /** Loadup function. */
   override def loadUp() = {
     b_music.update()
+    Main.gamerunner.start()
+  }
+  
+  /** Shutdown function. */
+  override def shutDown() = {
+    Main.gamerunner.stop()
   }
 
   /** Set to true upon entering godmode. */
@@ -153,7 +160,7 @@ object InGameScene extends AnimationScene {
 
   /** A new menu for all the menu options. */
   val menu = new Menu("Menu") { items =
-    List(mSave, sep, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
+    List(mSave, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
   }
   
   /** A menubar for the menu. */

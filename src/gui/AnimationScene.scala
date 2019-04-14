@@ -10,6 +10,9 @@ abstract class AnimationScene extends Scene {
   /** Function that is called each time before anything else when the animation scene is loaded up. */
   def loadUp() = ()
   
+  /** Function that is called each time before the animation scene is stooped. */
+  def shutDown() = ()
+  
   /** Function to stop the current scene's animation. */
   def stop()  = this.animation.stop() 
   

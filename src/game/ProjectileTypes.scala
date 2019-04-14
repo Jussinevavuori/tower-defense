@@ -9,10 +9,16 @@ class Bullet(x: Double, y: Double, dmg: Double, rng: Double, target: Enemy) exte
   
   /** The calculated direction, scaled to a constant velocity. */
   private val velocity = (target.pos - this.pos)
-  velocity.scaleTo(0.4)
+  
+  /** The constant speed. */
+  val speed = 0.4
   
   /** Always moves a constant step. */
-  def move(): Unit = this.pos += this.velocity
+  def move(elapsedTime: Double): Unit = this.pos += {
+    val movement = Vec(this.velocity.x, this.velocity.y)
+    movement.scaleTo(this.speed * 60 * elapsedTime)
+    movement
+  }
 }
 
 
@@ -41,14 +47,14 @@ class Boomerang(x: Double, y: Double, str: Double, trg: Enemy, spd: Double) exte
   override def finished: Boolean = this.speed < -1 * this.startingSpeed
   
   /** Move and accelerate backwards in an arc. */
-  def move(): Unit = this.pos += {
+  def move(elapsedTime: Double): Unit = this.pos += {
     
-    this.angle += 6.0
-    this.speed -= this.acc
+    this.angle += 6.0 * 60 * elapsedTime
+    this.speed -= this.acc * 60 * elapsedTime
     if (speed * speed < acc * acc) this.resetHitEnemies
 
     val currentVel = Vec(this.direction.x, this.direction.y)
-    currentVel.scaleTo(this.speed)
+    currentVel.scaleTo(this.speed * 60 * elapsedTime)
 
     currentVel
   }
@@ -80,7 +86,7 @@ class Missile(x: Double, y: Double, dmg: Double, rng: Double, br: Double, trg: E
   private var vel = Vec(0, 0)
   
   /** Accelerate until max speed and steer towards target. */
-  def move(): Unit = this.pos += {
+  def move(elapsedTime: Double): Unit = this.pos += {
     
     // The current speed magnitude
     val speed = this.vel.size
@@ -92,7 +98,8 @@ class Missile(x: Double, y: Double, dmg: Double, rng: Double, br: Double, trg: E
     
     // Set speed to accelerated speed until maxspeed
     if (this.vel.size != 0) {
-      this.vel.scaleTo { speed + { if (speed < maxSpeed) acc else 0 } }
+      val acceleration = if (speed < maxSpeed) acc else 0
+      this.vel.scaleTo((speed + acceleration) * 60 * elapsedTime)
     }
     
     // Return the velocity for moving
