@@ -25,7 +25,7 @@ class ImageButton(var image: Image) extends Canvas(image.getWidth, image.getHeig
   var overlay = 0.0
   
   /** By default all buttons are interactive. This value can be overridden. */
-  val interactive: Boolean = true
+  var interactive: Boolean = true
   
   /** Function to automatically resize the button. */
   override def resize(W: Double, H: Double) = {
@@ -108,16 +108,20 @@ class DefaultButton(val name: String, ia: Boolean = true) extends ImageButton(Im
   var txtSize = 40
   
   /** Override the interactivity. */
-  override val interactive = ia
+  interactive = ia
   
   /** Setting the graphics font and text alignment. */
   this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize)
   this.gfx.textAlign = TextAlignment.Center
   
+  /** The default width and height of the button. */
+  var buttonWidth = 640
+  var buttonHeight = 64
+  
   /** Function to automatically resize the button. */
   override def resize(W: Double, H: Double) = {
-    this.width = 640 * (W / 1920)
-    this.height = 64 * (H / 1080)
+    this.width = buttonWidth * (W / 1920)
+    this.height = buttonHeight * (H / 1080)
     this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize * (H / 1080))
     this.render()
   }
@@ -148,6 +152,8 @@ class MovableDefaultButton(name: String, _x: Double, _y: Double, ia: Boolean = t
   override def resize(W: Double, H: Double) = {
     this.width  = this.image.getWidth  * (W / 1920)
     this.height = this.image.getHeight * (H / 1080)
+    this.width = buttonWidth * (W / 1920)
+    this.height = buttonHeight * (H / 1080)
     this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize * (H / 1080))
     this.layoutX = this.x * (W / 1920)
     this.layoutY = this.y * (H / 1080)

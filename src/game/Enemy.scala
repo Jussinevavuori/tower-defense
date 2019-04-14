@@ -26,6 +26,9 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   /** Maximum health of the enemy for each extending enemy type..*/
   def maxhp: Double
   
+  /** Amount of damage the enemy does to the player upon reaching the end. */
+  val strength: Int
+  
   /** The position of the enemy as a position vector. */
   val pos: Vec = Vec(x, y)
   
@@ -68,7 +71,7 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
     
     // Calculate the velocity towards the next target and limit it to the enemy's speed
     val velocity: Vec = this.target.get.pos - this.pos
-    val scaledSpeed = this.speed * 80 * elapsedTime
+    val scaledSpeed = this.speed * 75 * elapsedTime
     velocity.limit(scaledSpeed)
     
     // When the enemy stops, it has reached its target and asks the target for the next target

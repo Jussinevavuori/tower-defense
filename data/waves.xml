@@ -102,18 +102,20 @@
 	<wave prize="100">16
 		<enemies>
 			<enemy count="3" id="n4"/>
+			<enemy count="3" id="n2"/>
 		</enemies>
 	</wave>
 
 	<wave prize="100">17
 		<enemies>
 			<enemy count="9" id="n4"/>
+			<enemy count="9" id="n2"/>
 		</enemies>
 	</wave>
 
 	<wave prize="100">18
 		<enemies>
-			<enemy count="18" id="n4"/>
+			<enemy count="14" id="n4"/>
 		</enemies>
 	</wave>
 
@@ -135,6 +137,26 @@
 		<enemies>
 			<enemy count="20" id="n4"/>
 			<enemy count="20 " id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">22
+		<enemies>
+			<enemy count="27" id="n4"/>
+			<enemy count="20 " id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">23
+		<enemies>
+			<enemy count="34" id="n4"/>
+			<enemy count="10" id="n3"/>
+		</enemies>
+	</wave>
+
+	<wave prize="100">24
+		<enemies>
+			<enemy count="40" id="n4"/>
 		</enemies>
 	</wave>
 </waves>

@@ -43,7 +43,7 @@ object WaveLoader {
       
       // Load the enemy data as an array of (count, id) tuples.
       val enemyData = (wavedata \\ "enemies" \ "enemy")
-        .map(enemy => {(enemy \@ "count").toInt -> (enemy \@ "id")}).toArray
+        .map(enemy => {(enemy \@ "count").trim().toInt -> (enemy \@ "id")}).toArray
       
       // Load the prize
       val prize = (wavedata \@ "prize").toInt

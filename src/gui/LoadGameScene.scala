@@ -68,8 +68,8 @@ object LoadGameScene extends AnimationScene {
       lvlButtons = lvlButtons.takeWhile(_.n != this.n) ++ lvlButtons.dropWhile(_.n != this.n).drop(1)
       delButtons = delButtons.takeWhile(_.n != this.n) ++ delButtons.dropWhile(_.n != this.n).drop(1)
       if (lvlButtons.isEmpty) {
-        lvlButtons = List(new LvlButton("No custom levels", -1) { override val interactive = false } )
-        delButtons = List(new DelButton(-1) { override val interactive = false })
+        lvlButtons = List(new LvlButton("No custom levels", -1) { interactive = false } )
+        delButtons = List(new DelButton(-1) { interactive = false })
       }
       lvls.children = lvlButtons
       dels.children = delButtons
@@ -123,8 +123,8 @@ object LoadGameScene extends AnimationScene {
     
     // Else create blank, non-interactive button
     else {
-      lvlButtons = List(new LvlButton("No custom levels", -1) { override val interactive = false } )
-		  delButtons = List(new DelButton(-1)                     { override val interactive = false } )
+      lvlButtons = List(new LvlButton("No custom levels", -1) { interactive = false } )
+		  delButtons = List(new DelButton(-1)                     { interactive = false } )
     }
     
     // Set buttons to vertical alignment

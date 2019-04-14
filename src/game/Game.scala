@@ -11,7 +11,9 @@ import scala.util.Random.nextInt
  *  player or a list of towers.
  */
 class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0, 
-            val player: Player = new Player(), val towers: Buffer[Tower] = Buffer[Tower]()) {
+            val player: Player = new Player(),
+            var towers: Buffer[Tower] = Buffer[Tower](),
+            var props: Buffer[Prop] = Buffer[Prop]()) {
   
   
   /** The enemies in the current game. */
@@ -35,83 +37,82 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   /** Returns true when the player dies and the game is over. */
   def gameover = this.player.dead
   
-  /** Each time a tower is bought / deleted, resort the towers by their y-position. */
-  var towersSorted = this.towers
-  
   /** Function to tupdate sorted towers. */
-  def updateTowersSorted() = this.towersSorted = this.towers.sortBy(_.pos.y)
+  def sortTowers() = this.towers = this.towers.sortBy(_.pos.y)
 
   /** Initially updating the towers. */
-  updateTowersSorted()
+  sortTowers()
   
   /** Updates the gamestate each frame with the given elapsed time in seconds. */
   def update(elapsedTime: Double): Unit = {
-        
-    // Loop five times for fast forward
-    for (loop <- 0 until framesPerUpdate) {
-                
-      var rem = 0  // Keeps track of how many items per category removed
-      
-      // Update enemies
-      val enemyIndexIterator = enemies.zipWithIndex.iterator
-      enemyIndexIterator.foreach{case (enemy, i) => {
-                
-        // Remove dead enemies, reward player, play effect, spawn enemies
-        if (enemy.dead) {
-          this.player.reward(enemy.reward)
-          gui.Effects.addMoneyEffect(enemy)
-          this.enemies.remove(i - rem)
-          rem += 1
-          for (spawn <- enemy.death()) {
-            this.enemies.append(spawn)
-          }
-        }
-        
-        // Move enemies, upon reaching end damage player and remove enemy
-        else if (enemy.advance(elapsedTime)) {
-          this.player.damage(1)
-          gui.Audio.play("damage2.wav")
-          this.enemies.remove(i)
-        }
-      }}
     
-      // Update tower targets, shoot, remove upgraded
-      rem = 0
-      val towerIndexIterator = towers.zipWithIndex.iterator
-      towerIndexIterator.foreach{case (tower, i) => {
-        if (tower.upgraded) {
-          this.towers.remove(i - rem)
-          rem += 1
-          this.updateTowersSorted()
-        }
-        tower.updateTarget(this.enemies.iterator)
-        this.projectiles ++= tower.shoot(elapsedTime)
-      }}
+    this.synchronized {
+          
+      // Loop five times for fast forward
+      for (loop <- 0 until framesPerUpdate) {
+                  
+        var rem = 0  // Keeps track of how many items per category removed
+        
+        // Update enemies
+        val enemyIndexIterator = enemies.zipWithIndex.iterator
+        enemyIndexIterator.foreach{case (enemy, i) => {
+                  
+          // Remove dead enemies, reward player, play effect, spawn enemies
+          if (enemy.dead) {
+            this.player.reward(enemy.reward)
+            gui.Effects.addMoneyEffect(enemy)
+            this.enemies.remove(i - rem)
+            rem += 1
+            for (spawn <- enemy.death()) {
+              this.enemies.append(spawn)
+            }
+          }
+          
+          // Move enemies, upon reaching end damage player and remove enemy
+          else if (enemy.advance(elapsedTime)) {
+            this.player.damage(enemy.strength)
+            gui.Audio.play("damage2.wav")
+            this.enemies.remove(i)
+          }
+        }}
       
-      // Update projectiles, move, try to hit all enemies and remove finished
-      rem = 0
-      val projIndexIterator = projectiles.zipWithIndex.iterator
-      projIndexIterator.foreach{case (proj, i) => {
-        proj.move(elapsedTime)
-        proj.hit(this.enemies.iterator)
-        if (proj.finished) {
-          this.projectiles.remove(i - rem)
-          rem += 1
+        // Update tower targets, shoot, remove upgraded
+        rem = 0
+        val towerIndexIterator = towers.zipWithIndex.iterator
+        towerIndexIterator.foreach{case (tower, i) => {
+          if (tower.upgraded) {
+            this.towers.remove(i - rem)
+            rem += 1
+          }
+          tower.updateTarget(this.enemies.iterator)
+          this.projectiles ++= tower.shoot(elapsedTime)
+        }}
+        
+        // Update projectiles, move, try to hit all enemies and remove finished
+        rem = 0
+        val projIndexIterator = projectiles.zipWithIndex.iterator
+        projIndexIterator.foreach{case (proj, i) => {
+          proj.move(elapsedTime)
+          proj.hit(this.enemies.iterator)
+          if (proj.finished) {
+            this.projectiles.remove(i - rem)
+            rem += 1
+          }
+        }}
+    
+        // Spawn in the enemies each wave
+        if (!this.wave.finished) {
+          val spawn = this.wave.spawn(elapsedTime)
+          if (spawn.isDefined)
+            this.enemies += spawn.get
         }
-      }}
-  
-      // Spawn in the enemies each wave
-      if (!this.wave.finished) {
-        val spawn = this.wave.spawn(elapsedTime)
-        if (spawn.isDefined)
-          this.enemies += spawn.get
-      }
-      
-      // After killing all enemies, grant prize
-      if (this.enemies.isEmpty && this.wave.finished) {
-        val reward = this.wave.prize
-        this.player.reward(reward)
-        if (reward > 0) gui.Audio.play("fanfare.wav")
+        
+        // After killing all enemies, grant prize
+        if (this.enemies.isEmpty && this.wave.finished) {
+          val reward = this.wave.prize
+          this.player.reward(reward)
+          if (reward > 0) gui.Audio.play("fanfare.wav")
+        }
       }
     }
   }

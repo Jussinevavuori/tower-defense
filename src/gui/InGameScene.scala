@@ -232,21 +232,21 @@ object InGameScene extends AnimationScene {
   
   /** The cannon tower lock. */
   val b_lock1 = new MovableImageButton(ImageLoader("shopLocked"), 701, 887) {
-    override val interactive = false
+    interactive = false
     this.visible = false
     override def onClick() = Audio.play("error.wav")
   }
   
   /** The boomerang tower lock. */
   val b_lock2 = new MovableImageButton(ImageLoader("shopLocked"), 901, 887) {
-    override val interactive = false
+    interactive = false
     this.visible = true
     override def onClick() = Audio.play("error.wav")    
   }
   
   /** The homing tower lock. */
   val b_lock3 = new MovableImageButton(ImageLoader("shopLocked"), 1101, 887) {
-    override val interactive = false
+    interactive = false
     this.visible = true
     override def onClick() = Audio.play("error.wav")
   }
@@ -280,7 +280,7 @@ object InGameScene extends AnimationScene {
   /** Mouse click. */
   gameCanvas.onMouseClicked = new EH[ME] {
     def handle(me: ME): Unit = {
-
+      
       /** Calculate game grid coordinates. */
       val (x, y) = (toGridX(me.getSceneX), toGridY(me.getSceneY))
       
@@ -327,7 +327,11 @@ object InGameScene extends AnimationScene {
         case KeyCode.ENTER => selectedTower = Actions.upgradeTower(Main.currentGame, selectedTower)
         
         /** Escape returns to main menu. */
-        case KeyCode.ESCAPE => Main.changeStatus(ProgramStatus.MainMenu)
+        case KeyCode.ESCAPE => {
+          if (Main.currentGame.wave.number > 1) Actions.save
+          Music.changeMusic("warriors")
+          Main.changeStatus(ProgramStatus.MainMenu)
+        }
         
         case _ =>
       }

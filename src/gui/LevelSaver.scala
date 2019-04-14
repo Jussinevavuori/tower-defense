@@ -3,6 +3,7 @@ package gui
 import game._
 import scala.xml._
 import java.io.File
+import scala.collection.mutable.Buffer
 
 /** Level saver can take custom levels created in the level editor and save them to customdata.xml. */
 object LevelSaver {
@@ -17,7 +18,7 @@ object LevelSaver {
   }
   
   /** Takes a path and saves it as a custom level. */
-  def saveCustomLevel(p: Path, title: String = "unnamed level") = {
+  def saveCustomLevel(p: Path, title: String = "unnamed level", proparray: Buffer[Prop]) = {
     
     // Loading the current levels
     val levels: NodeSeq = try {
@@ -36,9 +37,11 @@ object LevelSaver {
     val wave:   Elem = <wave>{0}</wave>
     val player: Elem = <player><health>{100}</health><money>{500}</money></player>
     val towers: Elem = <towers></towers>
+    val props:  Elem = <props>{proparray.map({p => this.createXMLElement("prop", Array("x" -> p.x.toString(),
+          "y" -> p.y.toString(), "id" -> p.id))})}</props>
             
     // All the elements combined to a level
-    val level:  Elem = <game>{num}{name}{cols}{rows}{wave}{player}{path}</game>
+    val level:  Elem = <game>{num}{name}{cols}{rows}{wave}{player}{path}{props}</game>
     
     // Combining previous levels and this level
     val data:   Elem = <data>{levels}{level}</data>

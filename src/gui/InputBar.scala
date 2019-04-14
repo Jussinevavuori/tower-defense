@@ -67,7 +67,7 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
     this.gfx.fillText(text, W / 2, 0.75 * H, W)
     this.frameCount += 1
     if (this.flashing && this.focused.value) {
-      this.gfx.fillText("|", (13.2 * value.length) + 0.51 * W, 0.75 * H, W)
+      this.gfx.fillText("|", W * (59 * value.length / 1920.0 + 0.51), 0.75 * H, W)
     }
   }
   

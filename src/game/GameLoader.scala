@@ -27,9 +27,10 @@ object GameLoader {
       val wave         = this.loadWave(xml)
       val path         = this.loadPath(xml)
       val towers       = this.loadTowers(xml)
+      val props        = this.loadProps(xml)
       
       // Returning the created and loaded game
-      new Game(rows, cols, path, wave, player, towers)
+      new Game(rows, cols, path, wave, player, towers, props)
       
     } catch {
       
@@ -55,9 +56,10 @@ object GameLoader {
       val wave         = this.loadWave(xml)
       val path         = this.loadPath(xml)
       val towers       = this.loadTowers(xml)
+      val props        = this.loadProps(xml)
             
       // Returning the created and loaded game
-      new Game(rows, cols, path, wave, player, towers)
+      new Game(rows, cols, path, wave, player, towers, props)
       
     } catch {
       
@@ -113,6 +115,13 @@ object GameLoader {
         case "h2" => new HomingTower2(x, y)
         case _ => throw new CorruptedSavedataException("Unrecognized tower id")
       }
+    }).toBuffer
+  }
+  
+  /** Helper function to load all props to a buffer from a game data file. */
+  private def loadProps(xml: Elem): Buffer[Prop] = {
+    ((xml \\ "game" \\ "props") \ "prop").map(p => {
+      new Prop((p \@ "x").toDouble, (p \@ "y").toDouble, (p \@ "id"))
     }).toBuffer
   }
   

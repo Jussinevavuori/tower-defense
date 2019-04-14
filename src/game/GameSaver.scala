@@ -20,20 +20,24 @@ object GameSaver extends App {
     val wave: Elem = <wave>{game.wave.number}</wave>
     val player: Elem =
       <player><health>{game.player.health}</health><money>{game.saveMoney}</money></player>
-    val path: Elem =
-      <path>{game.path.toArray().map({p =>
-        this.createXMLElement("segment", Array("x" -> p.pos.x.toInt.toString(), "y" -> p.pos.y.toInt.toString()))
-      })}</path>
-    val towers: Elem =
-      <towers>{game.saveTowers.map({t =>
+    val path: Elem = <path>{game.path.toArray().map({p =>
+        this.createXMLElement("segment", Array(
+          "x" -> p.pos.x.toInt.toString(),
+          "y" -> p.pos.y.toInt.toString()))})}</path>
+    val towers: Elem = <towers>{game.saveTowers.map({t =>
         this.createXMLElement("tower", Array(
-            "x" -> t.pos.x.toString(), "y" -> t.pos.y.toString(),
-            "id" -> t.typeid))
-      })}</towers>
+          "x" -> t.pos.x.toString(),
+          "y" -> t.pos.y.toString(),
+          "id" -> t.typeid))})}</towers>
+    val props: Elem = <props>{game.props.map({p =>
+        this.createXMLElement("prop", Array(
+          "x" -> p.x.toString(),
+          "y" -> p.y.toString(),
+          "id" -> p.id))})}</props>
     
     // Combine saved data into a single game element
     val savedata: Elem = 
-      <game>{cols}{rows}{wave}{player}{towers}{path}</game>
+      <game>{cols}{rows}{wave}{player}{towers}{path}{props}</game>
     
     // Saving to file
     try {
