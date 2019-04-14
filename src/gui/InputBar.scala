@@ -27,7 +27,7 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
   var value: String = ""
     
   /** List of allowed characters. */
-  val allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+  val allowed = "abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890"
   
   /** The image. */
   val image = ImageLoader("inputBar")
@@ -37,6 +37,10 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
   
   /** The current text size. */
   var txtSize = 40
+  
+  /** Variables for flashing functionality. */
+  var frameCount = 0
+  def flashing: Boolean = (frameCount / 40) % 2 == 0
 
   /** Setting the graphics font and text alignment. */
   this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize)
@@ -61,6 +65,10 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
     this.gfx.drawImage(this.image, 0, 0, W, H)
     this.gfx.fill = Color(0.0, 0.0, 0.0, {if (this.focused.value) 1.0 else 0.4})
     this.gfx.fillText(text, W / 2, 0.75 * H, W)
+    this.frameCount += 1
+    if (this.flashing && this.focused.value) {
+      this.gfx.fillText("|", (13.2 * value.length) + 0.51 * W, 0.75 * H, W)
+    }
   }
   
   /** Request for focus. */
@@ -73,7 +81,7 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
         value = value.dropRight(1)
       } else if (ke.getCode == KeyCode.SPACE) {
         value = value + "_"
-      } else if (allowed.contains(ke.getText)) {
+      } else if (allowed.contains(ke.getText) && value.length < 16) {
         value = value + ke.getText
       }
     }

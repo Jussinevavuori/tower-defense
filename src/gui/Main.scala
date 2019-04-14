@@ -13,7 +13,7 @@ object Main extends JFXApp {
   var currentGame = GameLoader.loadNewGame()
   
   /** Game runner thread for updating the game concurrently. */
-  val gamerunner = new Thread(GameRunner)
+  var gamerunner = new Thread(GameRunner)
   
   /** Function to load a new game. */
   def loadGame(g: Game) = {

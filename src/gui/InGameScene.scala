@@ -81,15 +81,17 @@ object InGameScene extends AnimationScene {
     }
   }
   
+  
   /** Loadup function. */
   override def loadUp() = {
     b_music.update()
+    Main.gamerunner = new Thread(GameRunner)
     Main.gamerunner.start()
   }
   
   /** Shutdown function. */
   override def shutDown() = {
-    Main.gamerunner.stop()
+    GameRunner.terminate()
   }
 
   /** Set to true upon entering godmode. */

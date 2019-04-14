@@ -10,7 +10,7 @@ import scala.collection.mutable.Queue
 class Wave(val number: Int, val enemies: Queue[Enemy], private val prizeSum: Int) {
 
   /** The frequency constant for how often an enemy should be spawned in in seconds. */
-  private val frequency = 0.8
+  private val frequency = 0.6
 
   /** The wave's timer, which tracks amount of time left before next spawn. */
   private var timer = frequency  

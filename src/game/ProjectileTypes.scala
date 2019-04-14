@@ -71,7 +71,7 @@ class Missile(x: Double, y: Double, dmg: Double, rng: Double, br: Double, trg: E
   val maxSpeed = 0.4
   
   /** The acceleration constant of a missile. */
-  val acc = 0.002
+  val acc = 0.0002
   
   /** The missile's current target enemy, towards which it accelerates. */
   val target = trg
@@ -98,12 +98,14 @@ class Missile(x: Double, y: Double, dmg: Double, rng: Double, br: Double, trg: E
     
     // Set speed to accelerated speed until maxspeed
     if (this.vel.size != 0) {
-      val acceleration = if (speed < maxSpeed) acc else 0
-      this.vel.scaleTo((speed + acceleration) * 60 * elapsedTime)
+      this.vel.scaleTo(speed + acc)
+      this.vel.limit(maxSpeed)
     }
     
-    // Return the velocity for moving
-    this.vel
+    // Return a scaled copy of the velocity for movement
+    val movement = Vec(this.vel.x, this.vel.y)
+    movement.scaleTo(this.vel.size * 30 * elapsedTime)
+    movement
   }
 
   /** Hits all enemies within the blast radius upon impact */

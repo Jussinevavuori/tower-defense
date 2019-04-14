@@ -11,7 +11,7 @@ class CannonTower1(x: Double, y: Double) extends Tower(x, y) {
   val price    = 300
   val upgrade  = Some(new CannonTower2(x, y))
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("shot1.wav", 0.2)
+    gui.Audio.play("shot1.wav")
     Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
@@ -23,7 +23,7 @@ class CannonTower2(x: Double, y: Double) extends Tower(x, y) {
   val price    = 500
   val upgrade  = Some(new CannonTower3(x, y))
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("shot1.wav", 0.2)
+    gui.Audio.play("shot1.wav")
     Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
@@ -35,7 +35,7 @@ class CannonTower3(x: Double, y: Double) extends Tower(x, y) {
   val price    = 800
   val upgrade  = None
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("shot1.wav", 0.2)
+    gui.Audio.play("shot1.wav")
     Buffer(new Bullet(this.pos.x, this.pos.y, this.strength, this.radius, target))
   }
 }
@@ -50,7 +50,7 @@ class BoomerTower1(x: Double, y: Double) extends Tower(x, y) {
   val price    = 600
   val upgrade  = Some(new BoomerTower2(x, y))
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("throw.wav", 0.2)
+    gui.Audio.play("throw.wav")
     Buffer(new Boomerang(this.pos.x, this.pos.y, this.strength, target, 0.25))
   }
 }
@@ -62,7 +62,7 @@ class BoomerTower2(x: Double, y: Double) extends Tower(x, y) {
   val price    = 500
   val upgrade  = None
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("throw.wav", 0.2)
+    gui.Audio.play("throw.wav")
     Buffer(new Boomerang(this.pos.x, this.pos.y, this.strength, target, 0.28))
   }
 }
@@ -78,7 +78,7 @@ class HomingTower1(x: Double, y: Double) extends Tower(x, y) {
   val price    = 1200
   val upgrade  = Some(new HomingTower2(x, y))
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("shot2.wav", 0.2)
+    gui.Audio.play("shot2.wav")
     Buffer(new Missile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 1.5, target))
   }
 }
@@ -91,7 +91,7 @@ class HomingTower2(x: Double, y: Double) extends Tower(x, y) {
   val price    = 1200
   val upgrade  = None
   def generateProjectiles(target: Enemy) = {
-    gui.Audio.play("shot2.wav", 0.2)
+    gui.Audio.play("shot2.wav")
     Buffer(new Missile(this.pos.x, this.pos.y, this.strength, 2 * this.radius, 2.5, target))
   }
 }

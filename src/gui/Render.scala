@@ -116,7 +116,6 @@ object Render {
   
   /** Renders a selectable tower when mouse is hovering over it. */
   def renderSelectableTower(canvas: Canvas, game: Game, tower: Tower): Unit = {
-    
     val gfx = canvas.graphicsContext2D
     val (x, y) = this.canvasCoords(tower.pos.x + 0.5, tower.pos.y + 0.5)
     val (rx, ry) = radius(0.7)
@@ -154,7 +153,6 @@ object Render {
   
   /** Renders towers in the shop. */
   def renderShopTowers(canvas: Canvas): Unit = {
-    
     val gfx = canvas.graphicsContext2D
     Animate("cannondog1",  730 * resizeW, 916 * resizeH, gfx)
     Animate("koala1",      930 * resizeW, 916 * resizeH, gfx)
@@ -201,29 +199,35 @@ object Render {
 
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     
-    for (p <- projectiles) {
-      val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
+    for (i <- 0 until projectiles.size) {
       
-      if (p.isInstanceOf[Missile]) {
-        val angle = p.asInstanceOf[Missile].dir() 
-        gfx.translate(x, y)
-        gfx.rotate(angle)
-        gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
-        gfx.rotate(-angle)
-        gfx.translate(-x, -y)
-      }
+      val p = projectiles(i)
       
-      else if (p.isInstanceOf[Bullet]) {
-        gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
-      }
+      if (p != null) {
       
-      else if (p.isInstanceOf[Boomerang]) {
-        val angle = p.asInstanceOf[Boomerang].angle
-        gfx.translate(x, y)
-        gfx.rotate(angle)
-        gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
-        gfx.rotate(-angle)
-        gfx.translate(-x, -y)
+        val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
+        
+        if (p.isInstanceOf[Missile]) {
+          val angle = p.asInstanceOf[Missile].dir() 
+          gfx.translate(x, y)
+          gfx.rotate(angle)
+          gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
+          gfx.rotate(-angle)
+          gfx.translate(-x, -y)
+        }
+        
+        else if (p.isInstanceOf[Bullet]) {
+          gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
+        }
+        
+        else if (p.isInstanceOf[Boomerang]) {
+          val angle = p.asInstanceOf[Boomerang].angle
+          gfx.translate(x, y)
+          gfx.rotate(angle)
+          gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
+          gfx.rotate(-angle)
+          gfx.translate(-x, -y)
+        }
       }
     }
   }
@@ -233,35 +237,40 @@ object Render {
   /** Renders the enemies as coloured circles of the correct size with HP bars. */
   private def renderEnemies(gfx: GraphicsContext, enemies: Buffer[Enemy]) = {
     
-    for (e <- enemies) {
+    for (i <- 0 until enemies.size) {
       
-      val (x, y) = this.canvasCoords(e.pos.x, e.pos.y)
-
-      val (sx, sy) = radius(e.size * 1.2)  // HP radius
-      val (rx, ry) = radius(e.size)
+      val e = enemies(i)
       
-      val hp = (e.health / e.maxhp) max 0
-     
-      gfx.stroke = Color(0, 0, 0, 0.8)
-      gfx.lineWidth = 5
-      gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+      if (e != null) {
       
-      gfx.stroke = Color(1, 1, 1, 0.8)
-      gfx.lineWidth = 3
-      gfx.strokeArc(x - sx, y - sy, 2 * sx, 2 * sy, -90, hp * 360, ArcType.OPEN)
-      
-      val c = 1 / 255.0
-
-      gfx.fill = e.typeid match { // Fill based on the color and remaining health
-        case "n1" => Color( 46 * c, 117 * c, 219 * c, 1.0)
-        case "n2" => Color(  0 * c, 160 * c,  23 * c, 1.0)
-        case "n3" => Color(229 * c, 174 * c,  21 * c, 1.0)
-        case "n4" => Color(229 * c,  75 * c,   0 * c, 1.0)
-        case "n5" => Color(188 * c,   4 * c,   4 * c, 1.0)
-        case _ => Color(0.0, 0.0, 0.0, 1.0)
+        val (x, y) = this.canvasCoords(e.pos.x, e.pos.y)
+  
+        val (sx, sy) = radius(e.size * 1.2)  // HP radius
+        val (rx, ry) = radius(e.size)
+        
+        val hp = (e.health / e.maxhp) max 0
+       
+        gfx.stroke = Color(0, 0, 0, 0.8)
+        gfx.lineWidth = 5
+        gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+        
+        gfx.stroke = Color(1, 1, 1, 0.8)
+        gfx.lineWidth = 3
+        gfx.strokeArc(x - sx, y - sy, 2 * sx, 2 * sy, -90, hp * 360, ArcType.OPEN)
+        
+        val c = 1 / 255.0
+  
+        gfx.fill = e.typeid match { // Fill based on the color and remaining health
+          case "n1" => Color( 46 * c, 117 * c, 219 * c, 1.0)
+          case "n2" => Color(  0 * c, 160 * c,  23 * c, 1.0)
+          case "n3" => Color(229 * c, 174 * c,  21 * c, 1.0)
+          case "n4" => Color(229 * c,  75 * c,   0 * c, 1.0)
+          case "n5" => Color(188 * c,   4 * c,   4 * c, 1.0)
+          case _ => Color(0.0, 0.0, 0.0, 1.0)
+        }
+  
+        gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
       }
-
-      gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
     }
   }
   

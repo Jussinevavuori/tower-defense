@@ -68,7 +68,7 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
     
     // Calculate the velocity towards the next target and limit it to the enemy's speed
     val velocity: Vec = this.target.get.pos - this.pos
-    val scaledSpeed = this.speed * 60 * elapsedTime
+    val scaledSpeed = this.speed * 90 * elapsedTime
     velocity.limit(scaledSpeed)
     
     // When the enemy stops, it has reached its target and asks the target for the next target
