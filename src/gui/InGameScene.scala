@@ -59,6 +59,7 @@ object InGameScene extends AnimationScene {
     Animate.advance()
     Effects.advance()
     Render.renderGame(Main.currentGame, gameCanvas, selectedTower)
+    Render.fade(Time.elapsedTime)
 
     // Render the interaction canvas
     interactionCanvas.graphicsContext2D.clearRect(0, 0, interactionCanvas.getWidth, interactionCanvas.getHeight)

@@ -57,7 +57,7 @@ object LoadGameScene extends AnimationScene {
   def menuYmax = 125.0
   
   /** Menu y position maximum coordinate. */
-  def menuYmin = -1 * (lvlButtons.size - 9) * 80
+  def menuYmin = -1 * (lvlButtons.size - 8) * 80
   
   /** Menu y position. */
   var menuY = menuYmax

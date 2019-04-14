@@ -19,12 +19,6 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
 
   /** The projectiles in the current game. */
   var projectiles = Buffer[Projectile]()
-  
-  /** The current alternatives for the graphics. */
-  val alts = Array("ss_groundGrass", "ss_groundFall", "ss_groundSnow")
-  
-  /** The current alternative in this game, chosen by random. */
-  val alt: String = this.alts(nextInt(alts.size))
 
   /** The current wave in the game. */
   var wave: Wave = WaveLoader.loadWave(initWave, this.path)  

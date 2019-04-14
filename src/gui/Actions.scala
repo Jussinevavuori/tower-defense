@@ -11,6 +11,7 @@ object Actions {
   def loadNextWave(g: Game) = {
     if (g.loadNextWave()) Audio.play("menu.wav") else error()
     this.checkLocks()
+    Render.startFade()
   }
   
   /** Saves the current game. */

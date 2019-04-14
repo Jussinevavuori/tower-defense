@@ -27,7 +27,13 @@ object Render {
   def renderGame(game: Game, canvas: Canvas, selectedTower: Option[Tower]): Unit = {
     
     // Require that the background is not null: Prerendering must be done before
-    this.renderRequire(this.bg != null, "Background is null")
+    this.renderRequire(this.bgs.nonEmpty, "Background is null")
+    
+    // The current wave's background
+    val bg = this.bgs((game.wave.number / 3) % this.bgs.size)
+    
+    // The previous wave's background
+    val prevbg = this.bgs((((game.wave.number - 1) max 0) / 3) % this.bgs.size)
     
     // The graphics of the canvas
     val gfx = canvas.graphicsContext2D
@@ -37,7 +43,14 @@ object Render {
     this.H = Main.stage.scene.value.getHeight
     
     // Draw background
-    gfx.drawImage(this.bg, 0, 0, W, H)
+    gfx.drawImage(bg, 0, 0, W, H)
+    
+    // Fade previous background
+    if (this.prevAlpha > 0.0) {
+      gfx.setGlobalAlpha(this.prevAlpha)
+      gfx.drawImage(prevbg, 0, 0, W, H)
+      gfx.setGlobalAlpha(1.0)
+    }
     
     // Draw all game elements
     gfx.translate(0.5 * this.gridW, 0.5 * this.gridH)
@@ -48,7 +61,7 @@ object Render {
     this.renderTowers(gfx, game.towers)
     
     // Finally redraw bottom bar and its info ontop of game elements
-    gfx.drawImage(this.bg, 0, 840, 1920, 240, 0, this.mainH, W, this.sideH)
+    gfx.drawImage(bg, 0, 840, 1920, 240, 0, this.mainH, W, this.sideH)
     
     // Draw player HP and money
     this.setFontSize(gfx, 30)
@@ -91,6 +104,13 @@ object Render {
   def radius(r: Double): (Double, Double) = {
     (r * this.gridW, r * this.gridH)
   }
+  
+  /** Fading functionality for changing the background. */
+  var fadeCountdown = 0.0
+  val fadeTime = 5.0
+  def startFade() = this.fadeCountdown = this.fadeTime
+  def fade(elapsedTime: Double) = this.fadeCountdown -= elapsedTime
+  def prevAlpha = (fadeCountdown / fadeTime) max 0
   
   
   /** Renders the active tower in the towershop that is being purchased */
@@ -198,36 +218,39 @@ object Render {
 
     gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
     
-    val proj = projectiles.iterator
-    
-    while (proj.hasNext) {
+    if (projectiles.nonEmpty) {
       
-      val p = proj.next
+      val proj = projectiles.iterator
       
-      if (p != null) {
-      
-        val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
+      while (proj.hasNext) {
         
-        if (p.isInstanceOf[Missile]) {
-          val angle = p.asInstanceOf[Missile].dir() 
-          gfx.translate(x, y)
-          gfx.rotate(angle)
-          gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
-          gfx.rotate(-angle)
-          gfx.translate(-x, -y)
-        }
+        val p = proj.next
         
-        else if (p.isInstanceOf[Bullet]) {
-          gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
-        }
+        if (p != null) {
         
-        else if (p.isInstanceOf[Boomerang]) {
-          val angle = p.asInstanceOf[Boomerang].angle
-          gfx.translate(x, y)
-          gfx.rotate(angle)
-          gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
-          gfx.rotate(-angle)
-          gfx.translate(-x, -y)
+          val (x, y) = this.canvasCoords(p.pos.x, p.pos.y)
+          
+          if (p.isInstanceOf[Missile]) {
+            val angle = p.asInstanceOf[Missile].dir() 
+            gfx.translate(x, y)
+            gfx.rotate(angle)
+            gfx.drawImage(this.homingProjImage, -8, -8, 16, 16)
+            gfx.rotate(-angle)
+            gfx.translate(-x, -y)
+          }
+          
+          else if (p.isInstanceOf[Bullet]) {
+            gfx.drawImage(this.bulletProjImage, x - 8, y - 8, 16, 16)
+          }
+          
+          else if (p.isInstanceOf[Boomerang]) {
+            val angle = p.asInstanceOf[Boomerang].angle
+            gfx.translate(x, y)
+            gfx.rotate(angle)
+            gfx.drawImage(this.boomerangProjImage, -12, -12, 24, 24)
+            gfx.rotate(-angle)
+            gfx.translate(-x, -y)
+          }
         }
       }
     }
@@ -238,41 +261,44 @@ object Render {
   /** Renders the enemies as coloured circles of the correct size with HP bars. */
   private def renderEnemies(gfx: GraphicsContext, enemies: Buffer[Enemy]) = {
     
-    val enem = enemies.iterator
+    if (enemies.nonEmpty) {
+        
+      val enem = enemies.iterator
+      
+      while (enem.hasNext) {
+        
+        val e = enem.next
+        
+        if (e != null) {
+        
+          val (x, y) = this.canvasCoords(e.pos.x, e.pos.y)
     
-    while (enem.hasNext) {
-      
-      val e = enem.next
-      
-      if (e != null) {
-      
-        val (x, y) = this.canvasCoords(e.pos.x, e.pos.y)
-  
-        val (sx, sy) = radius(e.size * 1.2)  // HP radius
-        val (rx, ry) = radius(e.size)
-        
-        val hp = (e.health / e.maxhp) max 0
-       
-        gfx.stroke = Color(0, 0, 0, 0.8)
-        gfx.lineWidth = 5
-        gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
-        
-        gfx.stroke = Color(1, 1, 1, 0.8)
-        gfx.lineWidth = 3
-        gfx.strokeArc(x - sx, y - sy, 2 * sx, 2 * sy, -90, hp * 360, ArcType.OPEN)
-        
-        val c = 1 / 255.0
-  
-        gfx.fill = e.typeid match { // Fill based on the color and remaining health
-          case "n1" => Color( 46 * c, 117 * c, 219 * c, 1.0)
-          case "n2" => Color(  0 * c, 160 * c,  23 * c, 1.0)
-          case "n3" => Color(229 * c, 174 * c,  21 * c, 1.0)
-          case "n4" => Color(229 * c,  75 * c,   0 * c, 1.0)
-          case "n5" => Color(188 * c,   4 * c,   4 * c, 1.0)
-          case _ => Color(0.0, 0.0, 0.0, 1.0)
+          val (sx, sy) = radius(e.size * 1.2)  // HP radius
+          val (rx, ry) = radius(e.size)
+          
+          val hp = (e.health / e.maxhp) max 0
+         
+          gfx.stroke = Color(0, 0, 0, 0.8)
+          gfx.lineWidth = 5
+          gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
+          
+          gfx.stroke = Color(1, 1, 1, 0.8)
+          gfx.lineWidth = 3
+          gfx.strokeArc(x - sx, y - sy, 2 * sx, 2 * sy, -90, hp * 360, ArcType.OPEN)
+          
+          val c = 1 / 255.0
+    
+          gfx.fill = e.typeid match { // Fill based on the color and remaining health
+            case "n1" => Color( 46 * c, 117 * c, 219 * c, 1.0)
+            case "n2" => Color(  0 * c, 160 * c,  23 * c, 1.0)
+            case "n3" => Color(229 * c, 174 * c,  21 * c, 1.0)
+            case "n4" => Color(229 * c,  75 * c,   0 * c, 1.0)
+            case "n5" => Color(188 * c,   4 * c,   4 * c, 1.0)
+            case _ => Color(0.0, 0.0, 0.0, 1.0)
+          }
+    
+          gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
         }
-  
-        gfx.fillOval(x - rx, y - ry, 2 * rx, 2 * ry)
       }
     }
   }
@@ -374,7 +400,7 @@ object Render {
   def toggleFPS() = this.showFPS = !this.showFPS
   
   /** The background image constructed in the prerender. */
-  private var bg: Image = null
+  private var bgs = Buffer[Image]()
   
   /** Preloaded images for all projectiles. */
   private var bulletProjImage:    Image = ImageLoader("bulletproj")
@@ -406,11 +432,18 @@ object Render {
   /** Function to load the game dimensions and render the background image. */
   def prerender(game: Game) = {
 
-    // Loading a canvas to paint the background on.
-    val canvas = new Canvas(1920, 1080)
+    // Clear the old backgrounds
+    this.bgs = Buffer[Image]()
     
-    // Loading the canvas graphics to draw the background with.
-    val cgfx = canvas.graphicsContext2D
+    // Loading a canvas to paint the background on for all the alternatives
+    val canvas1 = new Canvas(1920, 1080)
+    val canvas2 = new Canvas(1920, 1080)
+    val canvas3 = new Canvas(1920, 1080)
+    
+    // Loading the canvas graphics to draw the background with for all the alternatives
+    val gfx1 = canvas1.graphicsContext2D
+    val gfx2 = canvas2.graphicsContext2D
+    val gfx3 = canvas3.graphicsContext2D
     
     // Loading the columns and rows of the game.
     gCols = game.cols
@@ -429,8 +462,10 @@ object Render {
       }
     }
     
-    // Loading the spritesheet based on the alternative of the game
-    val spritesheet: Image = ImageLoader(game.alt)
+    // Loading the spritesheets for all the alternatives
+    val ss1: Image = ImageLoader("ss_groundGrass")
+    val ss2: Image = ImageLoader("ss_groundFall")
+    val ss3: Image = ImageLoader("ss_groundSnow")
     
     // Draw each spot in the grid
     for (i <- 1 to game.cols) {
@@ -475,17 +510,26 @@ object Render {
         }
         
         // Draws the correct part of the sprite to the correct coordinates
-        cgfx.drawImage(spritesheet, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
+        gfx1.drawImage(ss1, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
+        gfx2.drawImage(ss2, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
+        gfx3.drawImage(ss3, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
       }
     }
     // Drawing the sidebar
-    cgfx.drawImage(ImageLoader("sidebar"), 0, 840)
+    val sidebar = ImageLoader("sidebar")
+    gfx1.drawImage(sidebar, 0, 840)
+    gfx2.drawImage(sidebar, 0, 840)
+    gfx3.drawImage(sidebar, 0, 840)
 
     // Creating a new writable image
-    val image = new WritableImage(1920, 1080)
+    val image1 = new WritableImage(1920, 1080)
+    val image2 = new WritableImage(1920, 1080)
+    val image3 = new WritableImage(1920, 1080)
     
     // Snapshotting the canvas and saving it as the background
-    this.bg = canvas.snapshot(new SnapshotParameters(), image)
+    this.bgs += canvas1.snapshot(new SnapshotParameters(), image1)
+    this.bgs += canvas2.snapshot(new SnapshotParameters(), image2)
+    this.bgs += canvas3.snapshot(new SnapshotParameters(), image3)
   }
   
   /** Function to throw a rendering exception if the given case fails. */
@@ -496,9 +540,3 @@ object Render {
 
 /** An exception class for rendering expections if needed. */
 class RenderingException(msg: String) extends Exception(msg)
-
-
-
-
-
-
