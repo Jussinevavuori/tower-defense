@@ -70,6 +70,34 @@ kehitykset ovat olleet enemmänkin omasta ilosta jatkokehitystä ja projekti on 
 valmis.
 
 
+----------------
+
+Raportti 15.4.
+
+----------------
+
+
+Viimeisimmän raportin jälkeen tärkeimpiä muutoksia ovat toiminnallisuuksien lisäämiset ja
+viimeistelyt. Esimerkiksi uusien tasojen ja keskeneräisten pelien tallentaminen, lataaminen ja
+luominen toimii nyt moitteettomasti. Paljon on tehty työtä itse GUI:n kehittämiseksi, yritetty
+parantaa tehokkuutta ja korjattu bugeja.
+
+Suuri muutos oli tehokkuuden parantamiseksi rinnakkaisuuden tuominen peliin. Nyt GUI ja pelin
+piirtäminen tapahtuvat erillisesti itse pelin päivityksistä. Tämä saatiin toteutumaan hyvin
+helposti, joskin se toi mukanaan kourallisen bugeja, joita on nyt korjailtu ainakin niin
+paljon kuin on löydetty. Itse GUI tai piirtäminen ei nimittäin muokkaa pelin ominaisuuksia,
+ainoastaan lukee. Näin peli saa vapaasti päivittää itseään omaa tahtiaan taustalla ja GUI
+piirtää sitä tavoitellen 60 fps vauhtia erillään. Tämä sai myös pelin toimimaan paljon paremmin
+vähän hitaammalla läppärilläni.
+
+Rinnakkaisuuden lisäksi on lisätty pieni graafinen uudistus, jossa nyt pelissä on "propseja",
+eli puita ja puskia, joita voi level editorissa vapaasti tasoonsa asetella. Tämän lisäksi
+peliin on myös tuotu vuodenajat, jotka vaihtuvat muutaman tason välein. (Vuodenajat eivät
+vaikuta muuhun kuin grafiikkaan.)
+
+Paljon on tehty myös refaktorointia ja koodin siistimistä ja korjailuja ja parannuksia.
+
+
 
 
 

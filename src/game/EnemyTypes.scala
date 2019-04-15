@@ -33,8 +33,8 @@ class EnemyN2(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) 
   val reward = 2
   val strength = 2
   def death  = Iterator[Enemy](
-    new EnemyN3(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target),
-    new EnemyN3(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target)
+    new EnemyN1(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target),
+    new EnemyN1(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target)
   )
 }
 
@@ -49,8 +49,8 @@ class EnemyN3(x: Double, y: Double, trg: Option[Path]) extends Enemy(x, y, trg) 
   val reward = 1
   val strength = 4
   def death  = Iterator[Enemy](
-    new EnemyN3(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target),
-    new EnemyN3(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target)
+    new EnemyN2(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target),
+    new EnemyN2(Vary(this.pos.x) by 0.05, Vary(this.pos.y) by 0.05, this.target)
   )
 }
 
