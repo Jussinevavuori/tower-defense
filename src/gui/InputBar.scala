@@ -25,6 +25,9 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
   
   /** The current value of the text field. */
   var value: String = ""
+  
+  /** Clears the value. */
+  def clear(): Unit = this.value = ""
     
   /** List of allowed characters. */
   private val allowed = "abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890"

@@ -61,7 +61,7 @@ abstract class Tower(x: Double, y: Double) {
     // Attempt to find a new target
     while (!hasViableTarget && enemies.hasNext) {
       val candidate = enemies.next
-      if (candidate.pos.distanceSqrd(this.pos) < radiusSqrd) {
+      if (candidate.pos.distanceSqrd(this.pos) < radiusSqrd && candidate.alive) {
         this.target = Some(candidate)
         return
       }

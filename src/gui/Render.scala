@@ -535,7 +535,7 @@ object Render {
     }
     
     // Drawing the props
-    for (p <- game.props) {
+    for (p <- game.props.sortBy(_.y)) {
       var (i, j, w, h) = p.id match {
         case "bush" => (0, 3, 1, 1)
         case "tree" => (1, 3, 2, 2)

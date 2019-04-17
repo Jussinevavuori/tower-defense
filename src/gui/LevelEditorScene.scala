@@ -60,7 +60,7 @@ object LevelEditorScene extends AnimationScene {
   var (latestX, latestY) = (-1, -1)
   
   /** The background created with the Rerender object. */
-  var bg = Rerender.renderMap()
+  var bg = this.renderMap()
   
   /** The selection box graphics. */
   var selection = this.renderSelectionBox()
@@ -104,7 +104,7 @@ object LevelEditorScene extends AnimationScene {
             grid(x + 1)(y + 1) = true
             latestX = x
             latestY = y
-            Rerender()
+            this.rerender()
             return true
           }
           
@@ -114,7 +114,7 @@ object LevelEditorScene extends AnimationScene {
             grid(x + 1)(y + 1) = true
             latestX = x
             latestY = y
-            Rerender()
+            this.rerender()
             return true
           }
         }
@@ -127,7 +127,7 @@ object LevelEditorScene extends AnimationScene {
   def resetPath() = {
     grid = grid.map(_.map(x => false))
     path = null
-    Rerender()
+    this.rerender()
   }
 
   /** Two invisible rectangles for scaling purposes. */
@@ -153,6 +153,7 @@ object LevelEditorScene extends AnimationScene {
         LevelSaver.saveCustomLevel(path, input.value, props)
         LevelEditorScene.props.clear()
         LevelEditorScene.resetPath()
+        LevelEditorScene.input.clear()
         Audio.play("iosfx.wav")
       } else {
         Audio.play("error.wav")
@@ -217,8 +218,8 @@ object LevelEditorScene extends AnimationScene {
       val wc = 60 * 1.5 * LevelEditorScene.getWidth / 1920
       val hc = 60 * 1.5 * LevelEditorScene.getHeight / 1080
       this.selectedProp.get match {
-        case "bush" => gfx.drawImage(Rerender.ss,  0, 180,  60,  60, propx, propy,   wc,   hc)
-        case "tree" => gfx.drawImage(Rerender.ss, 60, 180, 120, 120, propx, propy, 2*wc, 2*hc)
+        case "bush" => gfx.drawImage(this.ss,  0, 180,  60,  60, propx, propy,   wc,   hc)
+        case "tree" => gfx.drawImage(this.ss, 60, 180, 120, 120, propx, propy, 2*wc, 2*hc)
       }
     } else {
       // Draw selection box
@@ -247,6 +248,10 @@ object LevelEditorScene extends AnimationScene {
   /** On key pressed. */
   this.onKeyPressed = new EH[KeyEvent] {
     def handle(ke: KeyEvent) = { ke.getCode() match {
+      
+      /** 1 and 2 shortcuts to props. */
+      case KeyCode.NUMPAD1 => LevelEditorScene.selectedProp = Some("bush")
+      case KeyCode.NUMPAD2 => LevelEditorScene.selectedProp = Some("tree")
       
       /** F11 toggles fullscreen. */
       case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
@@ -300,7 +305,7 @@ object LevelEditorScene extends AnimationScene {
             case "bush" => new Prop(x - 0.5, y - 0.5, "bush")
             case "tree" => new Prop(x - 0.5, y - 0.5, "tree")
           }}
-          Rerender()
+          LevelEditorScene.rerender()
           selectedProp = None
         }
       }
@@ -319,19 +324,12 @@ object LevelEditorScene extends AnimationScene {
     c.graphicsContext2D.fillRect(0, 0, 60, 60)
     c.snapshot(new SnapshotParameters(), new WritableImage(60, 60))
   }
-}
-
-
-
-
-/** Object for rendering the map. */
-object Rerender {
   
-  /** Shorter syntax for rendering background. */
-  def apply() = LevelEditorScene.bg = this.renderMap()
-  
-  // The spritesheet.
+  /** The spritesheet. */
   val ss = ImageLoader("ss_groundGrass")
+  
+  /** Rerenders the background. */
+  def rerender() = this.bg = this.renderMap()
     
   /** Renders the background as an image. */
   def renderMap(): Image = {
@@ -346,15 +344,15 @@ object Rerender {
         val (sx, sy): (Int, Int) = {
           
           // Record the truth values for this and the eight neighboring grid cells
-          val t  = LevelEditorScene.grid(i)(j)
-          val l  = LevelEditorScene.grid(i - 1)(j)
-          val r  = LevelEditorScene.grid(i + 1)(j)
-          val u  = LevelEditorScene.grid(i)(j - 1)
-          val d  = LevelEditorScene.grid(i)(j + 1)
-          val ld = LevelEditorScene.grid(i - i)(j + 1)
-          val rd = LevelEditorScene.grid(i + 1)(j + 1)
-          val lu = LevelEditorScene.grid(i - 1)(j - 1)
-          val ru = LevelEditorScene.grid(i + 1)(j - 1)
+          val t  = this.grid(i)(j)
+          val l  = this.grid(i - 1)(j)
+          val r  = this.grid(i + 1)(j)
+          val u  = this.grid(i)(j - 1)
+          val d  = this.grid(i)(j + 1)
+          val ld = this.grid(i - i)(j + 1)
+          val rd = this.grid(i + 1)(j + 1)
+          val lu = this.grid(i - 1)(j - 1)
+          val ru = this.grid(i + 1)(j - 1)
           
           // Find the correct spot in the spritesheet based on the neighbors
           if      (t)             (1, 1)  //  |Path
@@ -385,7 +383,7 @@ object Rerender {
       }
       
       // Drawing the props
-      for (p <- LevelEditorScene.props) {
+      for (p <- this.props.sortBy(_.y)) {
         var (i, j, w, h) = p.id match {
           case "bush" => (0, 3, 1, 1)
           case "tree" => (1, 3, 2, 2)
@@ -402,8 +400,6 @@ object Rerender {
     snapshotCanvas.snapshot(new SnapshotParameters(), new WritableImage(1920, 1080))
   }
 }
-
-
 
 
 
