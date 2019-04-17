@@ -4,6 +4,7 @@ import game._
 import scalafx.application.JFXApp
 import javafx.event.{ EventHandler => EH }
 import javafx.stage.{ WindowEvent => WE }
+import scalafx.scene.Scene
 
 
 /** The main app and window. */
@@ -31,8 +32,11 @@ object Main extends JFXApp {
     title = "Tower Defense"
     resizable = true
     fullScreen = false
+    maximized = true
     width = 1280
     height = 720
+    minWidth = 1280
+    minHeight = 720
     
     /** Initializing with the default scene in program status. */
     scene = ProgramStatus.scene
@@ -56,7 +60,9 @@ object Main extends JFXApp {
   def changeStatus(s: Int) = {
     ProgramStatus.stop()
     ProgramStatus.setStatus(s)
+    val wasFullscreen = this.stage.fullScreen.value
     this.stage.scene = ProgramStatus.scene
+    this.stage.fullScreen = wasFullscreen
     ProgramStatus.start()
   }
 }

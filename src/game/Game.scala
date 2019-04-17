@@ -141,7 +141,7 @@ class Game(val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   
   /** For a given pair of coordinates, returns whether a tower can be placed in the spot. */
   def isValidSpot(x: Double, y: Double) = {
-    x >= 0.0 && y >= 0.0 && x <= this.cols && y <= this.rows &&
+    x >= 0.0 && y >= 0.0 && x <= this.cols - 1 && y <= this.rows &&
     this.path.toArray().map(_.pos).forall(p => p.distance(Vec(x, y)) > 1.0)
   }
   

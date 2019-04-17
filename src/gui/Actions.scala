@@ -56,12 +56,15 @@ object Actions {
   def selectTower(g: Game, _x: Double, _y: Double): (Option[Tower], Double, Double) = { 
     val selection = g.towers.find(t => Vec(_x, _y).distance(t.pos) < 0.6)
     var (x, y) = (0.0, 0.0)
+    val (sceneW, sceneH) = (Main.stage.scene.value.getWidth, Main.stage.scene.value.getHeight)
     if (selection.isDefined) {
       Audio.play("menu.wav")
       if (selection.get.upgrade.isDefined) {
         val pos = selection.get.pos
-        x = (Render.gridW * (pos.x - 0.45) * 1920) / Main.stage.scene.value.getWidth
-        y = (Render.gridH * (pos.y - 1.05) * 1080) / Main.stage.scene.value.getHeight
+        x = (Render.gridW * (pos.x - 0.45) * 1920) / sceneW
+        y = (Render.gridH * (pos.y - 1.05) * 1080) / sceneH
+        y = (y max 32) min (1080 / sceneH) * (1080 - InGameScene.b_upgrd.image.getHeight)
+        x = (x max 0)  min (1920 / sceneW) * (1920 - InGameScene.b_upgrd.image.getWidth)
       }
     }
     (selection, x, y)  // Returns position for offset upgrade button and option[tower]

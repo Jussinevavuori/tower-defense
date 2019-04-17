@@ -154,7 +154,7 @@ object Render {
         case t3: BoomerTower1 => Animate("koala1", x, y, gfx)
         case t4: BoomerTower2 => Animate("koala2", x, y, gfx)
         case t5: HomingTower1 => Animate("panda1", x, y, gfx)
-        case t6: HomingTower2 => Animate("panda1", x, y, gfx)
+        case t6: HomingTower2 => Animate("panda2", x, y, gfx)
         case _ => throw new RenderingException("Invalid tower type")
       }
     }
@@ -292,10 +292,13 @@ object Render {
     gfx.fillOval(  x - rx, y - ry, 2 * rx, 2 * ry)
     gfx.strokeOval(x - rx, y - ry, 2 * rx, 2 * ry)
     if (tower.upgrade.isDefined) {
+      val b = InGameScene.b_upgrd
       this.setFontSize(gfx, 20)
+      val tx = resizeW * (b.x + 28)
+      val ty = resizeH * (b.y + 2)
       gfx.fill = Color(1.0, 1.0, 1.0, 1.0)
       gfx.textAlign = TextAlignment.Center
-      gfx.fillText("$" + tower.upgrade.get.price.toString(), x, y - (60 * resizeH))
+      gfx.fillText("$" + tower.upgrade.get.price.toString(), tx, ty)
     }
     gfx.translate(-this.gridW / 2, -this.gridH / 2)
   }

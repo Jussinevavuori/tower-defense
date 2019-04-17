@@ -28,6 +28,11 @@ object ProgramStatus {
     LoadGameScene
   )
   
+  /** Toggling fullscreen. */
+  def toggleFullscreen() = {
+    this.scenes.foreach(s => ())
+  }
+  
   /** Function to start a scene, by default the current scene. */
   def start(s: Int = this.status) = {
     this.scenes(s).loadUp()

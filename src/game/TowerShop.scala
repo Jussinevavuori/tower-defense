@@ -40,11 +40,11 @@ class TowerShop(var game: Game) {
   def upgrade(tower: Tower): Option[Tower] = {
     if (tower.upgrade.isDefined && game.player.canAfford(tower.upgrade.get.price)) {
       val upgraded = tower.upgrade.get
-      tower.upgraded = true
       game.towers += upgraded
       upgraded.pos.moveTo(tower.pos)
       game.sortTowers()
       game.player.charge(upgraded.price)
+      tower.upgraded = true
       Some(upgraded)
     } else {
       None

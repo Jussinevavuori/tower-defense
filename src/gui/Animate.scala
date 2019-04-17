@@ -52,6 +52,7 @@ object Animate {
     "cannondog2" -> this.loadAnimation("cannondog2",   60,   60, 2),
     "cannondog3" -> this.loadAnimation("cannondog3",   60,   60, 2),
     "panda1"     -> this.loadAnimation("panda1",       60,   60, 2),
+    "panda2"     -> this.loadAnimation("panda2",       60,   60, 2),
     "towerup"    -> this.loadAnimation("towerup",      16,   16, 7),
     "explosion"  -> this.loadAnimation("explosion",    60,   60, 6),
     "gameover"   -> this.loadAnimation("gameover",   1920, 1080, 2)
