@@ -9,7 +9,7 @@ class Player(initialHealth: Int = 100, initialMoney: Int = 1000) {
   private var _health: Int = initialHealth
   
   /** The players current health, cutting at zero. */
-  def health: Int     = this._health max 0
+  def health: Int = this._health max 0
   
   /** Returns true when the player is alive. */
   def alive: Boolean = this._health > 0

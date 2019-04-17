@@ -13,7 +13,7 @@ object Main extends JFXApp {
   var currentGame = GameLoader.loadNewGame()
   
   /** Game runner thread for updating the game concurrently. */
-  var gamerunner = new Thread(GameRunner)
+  var gameThread = new Thread(GameRunner)
   
   /** Function to load a new game. */
   def loadGame(g: Game) = {
@@ -39,6 +39,16 @@ object Main extends JFXApp {
     
     /** Starting the animation in the default scene. */
     ProgramStatus.start()
+    
+    /** On shutdown terminate concurrent thread and save game. */
+    this.onCloseRequest = new EH[WE] {
+      def handle(w: WE) = {
+        GameRunner.terminate()
+        if (ProgramStatus() == ProgramStatus.InGame)
+          if (Main.currentGame.wave.number > 1)
+            Actions.save
+      }
+    }
   }
   
   

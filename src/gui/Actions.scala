@@ -23,7 +23,7 @@ object Actions {
   /** Method to buy a new cannon tower. */
   def buyCannonTower(g: Game, godmode: Boolean) = {
     if (g.wave.number >= TowerInfo.unlockCannon || godmode) {
-      g.shop.choose("c1", g)
+      g.shop.choose("c1")
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
@@ -31,7 +31,7 @@ object Actions {
   /** Method to buy a new boomerang tower. */
   def buyBoomerTower(g: Game, godmode: Boolean) = {
     if (g.wave.number >= TowerInfo.unlockBoomer || godmode) {
-      g.shop.choose("b1", g)
+      g.shop.choose("b1")
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
@@ -39,14 +39,14 @@ object Actions {
   /** Method to buy a new homing tower. */
   def buyHomingTower(g: Game, godmode: Boolean) = {
     if (g.wave.number >= TowerInfo.unlockHoming || godmode) {
-      g.shop.choose("h1", g)
+      g.shop.choose("h1")
       if (g.shop.active) Audio.play("coin.wav") else error()
     } else error()
   }
   
   /** Method to purchase the current active tower. */
   def purchaseTower(g: Game, x: Double, y: Double) = {
-    if (g.shop.purchase(g, x, y)) {
+    if (g.shop.purchase(x, y)) {
       Audio.play("coincluster.wav")
       Audio.play("impact.wav")
     } else error()
@@ -75,7 +75,7 @@ object Actions {
   /** Method to upgrade given tower. */
   def upgradeTower(g: Game, t: Option[Tower]): Option[Tower] = {
     if (t.isDefined) {
-      val upgraded = g.shop.upgrade(g, t.get)
+      val upgraded = g.shop.upgrade(t.get)
       if (upgraded.isDefined) {
         Audio.play("fanfare.wav") 
         Effects.addTowerupEffect(upgraded.get)
@@ -116,6 +116,7 @@ object Actions {
   /** Method to load the saved game. */
   def loadGame() = {
     Main.loadGame(GameLoader.loadSavedGame())
+    Main.currentGame.setEmptyWave()
     this.resetSettings()
   }
   

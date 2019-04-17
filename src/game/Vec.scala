@@ -19,6 +19,13 @@ case class Vec(var x: Double, var y: Double) {
     this.y = sum.y
   }
   
+  /** Changes this vector to be the subtraction of this and another vector. */
+  def -=(that: Vec): Unit = {
+    val sum = this - that
+    this.x = sum.x
+    this.y = sum.y
+  }
+  
   /** Returns this vector's size/magnitude/length. */
   def size: Double = math.sqrt(this.x * this.x + this.y * this.y)
   

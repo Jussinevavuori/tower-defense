@@ -6,7 +6,7 @@ package gui
 object GameRunner extends Runnable {
   
   /** Records the last recorded time for calculating the elapsed time each frame. */
-  var latestTime: Long = 0L
+  private var latestTime: Long = 0L
   
   /** Flag for when the game is running. */
   var running = true

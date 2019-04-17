@@ -27,20 +27,20 @@ class InputBar(defaultText: String = "", _x: Double, _y: Double) extends Canvas(
   var value: String = ""
     
   /** List of allowed characters. */
-  val allowed = "abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890"
+  private val allowed = "abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890"
   
   /** The image. */
-  val image = ImageLoader("inputBar")
+  private val image = ImageLoader("inputBar")
   
   /** The graphics of the canvas. */
-  val gfx = this.graphicsContext2D
+  private val gfx = this.graphicsContext2D
   
   /** The current text size. */
   var txtSize = 40
   
   /** Variables for flashing functionality. */
-  var frameCount = 0
-  def flashing: Boolean = (frameCount / 40) % 2 == 0
+  private var frameCount = 0
+  private def flashing: Boolean = (frameCount / 40) % 2 == 0
 
   /** Setting the graphics font and text alignment. */
   this.gfx.font = Font.loadFont("file:assets/font/gamegirl.ttf", txtSize)

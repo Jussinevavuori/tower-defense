@@ -148,29 +148,6 @@ object LoadGameScene extends AnimationScene {
   
   /** The group for the buttons. */
   val buttons = new Group() { children = List(b_music, b_mainmenu, scl1, scl2) }
-  
-  /** Return to main menu option. */
-  val mMenu   = new MenuItem("Main menu") {
-    onAction = (e: AE) => {
-      Main.changeStatus(ProgramStatus.MainMenu)
-    }
-  }
-  
-  /** Exit option. */
-  val mExit   = new MenuItem("Exit") {
-    onAction = (e: AE) => {
-      sys.exit(0)
-    }
-  }
-  
-  /** The menu containing the options. */
-  val menu = new Menu("Menu") { items = List(mMenu, sep, mExit) }
-  
-  /** The menubar containing the menu. */
-  val menuBar = new MenuBar {
-    visible = false
-    menus = List(menu)
-  }
 
   /** Function to resize all elements. */
   def resize() = {
@@ -189,7 +166,7 @@ object LoadGameScene extends AnimationScene {
   
   /** Creating the stack. */
   root = new StackPane() {
-    children = List(canvas, lvls, dels, overlay, buttons, menuBar)
+    children = List(canvas, lvls, dels, overlay, buttons)
     alignment = Pos.TopLeft
   }
   
@@ -213,15 +190,6 @@ object LoadGameScene extends AnimationScene {
       
       /** Scroll level list. */
       menuY = ((menuY + se.getDeltaY) max menuYmin) min menuYmax
-    }
-  }
-  
-  /** Mouse moved. */
-  this.onMouseMoved = new EH[ME] {
-    def handle(me: ME) = {
-      
-      /** Toggle menubar visibility. */
-      menuBar.visible = me.getSceneY < 32 // Show and hide menubar
     }
   }
 }

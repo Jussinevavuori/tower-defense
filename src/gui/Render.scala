@@ -122,11 +122,11 @@ object Render {
   
   
   /** Fading functionality for changing the background. */
-  var fadeCountdown = 0.0
-  val fadeTime = 5.0
-  var latestFadeWave = -1
+  private var fadeCountdown = 0.0
+  private val fadeTime = 5.0
+  private var latestFadeWave = -1
+  private def prevAlpha = (fadeCountdown / fadeTime) max 0
   def fade(elapsedTime: Double) = this.fadeCountdown -= elapsedTime
-  def prevAlpha = (fadeCountdown / fadeTime) max 0
   def startFade() = {
     val wave = Main.currentGame.wave.number
     if (wave != latestFadeWave && fadeCountdown <= 0) {

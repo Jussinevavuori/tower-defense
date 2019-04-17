@@ -41,7 +41,7 @@ abstract class Tower(x: Double, y: Double) {
   var upgraded = false
   
   /** List of all projectiles this tower generates each time it shoots for each implementing tower type. */
-  def generateProjectiles(target: Enemy): Buffer[Projectile]
+  def generateProjectile(target: Enemy): Projectile
     
   /** The tower's current "heat" which has to return to zero before tower can shoot again. */
   private var heat = 0.0
@@ -69,14 +69,14 @@ abstract class Tower(x: Double, y: Double) {
   }
 
   /** Method to shoot. Returns a buffer that contains all the projectiles that were shot. */
-  def shoot(elapsedTime: Double): Buffer[Projectile] = {
+  def shoot(elapsedTime: Double): Option[Projectile] = {
     if (this.heat <= 0 && this.target.isDefined) {
       this.heat = this.cooldown
-      this.generateProjectiles(this.target.get)
+      Some(this.generateProjectile(this.target.get))
     }
     else {
       this.heat -= elapsedTime
-      Buffer()
+      None
     }
   }
 }

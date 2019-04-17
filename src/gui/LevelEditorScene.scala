@@ -41,12 +41,6 @@ object LevelEditorScene extends AnimationScene {
   /** The level editor graphics. */
   val gfx = canvas.graphicsContext2D
   
-  /** The spritesheet. */
-  val spritesheet = ImageLoader("ss_groundGrass")
-  
-  /** Set to false when path is done. */
-  var constructing = true
-  
   /** The current path. */
   var path: Path = null
   
@@ -65,31 +59,32 @@ object LevelEditorScene extends AnimationScene {
   /** The latest created path's integer coordinates. */
   var (latestX, latestY) = (-1, -1)
   
-  /** The background created with a function. */
-  var bg = this.renderMap()
+  /** The background created with the Rerender object. */
+  var bg = Rerender.renderMap()
   
   /** The selection box graphics. */
   var selection = this.renderSelectionBox()
   
   /** Function to create a new path segment to the given integer grid coordinates. */
-  def createPath(x: Int, y: Int): Boolean = {
+  def createPath(x: Int, y: Int, saving: Boolean = false): Boolean = {
     
+    // Shortcut to rows and columns
+    val cols = Main.currentGame.cols
+    val rows = Main.currentGame.rows
+    
+    // If not currently choosing a prop
     if (selectedProp.isEmpty) {
       
       // If constructing and coordinates on gamefield
-      if (x >= 0 && y >= 0 && y < Main.currentGame.rows && x < Main.currentGame.cols && constructing) {
-        
-        this.b_save.interactive = false
+      if ((x >= 0 && y >= 0 && y < rows && x < cols) || saving) {
         
         // For first path, construct starting point next to path outside of view
-        if (path == null) {
-          path = {
-            if      (x == 0)                         { latestX = x - 1; latestY = y; new Path(x - 1, y) }
-            else if (x == Main.currentGame.cols - 1) { latestX = x + 1; latestY = y; new Path(x + 1, y) }
-            else if (y == 0)                         { latestX = x; latestY = y - 1; new Path(x, y - 1) }
-            else if (y == Main.currentGame.rows - 1) { latestX = x; latestY = y + 1; new Path(x, y + 1) }
-            else null
-          }
+        if (path == null) path = {
+          if      (x == 0)        { latestX = x - 1; latestY = y; new Path(x - 1, y) }
+          else if (x == cols - 1) { latestX = x + 1; latestY = y; new Path(x + 1, y) }
+          else if (y == 0)        { latestX = x; latestY = y - 1; new Path(x, y - 1) }
+          else if (y == rows - 1) { latestX = x; latestY = y + 1; new Path(x, y + 1) }
+          else null
         }
         
         // Construct other paths normally if path is next to previous path and not overlapping
@@ -109,7 +104,7 @@ object LevelEditorScene extends AnimationScene {
             grid(x + 1)(y + 1) = true
             latestX = x
             latestY = y
-            bg = renderMap()
+            Rerender()
             return true
           }
           
@@ -119,30 +114,20 @@ object LevelEditorScene extends AnimationScene {
             grid(x + 1)(y + 1) = true
             latestX = x
             latestY = y
-            bg = renderMap()
+            Rerender()
             return true
           }
-          
-          else false
-        } else false
+        }
       }
-      // Else finish construction
-      else {
-        constructing = false
-        this.b_save.interactive = true
-        false
-      }
-    } else {
-      false
     }
+    return false  // False by default
   }
   
   /** Function to reset the path. */
   def resetPath() = {
     grid = grid.map(_.map(x => false))
-    constructing = true
     path = null
-    bg = renderMap()
+    Rerender()
   }
 
   /** Two invisible rectangles for scaling purposes. */
@@ -155,11 +140,23 @@ object LevelEditorScene extends AnimationScene {
   /** A save button. */
   val b_save = new MovableDefaultButton("Save", 44, 982) {
     override def onClick() = {
-      if (!constructing) {
+        
+      // If last path on edge, construct one off-edge and save
+      val (c, r) = (Main.currentGame.cols - 1, Main.currentGame.rows - 1)
+      if (
+        if      (latestX == 0) createPath(latestX - 1, latestY, true)
+        else if (latestX == c) createPath(latestX + 1, latestY, true)
+        else if (latestY == 0) createPath(latestX, latestY - 1, true)
+        else if (latestY == r) createPath(latestX, latestY + 1, true)
+        else  { Audio.play("error.wav"); false }
+      ) {
         LevelSaver.saveCustomLevel(path, input.value, props)
+        LevelEditorScene.props.clear()
+        LevelEditorScene.resetPath()
         Audio.play("iosfx.wav")
+      } else {
+        Audio.play("error.wav")
       }
-      else Audio.play("error.wav")
     }
     buttonWidth = 309
   }
@@ -167,6 +164,7 @@ object LevelEditorScene extends AnimationScene {
   /** A reset button. */
   val b_reset = new MovableDefaultButton("Reset", 375, 982) {
     override def onClick() = {
+      props = Buffer()
       resetPath()
       Audio.play("iosfx.wav")
     }
@@ -216,11 +214,11 @@ object LevelEditorScene extends AnimationScene {
     
     // Draw selected prop
     if (this.selectedProp.isDefined) {
-      val wc = 1.5 * LevelEditorScene.getWidth / 1920
-      val hc = 1.5 * LevelEditorScene.getHeight / 1080
+      val wc = 60 * 1.5 * LevelEditorScene.getWidth / 1920
+      val hc = 60 * 1.5 * LevelEditorScene.getHeight / 1080
       this.selectedProp.get match {
-        case "bush" => gfx.drawImage(spritesheet,  0, 180,  60,  60, propx, propy, wc *  60, hc *  60)
-        case "tree" => gfx.drawImage(spritesheet, 60, 180, 120, 120, propx, propy, wc * 120, hc * 120)
+        case "bush" => gfx.drawImage(Rerender.ss,  0, 180,  60,  60, propx, propy,   wc,   hc)
+        case "tree" => gfx.drawImage(Rerender.ss, 60, 180, 120, 120, propx, propy, 2*wc, 2*hc)
       }
     } else {
       // Draw selection box
@@ -261,7 +259,6 @@ object LevelEditorScene extends AnimationScene {
       case KeyCode.DOWN  => if (!createPath(latestX, latestY + 1)) createPath(latestX, latestY + 2)
       case KeyCode.LEFT  => if (!createPath(latestX - 1, latestY)) createPath(latestX - 2, latestY)
       case KeyCode.RIGHT => if (!createPath(latestX + 1, latestY)) createPath(latestX + 2, latestY)
-      
       case _ => 
     }}
   }
@@ -303,28 +300,44 @@ object LevelEditorScene extends AnimationScene {
             case "bush" => new Prop(x - 0.5, y - 0.5, "bush")
             case "tree" => new Prop(x - 0.5, y - 0.5, "tree")
           }}
-          bg = renderMap()
+          Rerender()
           selectedProp = None
         }
       }
-      else {
-        /** If valid, create a path at selection. */
-        if (selY > - 1) createPath(selX, selY)
+      
+      /** If valid, create a path at selection. */
+      else if (selY > -1) {
+        createPath(selX, selY)
       }
     }
   }
   
-  /*
-   * RENDERING FUNCTIONS
-   */
+  /** Function that renders a small, see-through, white selection box and returns it. */
+  def renderSelectionBox() = {
+    val c = new Canvas(60, 60)
+    c.graphicsContext2D.fill = Color(1.0, 1.0, 1.0, 0.5)
+    c.graphicsContext2D.fillRect(0, 0, 60, 60)
+    c.snapshot(new SnapshotParameters(), new WritableImage(60, 60))
+  }
+}
+
+
+
+
+/** Object for rendering the map. */
+object Rerender {
   
+  /** Shorter syntax for rendering background. */
+  def apply() = LevelEditorScene.bg = this.renderMap()
+  
+  // The spritesheet.
+  val ss = ImageLoader("ss_groundGrass")
+    
   /** Renders the background as an image. */
-  def renderMap() = {
+  def renderMap(): Image = {
     
-    // Loading a new canvas for the background to be drawn on
+    // Loading a new canvas for the background to be drawn on and its graphics
     val snapshotCanvas = new Canvas(1920, 1080)
-    
-    // Loading the canvas graphics
     val sgfx = snapshotCanvas.graphicsContext2D
     
     // Looping through the boolean grid
@@ -333,18 +346,17 @@ object LevelEditorScene extends AnimationScene {
         val (sx, sy): (Int, Int) = {
           
           // Record the truth values for this and the eight neighboring grid cells
-          val t = grid(i)(j)
-          val l = grid(i - 1)(j)
-          val r = grid(i + 1)(j)
-          val u = grid(i)(j - 1)
-          val d = grid(i)(j + 1)
-          val ld = grid(i - i)(j + 1)
-          val rd = grid(i + 1)(j + 1)
-          val lu = grid(i - 1)(j - 1)
-          val ru = grid(i + 1)(j - 1)
+          val t  = LevelEditorScene.grid(i)(j)
+          val l  = LevelEditorScene.grid(i - 1)(j)
+          val r  = LevelEditorScene.grid(i + 1)(j)
+          val u  = LevelEditorScene.grid(i)(j - 1)
+          val d  = LevelEditorScene.grid(i)(j + 1)
+          val ld = LevelEditorScene.grid(i - i)(j + 1)
+          val rd = LevelEditorScene.grid(i + 1)(j + 1)
+          val lu = LevelEditorScene.grid(i - 1)(j - 1)
+          val ru = LevelEditorScene.grid(i + 1)(j - 1)
           
           // Find the correct spot in the spritesheet based on the neighbors
-          
           if      (t)             (1, 1)  //  |Path
           else if (l & d & r & u) (6, 0)  //  |Full surround
           else if (l & d & r)     (6, 2)  //  |Peninsulas
@@ -369,36 +381,25 @@ object LevelEditorScene extends AnimationScene {
         }
         
         // Draw the correct sprite to the correct location
-        sgfx.drawImage(spritesheet, sx * 60, sy * 60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
+        sgfx.drawImage(ss, sx * 60, sy * 60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
       }
       
       // Drawing the props
-      for (p <- this.props) {
+      for (p <- LevelEditorScene.props) {
         var (i, j, w, h) = p.id match {
           case "bush" => (0, 3, 1, 1)
           case "tree" => (1, 3, 2, 2)
         }
         i *= 60; j *= 60; w *= 60; h *= 60
-        sgfx.drawImage(spritesheet, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
+        sgfx.drawImage(ss, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
       }
     }
         
     // Draw the sidebar
     sgfx.drawImage(ImageLoader("llSidebar"), 0, 840)
-    
-    // Creating a new image to write to
-    val image = new WritableImage(1920, 1080)
-    
+
     // Snapshotting the canvas and returning the image
-    snapshotCanvas.snapshot(new SnapshotParameters(), image)
-  }
-  
-  /** Function that renders a small, see-through, white selection box and returns it. */
-  def renderSelectionBox() = {
-    val c = new Canvas(60, 60)
-    c.graphicsContext2D.fill = Color(1.0, 1.0, 1.0, 0.5)
-    c.graphicsContext2D.fillRect(0, 0, 60, 60)
-    c.snapshot(new SnapshotParameters(), new WritableImage(60, 60))
+    snapshotCanvas.snapshot(new SnapshotParameters(), new WritableImage(1920, 1080))
   }
 }
 

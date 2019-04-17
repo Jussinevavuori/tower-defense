@@ -1,6 +1,7 @@
 package game
 
 import scala.collection.mutable.Buffer
+import scala.collection.mutable.Queue
 import scala.util.Random.nextInt
 
 /** A game object describes an instance of a tower defense game and holds all the
@@ -10,10 +11,10 @@ import scala.util.Random.nextInt
  *  an initial wave number (default 0) can be passed in, as well as a readily made
  *  player or a list of towers.
  */
-class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0, 
-            val player: Player = new Player(),
-            var towers: Buffer[Tower] = Buffer[Tower](),
-            var props: Buffer[Prop] = Buffer[Prop]()) {
+class Game(val rows: Int, val cols: Int, val path: Path, initWave: Int = 0, 
+           val player: Player = new Player(),
+           var towers: Buffer[Tower] = Buffer[Tower](),
+           var props: Buffer[Prop] = Buffer[Prop]()) {
   
   
   /** The enemies in the current game. */
@@ -26,7 +27,7 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   var wave: Wave = WaveLoader.loadWave(initWave, this.path)  
   
   /** The current game's towershop. */
-  val shop = new TowerShop()
+  val shop = new TowerShop(this)
   
   /** The towers as they were at the start of each round for saving. */
   var saveTowers = this.towers
@@ -37,10 +38,10 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   /** Returns true when the player dies and the game is over. */
   def gameover = this.player.dead
   
-  /** Function to tupdate sorted towers. */
+  /** Function to sort towers (towers are sorted for rendering purposes). */
   def sortTowers() = this.towers = this.towers.sortBy(_.pos.y)
 
-  /** Initially updating the towers. */
+  /** Initially sorting the towers. */
   sortTowers()
   
   /** Updates the gamestate each frame with the given elapsed time in seconds. */
@@ -85,7 +86,10 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
             rem += 1
           }
           tower.updateTarget(this.enemies.iterator)
-          this.projectiles ++= tower.shoot(elapsedTime)
+          val shot = tower.shoot(elapsedTime)
+          if (shot.isDefined) {
+            this.projectiles.append(shot.get)
+          }
         }}
         
         // Update projectiles, move, try to hit all enemies and remove finished
@@ -128,6 +132,13 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
     return ready
   }
   
+  /** Sets an empty wave as a placeholder when loading previously saved games. */
+  def setEmptyWave() = {
+    val emptyWave = new Wave(this.wave.number - 1, Queue(), 0)
+    this.wave = emptyWave
+    this.enemies.clear()
+  }
+  
   /** For a given pair of coordinates, returns whether a tower can be placed in the spot. */
   def isValidSpot(x: Double, y: Double) = {
     x >= 0.0 && y >= 0.0 && x <= this.cols && y <= this.rows &&
@@ -144,6 +155,20 @@ class Game( val rows: Int, val cols: Int, val path: Path, initWave: Int = 0,
   def toggleFastForward(setting: Boolean) = fastForward = setting
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

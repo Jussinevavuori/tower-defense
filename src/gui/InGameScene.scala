@@ -86,8 +86,8 @@ object InGameScene extends AnimationScene {
   /** Loadup function. */
   override def loadUp() = {
     b_music.update()
-    Main.gamerunner = new Thread(GameRunner)
-    Main.gamerunner.start()
+    Main.gameThread = new Thread(GameRunner)
+    Main.gameThread.start()
   }
   
   /** Shutdown function. */
@@ -153,17 +153,10 @@ object InGameScene extends AnimationScene {
       Main.changeStatus(ProgramStatus.MainMenu)
     }
   }
-  
-  /** Menu option to close window. */
-  val mExit = new MenuItem("Exit") {
-    onAction = (e: AE) => {
-      sys.exit(0)
-    }
-  }
 
   /** A new menu for all the menu options. */
   val menu = new Menu("Menu") { items =
-    List(mSave, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu, sep, mExit)
+    List(mSave, sep, mControl, sep, mShowFPS, sep, mGodmode, sep, mMainmenu)
   }
   
   /** A menubar for the menu. */

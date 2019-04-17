@@ -31,7 +31,7 @@ object Animate {
   }
   
   /** The current frame count. */
-  var frame = 0
+  private var frame = 0
   
   /** Function to be called each frame to advance the animations. */
   def advance() = this.frame += 1

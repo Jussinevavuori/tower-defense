@@ -11,7 +11,7 @@ object LevelSaver {
   /** Resets all custom levels. */
   def resetCustomLevels() = {
     try {
-      XML.save("data/customdata.xml", <empty></empty>, "UTF-8", true, null)
+      XML.save("data/customdata.xml", <data></data>, "UTF-8", true, null)
     } catch {
       case e: Throwable => println("Something went wrong when trying to reset customdata.xml")
     }

@@ -23,7 +23,7 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   /** The reward awarded to the player upon killing this enemy for each extending enemy type. */
   val reward: Int
   
-  /** Maximum health of the enemy for each extending enemy type..*/
+  /** Maximum health of the enemy for each extending enemy type. */
   def maxhp: Double
   
   /** Amount of damage the enemy does to the player upon reaching the end. */
@@ -47,13 +47,9 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   /** Returns true when the enemy is dead */
   def dead: Boolean = !this.alive
   
-  /** Minimum speed threshold under which the enemy is considered to have stopped. */
-  def minimumSpeed = 1.0 / 1e7
-  
   /** Function that damages the enemy by the given (positive) amount */
-  def damage(amount: Double): Unit = {
+  def damage(amount: Double): Unit =
     if (amount > 0) this._health -= amount
-  }
   
   /** Function that contains all the enemies spawned upon this enemy's death
    *  for each extending enemy type individually. */
@@ -72,10 +68,12 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
     // Calculate the velocity towards the next target and limit it to the enemy's speed
     val velocity: Vec = this.target.get.pos - this.pos
     val scaledSpeed = this.speed * 75 * elapsedTime
-    velocity.limit(scaledSpeed)
+    if (velocity.size > scaledSpeed) {
+      velocity.scaleTo(scaledSpeed)
+    }
     
     // When the enemy stops, it has reached its target and asks the target for the next target
-    if (velocity.size < minimumSpeed) {
+    if (velocity.size < 0.01 * scaledSpeed) {
       this.target = this.target.get.next
     }
     
@@ -87,7 +85,8 @@ abstract class Enemy(x: Double, y: Double, var target: Option[Path] ) {
   }
 
   /** Returns a textual description of the enemy */
-  override def toString() = s"${this.typeid} (${this._health} HP) @ (${this.pos.x}, ${this.pos.y})"
+  override def toString() =
+    s"${this.typeid} (${this._health} HP) @ (${this.pos.x}, ${this.pos.y})"
 
 }
 

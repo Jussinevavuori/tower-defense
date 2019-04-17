@@ -1,6 +1,6 @@
 package game
 
-class TowerShop {
+class TowerShop(var game: Game) {
   
   /** The current bought tower that is being placed down if any. */
   var activeTower: Option[Tower] = None
@@ -9,7 +9,7 @@ class TowerShop {
   def active: Boolean = this.activeTower.isDefined
   
   /** Function to create and choose an active tower based on the typeid. */
-  def choose(id: String, game: Game) = {
+  def choose(id: String) = {
     val choice = id match {
         case "c1" => new CannonTower1(-1, -1)
         case "b1" => new BoomerTower1(-1, -1)
@@ -24,7 +24,7 @@ class TowerShop {
   }
   
   /** Function to place the active tower down at the chosen location and buy it. Returns true when succesful. */
-  def purchase(game: Game, x: Double, y: Double): Boolean = {
+  def purchase(x: Double, y: Double): Boolean = {
     if (this.activeTower.isDefined && game.isValidSpot(x, y) && (y < game.rows - 1)) {
       val purchased = this.activeTower.get
       this.activeTower = None
@@ -37,7 +37,7 @@ class TowerShop {
   }
   
   /** Function to upgrade the selected tower. Returns the upgraded tower if any. */
-  def upgrade(game: Game, tower: Tower): Option[Tower] = {
+  def upgrade(tower: Tower): Option[Tower] = {
     if (tower.upgrade.isDefined && game.player.canAfford(tower.upgrade.get.price)) {
       val upgraded = tower.upgrade.get
       tower.upgraded = true
