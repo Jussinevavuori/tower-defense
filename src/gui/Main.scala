@@ -57,7 +57,7 @@ object Main extends JFXApp {
   /** Function to change status of main using the programstatus. */
   def changeStatus(s: Int) = {
     ProgramStatus.stop()
-    ProgramStatus.resize(s)
+    ProgramStatus.resize(s, Main.stage.maximized.value)
     ProgramStatus.setStatus(s)
     val wasFullscreen = this.stage.fullScreen.value
     this.stage.scene = ProgramStatus.scene

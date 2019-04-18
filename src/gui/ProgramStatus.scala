@@ -42,11 +42,12 @@ object ProgramStatus {
   }
   
   /** Function to initially resize a scene.  */
-  def resize(s: Int) = {
+  def resize(s: Int, maximized: Boolean) = {
+    Main.stage.maximized = maximized
     val W = this.scene.getWidth
     val H = this.scene.getHeight
-    Main.stage.setWidth(W)
-    Main.stage.setHeight(H)
+    Main.stage.setWidth( W + {if (maximized) 0 else 16})
+    Main.stage.setHeight(H + {if (maximized) 0 else 39})
     this.scenes(s).resize(W, H)
   }
 

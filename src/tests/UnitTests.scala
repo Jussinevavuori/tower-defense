@@ -5,6 +5,7 @@ import game._
 import gui._
 import org.junit.Test
 import org.junit.Assert._
+import scala.collection.mutable.{ Buffer, Queue }
 
 class UnitTests {
   
@@ -20,13 +21,15 @@ class UnitTests {
     assertTrue(e.alive)  // Enemy should be alive
     e.damage(1)  // Leave 0 hp
     assertFalse(e.alive)  // Enemy should be dead
+    val d = e.death() // Spawned enemies
+    d.foreach(s => assertEquals(e.pos.x, s.pos.x, 0.5)) // Enemies spawn at enemy's location
   } 
   
   // Testing that enemies move correctly
   @Test def enemyAdvance() {
     val p2 = new Path(10, 0, None)  // Second path
     val p1 = new Path(5, 0, Some(p2))  // First path
-    val e = new EnemyN1(0, 0, Some(p1))  // Enemy heading towards first path
+    val e = new EnemyN2(0, 0, Some(p1))  // Enemy heading towards first path
     var prevX = 0  // Record previous position
     var prevY = 0
     // Move until reached p1
@@ -52,6 +55,8 @@ class UnitTests {
     // Check advancing works after reaching final target
     e.advance(dt)
     assertTrue(e.finished && e.dead)
+    val d = e.death() // Spawned enemies
+    d.foreach(s => assertEquals(e.pos.x, s.pos.x, 0.5)) // Enemies spawn at enemy's location
   }
   
   // Testing path functionalities
@@ -218,22 +223,135 @@ class UnitTests {
   }
   
   // Testing tower shooting
-  @Test def towerShooting() { assert(true) }
+  @Test def towerShooting() { 
+    val t = new CannonTower1(2, 0) { override val radius = 1.0 }
+    val p = new Path(4, 0)
+    val e = new EnemyN1(0, 0, Some(p))
+    val shot = t.shoot(dt)  // Shoot
+    assertTrue(shot.isEmpty)
+    while (e.pos.x < 1.1) {
+      t.updateTarget(Iterator(e))
+      e.advance(dt)
+    }
+    val projs = t.shoot(dt)  // Shoot projectiles
+    assertTrue(projs.nonEmpty)  // Should shoot projectiles
+    val dist = projs.head.pos.distance(e.pos)  // Measure distance at start
+    for (i <- 0 until 10) projs.head.move(dt)  // Move projectile
+    assertTrue(projs.head.pos.distance(e.pos) < dist)  // Projectile should move towards target
+    var time = 0.0
+    do  {  // try shooting
+      assertTrue(t.shoot(dt).isEmpty)  // should not shoot until cooldown amount time has passed
+      time += dt  // measure passed time
+    } while (time < t.cooldown) // stop when cooldown amount time has passed
+    assertTrue(t.shoot(dt).nonEmpty) // should shoot again now
+    while (e.pos.x < 3.0) {  // move enemy out of range
+      t.updateTarget(Iterator(e))
+      e.advance(dt)
+    }
+    assertTrue(t.shoot(dt).isEmpty) // Tower should no longer shoot
+  }
+  
+  // Helper function for checking if two vectors are equal
+  private def assertVecEquals(v1: Vec, v2: Vec) = {
+    assertEquals(v1.x, v2.x, 0.00001); assertEquals(v1.y, v2.y, 0.00001)
+  }
+  private def assertVecEquals(v: Vec, x: Double, y: Double) = {
+    assertEquals(v.x, x, 0.00001); assertEquals(v.y, y, 0.00001)
+  }
   
   // Testing vector functions: +, -, +=, -=
-  @Test def vectorBasicArithmetic() { assert(true) }
+  @Test def vectorBasicArithmetic() {
+    val v1 = Vec(0, 1)
+    val v2 = Vec(2, -2)
+    assertVecEquals(v1 + v2, v1.x + v2.x, v1.y + v2.y)
+    assertVecEquals(v1 - v2, v1.x - v2.x, v1.y - v2.y)
+    v1 += v2; assertVecEquals(v1, Vec(0, 1) + v2)
+    v1 -= v2; assertVecEquals(v1, Vec(0, 1))
+    v2 -= v1; assertVecEquals(v2, Vec(2, -2) - v1)
+    v2 += v1; assertVecEquals(v2, Vec(2, -2))
+  }
   
   // Testing vector size, scale and limit
-  @Test def vectorSizeAndScaling() { assert(true) }
+  @Test def vectorSizeAndScaling() {
+    val v = Vec(3, 4)
+    val nil = Vec(0, 0)
+    assertEquals(v.size, 5.0, 0.001)
+    assertEquals(v.sizeSqrd, 25.0, 0.001)
+    assertEquals(nil.size, nil.sizeSqrd, 0.0)
+    assertEquals(nil.size, 0.0, 0.0)
+    var thrown = false
+    try { nil.scaleTo(1.0) } catch { case e: ArithmeticException => thrown = true }
+    assertTrue(thrown)
+    v.scaleTo(2.0)
+    assertEquals(v.size, 2.0, 0.0001)
+    v.limit(3.0)
+    assertEquals(v.size, 2.0, 0.0001)
+    v.limit(1.0)
+    assertEquals(v.size, 1.0, 0.0001)
+  }
   
   // Testing vector distance and moving
-  @Test def vectorDistanceAndMove() { assert(true) }
+  @Test def vectorDistanceAndMove() { 
+    val v1 = Vec(1, 1)
+    val v2 = Vec(-2, -3)
+    assertEquals(v1 distance v2, 5.0, 0.0001)
+    assertEquals(v1 distanceSqrd v2, 25.0, 0.0001)
+    assertEquals(v1 distance v1, 0.0, 0.0)
+    val v3 = Vec(0, 1)
+    assertEquals(v3 distance v1, 1.0, 0.0001)
+    v3.moveTo(v1)
+    assertEquals(v3 distance v1, 0.0, 0.0001)
+    assertVecEquals(v1, v3)
+  }
   
   // Testing waves
-  @Test def wave() { assert(true) }
+  @Test def wave() {
+    val w = new Wave(1, Queue.fill(2)(new EnemyN2(0.0, 0.0, None)), 100)
+    val f = 0.6 // spawning frequency
+    var time = 0.0  // record time
+    do { assertTrue(w.spawn(dt).isEmpty); time += dt } while(time < f - dt) // should not spawn until f seconds
+    assertTrue(w.spawn(dt).isDefined) // should spawn at f
+    time = 0.0
+    do { assertTrue(w.spawn(dt).isEmpty); time += dt } while(time < f - dt) // should not spawn until next f seconds
+    assertTrue(w.spawn(dt).isDefined) // should spawn second enemy at 2 * f
+    time = 0.0
+    do { assertTrue(w.spawn(dt).isEmpty); time += dt } while(time < f - dt) // should not spawn until next f seconds
+    assertTrue(w.spawn(dt).isEmpty) // should be out of enemies
+    assertTrue(w.finished)
+    assertTrue(w.enemies.isEmpty)
+    assertTrue(w.prize == 100)  // should give prize
+    assertTrue(w.prize == 0) // should give prize only once
+  }
   
-  // Testing different game scenarios
-  @Test def game1() { assert(true) }
+  // Test loading new game from file
+  @Test def loadNewGame() {
+    val g = GameLoader.loadNewGame()
+    assertEquals(g.cols, 32)
+    assertEquals(g.rows, 14)
+    assertEquals(g.player.money, 500)
+    assertEquals(g.player.health, 100)
+    assertEquals(g.path.x, -1.0, 0.0)
+    assertEquals(g.path.y, 7.0, 0.0)
+    assertEquals(g.path.last.x, 32.0, 0.0)
+    assertEquals(g.path.last.y, 5.0, 0.0)
+    assertEquals(g.path.toArray().apply(7).x, 5.0, 0.0)
+    assertEquals(g.path.toArray().apply(7).y, 6.0, 0.0)
+    assertEquals(g.props.head.x, 0.7, 0.1)
+    assertTrue(g.props.size == 17)
+  }
+  
+  // Test loading wave from file
+  @Test def loadWave() {
+    val p = new Path(0, 0)
+    assertEquals(WaveLoader.maxWave, 24)
+    val w = (0 to WaveLoader.maxWave).map(i => WaveLoader(i, p))
+    assertEquals(w(0).prize, 0)
+    assertEquals(w(1).prize, 150)
+    assertTrue(w(0).enemies.isEmpty)
+    assertEquals(w(5).enemies.size, 14)
+    assertEquals(w(8).enemies.size, 45)
+    assertEquals(w(8).enemies.filter(_.isInstanceOf[EnemyN1]).size, 10)
+  }
 }
 
 
