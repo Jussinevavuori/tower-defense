@@ -32,9 +32,7 @@ object Main extends JFXApp {
     title = "Tower Defense"
     resizable = true
     fullScreen = false
-    maximized = true
-    width = 1280
-    height = 720
+    maximized = false
     minWidth = 1280
     minHeight = 720
     
@@ -59,6 +57,7 @@ object Main extends JFXApp {
   /** Function to change status of main using the programstatus. */
   def changeStatus(s: Int) = {
     ProgramStatus.stop()
+    ProgramStatus.resize(s)
     ProgramStatus.setStatus(s)
     val wasFullscreen = this.stage.fullScreen.value
     this.stage.scene = ProgramStatus.scene

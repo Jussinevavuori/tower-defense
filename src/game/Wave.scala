@@ -35,9 +35,9 @@ class Wave(val number: Int, val enemies: Queue[Enemy], private val prizeSum: Int
       this.timer = frequency
       if (!this.finished) {
         return Some(this.enemies.dequeue())
-      } else return None
+      }
     }
-    else return None
+    return None
   }
   
   /** Returns a textual description of this wave. */

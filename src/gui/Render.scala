@@ -134,6 +134,10 @@ object Render {
       this.fadeCountdown = this.fadeTime
     }
   }
+  def resetFade() = {
+    this.latestFadeWave = -1
+    this.fadeCountdown = this.fadeTime
+  }
   
   
   /*
@@ -442,6 +446,13 @@ object Render {
    * PRERENDERING
    */
   
+  // Loading the spritesheets for all the alternatives
+    val ss: Array[Image] = Array(
+      ImageLoader("ss_groundGrass"),
+      ImageLoader("ss_groundFall"),
+      ImageLoader("ss_groundSnow"),
+      ImageLoader("ss_groundSpring")
+    )
 
   /** Function to load the game dimensions and render the background image. */
   def prerender(game: Game) = {
@@ -450,16 +461,10 @@ object Render {
     this.bgs = Buffer[Image]()
     
     // Loading a canvas to paint the background on for all the alternatives
-    val canvas1 = new Canvas(1920, 1080)
-    val canvas2 = new Canvas(1920, 1080)
-    val canvas3 = new Canvas(1920, 1080)
-    val canvas4 = new Canvas(1920, 1080)
+    val canvases = Array.fill(4)(new Canvas(1920, 1080))
     
     // Loading the canvas graphics to draw the background with for all the alternatives
-    val gfx1 = canvas1.graphicsContext2D
-    val gfx2 = canvas2.graphicsContext2D
-    val gfx3 = canvas3.graphicsContext2D
-    val gfx4 = canvas4.graphicsContext2D
+    val gfxs = canvases.map(_.graphicsContext2D)
     
     // Loading the columns and rows of the game.
     gCols = game.cols
@@ -477,12 +482,6 @@ object Render {
         grid(i + 1)(j + 1) = paths.contains((i, j))
       }
     }
-    
-    // Loading the spritesheets for all the alternatives
-    val ss1: Image = ImageLoader("ss_groundGrass")
-    val ss2: Image = ImageLoader("ss_groundFall")
-    val ss3: Image = ImageLoader("ss_groundSnow")
-    val ss4: Image = ImageLoader("ss_groundSpring")
     
     // Draw each spot in the grid
     for (i <- 1 to game.cols) {
@@ -527,10 +526,7 @@ object Render {
         }
         
         // Draws the correct part of the sprite to the correct coordinates
-        gfx1.drawImage(ss1, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
-        gfx2.drawImage(ss2, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
-        gfx3.drawImage(ss3, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
-        gfx4.drawImage(ss4, sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60)
+        (0 until 4).foreach(k => gfxs(k).drawImage(ss(k), sx*60, sy*60, 60, 60, (i-1)*60, (j-1)*60, 60, 60))
       }
     }
     
@@ -541,30 +537,15 @@ object Render {
         case "tree" => (1, 3, 2, 2)
       }
       i *= 60; j *= 60; w *= 60; h *= 60
-      gfx1.drawImage(ss1, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
-      gfx2.drawImage(ss2, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
-      gfx3.drawImage(ss3, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
-      gfx4.drawImage(ss4, i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h)
+      (0 until 4).foreach(k => gfxs(k).drawImage(ss(k), i, j, w, h, p.x * 60, p.y * 60, 1.5 * w, 1.5 * h))
     }
     
     // Drawing the sidebar
     val sidebar = ImageLoader("sidebar")
-    gfx1.drawImage(sidebar, 0, 840)
-    gfx2.drawImage(sidebar, 0, 840)
-    gfx3.drawImage(sidebar, 0, 840)
-    gfx4.drawImage(sidebar, 0, 840)
-
-    // Creating a new writable image
-    val image1 = new WritableImage(1920, 1080)
-    val image2 = new WritableImage(1920, 1080)
-    val image3 = new WritableImage(1920, 1080)
-    val image4 = new WritableImage(1920, 1080)
+    gfxs.foreach(_.drawImage(sidebar, 0, 840))
     
     // Snapshotting the canvas and saving it as the background
-    this.bgs += canvas1.snapshot(new SnapshotParameters(), image1)
-    this.bgs += canvas2.snapshot(new SnapshotParameters(), image2)
-    this.bgs += canvas3.snapshot(new SnapshotParameters(), image3)
-    this.bgs += canvas4.snapshot(new SnapshotParameters(), image4)
+    canvases.foreach(c => this.bgs append c.snapshot(new SnapshotParameters(), new WritableImage(1920, 1080)))
   }
   
   /** Function to throw a rendering exception if the given case fails. */

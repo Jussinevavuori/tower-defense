@@ -24,4 +24,7 @@ abstract class AnimationScene extends Scene {
   
   /** Shortcut to generate new menu separators for animation scene menus. */
   def sep() = new SeparatorMenuItem
+  
+  /** Resizing function. */
+  def resize(W: Double, H: Double)
 }

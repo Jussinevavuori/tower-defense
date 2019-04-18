@@ -23,10 +23,10 @@ import scalafx.scene.Node
 object MainMenuScene extends AnimationScene {
     
   /** The main canvas for the main menu. */
-  val canvas = new Canvas(1920, 1080)
+  val canvas = new Canvas(7680, 4320)
   
   /** The canvas for the titles. */
-  val titleCanvas = new Canvas(1920, 1080)
+  val titleCanvas = new Canvas(7680, 4320)
   
   /** The main canvas graphics. */
   val gfx = canvas.graphicsContext2D
@@ -65,6 +65,7 @@ object MainMenuScene extends AnimationScene {
   val b_play = new DefaultButton("NEW GAME") {
     override def onClick() = {
       Actions.newGame()
+      Render.resetFade()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }
@@ -74,6 +75,7 @@ object MainMenuScene extends AnimationScene {
   val b_cont = new DefaultButton("CONTINUE") {
     override def onClick() = {
       Actions.loadGame()
+      Render.resetFade()
       Main.changeStatus(ProgramStatus.InGame)
       Music.changeMusic("celebration")
     }

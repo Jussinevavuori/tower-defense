@@ -37,21 +37,16 @@ object LoadGameScene extends AnimationScene {
   /** The main animation timer. */
   var animation = AnimationTimer { now =>
     Time.updateElapsedTime(now)
-    resize()
+    resize(LoadGameScene.getWidth,LoadGameScene.getHeight)
   }
   
   /** Drawing a black background canvas. */
-  val canvas: Canvas = new Canvas(1920, 1080)
-  canvas.graphicsContext2D.fill = Color.Black
-  canvas.graphicsContext2D.fillRect(0, 0, 1920, 1080)
+  val canvas = Rectangle(7680, 4320)
+  canvas.fill = Color.Black
   
   /** Drawing an overlay canvas. */
-  val overlay: Canvas = new Canvas(1920, 1080) { this.pickOnBounds = false }
-  def resizeOverlay(W: Double, H: Double) = {
-    overlay.graphicsContext2D.fill = Color(0.1, 0.1, 0.1, 1.0)
-    overlay.graphicsContext2D.fillRect(0, 0, Int.MaxValue, Int.MaxValue)
-    overlay.translateY = 944 * (H / 1080)
-  }
+  val overlay = Rectangle(7680, 4320)
+  overlay.fill = Color(0.1, 0.1, 0.1, 1.0)
   
   /** Menu y position minimum coordinate. */
   def menuYmax = 125.0
@@ -150,16 +145,14 @@ object LoadGameScene extends AnimationScene {
   val buttons = new Group() { children = List(b_music, b_mainmenu, scl1, scl2) }
 
   /** Function to resize all elements. */
-  def resize() = {
-    val W = this.getWidth
-    val H = this.getHeight
+  def resize(W: Double, H: Double) = {
     lvls.translateY = menuY
     dels.translateY = menuY
     lvls.translateX = -48 * (W / 1920)
     dels.translateX = 368 * (W / 1920)
     lvlButtons.foreach(_.resize(W, H))
     delButtons.foreach(_.resize(W, H))
-    resizeOverlay(W, H)
+    overlay.translateY = 944 * (H / 1080)
     b_music.resize(W, H)
     b_mainmenu.resize(W, H)
   }

@@ -36,7 +36,7 @@ object LevelEditorScene extends AnimationScene {
   override def loadUp() = b_music.update()
   
   /** The level editor canvas. */
-  val canvas: Canvas = new Canvas(1920, 1080)
+  val canvas: Canvas = new Canvas(7680, 4320)
   
   /** The level editor graphics. */
   val gfx = canvas.graphicsContext2D
@@ -131,8 +131,7 @@ object LevelEditorScene extends AnimationScene {
   }
 
   /** Two invisible rectangles for scaling purposes. */
-  val scl1 = Rectangle(0, 0, 0, 0)      
-  val scl2 = Rectangle(1920, 1080, 0, 0) 
+  val scl = Rectangle(0, 0, 0, 0) 
   
   /** A button to toggle the music. */
   val b_music = Music.button(1848, 890)
@@ -189,7 +188,7 @@ object LevelEditorScene extends AnimationScene {
   }
   
   /** A group for all the buttons. */
-  val buttons = new Group() { children = List(b_music, b_save, b_reset, b_menu, b_tree, b_bush, scl1, scl2) }
+  val buttons = new Group() { children = List(b_music, b_save, b_reset, b_menu, b_tree, b_bush, scl) }
   
   /** List of all elements to resize. */
   val resizeList = List(b_music, b_save, b_menu, b_reset, b_tree, b_bush)
@@ -228,13 +227,11 @@ object LevelEditorScene extends AnimationScene {
     }
     
     // Resize
-    resize()
+    resize(LevelEditorScene.getWidth, LevelEditorScene.getHeight)
   }}
 
   /** Function to resize elements. */
-  def resize() = {
-    val W = this.getWidth
-    val H = this.getHeight
+  def resize(W: Double, H: Double) = {
     resizeList.foreach(_.resize(W, H))
     this.input.resize(W, H)
   }
@@ -250,8 +247,8 @@ object LevelEditorScene extends AnimationScene {
     def handle(ke: KeyEvent) = { ke.getCode() match {
       
       /** 1 and 2 shortcuts to props. */
-      case KeyCode.NUMPAD1 => LevelEditorScene.selectedProp = Some("bush")
-      case KeyCode.NUMPAD2 => LevelEditorScene.selectedProp = Some("tree")
+      case KeyCode.DIGIT1 => LevelEditorScene.selectedProp = Some("bush")
+      case KeyCode.DIGIT2 => LevelEditorScene.selectedProp = Some("tree")
       
       /** F11 toggles fullscreen. */
       case KeyCode.F11   => Main.stage.fullScreen = !Main.stage.fullScreen.value
@@ -399,6 +396,9 @@ object LevelEditorScene extends AnimationScene {
     // Snapshotting the canvas and returning the image
     snapshotCanvas.snapshot(new SnapshotParameters(), new WritableImage(1920, 1080))
   }
+  
+  // Initializing with a rerender
+  this.rerender()
 }
 
 

@@ -31,16 +31,16 @@ object InGameScene extends AnimationScene {
    */
   
   /** The main game canvas. */
-  val gameCanvas = new Canvas(1920, 1080)
+  val gameCanvas = new Canvas(3840, 2160)
   gameCanvas.requestFocus()
   
   /** The interaction canvas on top of the game canvas for interacting with the game. */
-  val interactionCanvas = new Canvas(1920, 1080) {
+  val interactionCanvas = new Canvas(3840, 2160) {
     disable = true
   }
   
   /** The gameover canvas on top of all canvases for when the game is over. */
-  val gameoverCanvas = new Canvas(1920, 1080) {
+  val gameoverCanvas = new Canvas(3840, 2160) {
     disable = true
     visible = false
   }
@@ -53,7 +53,7 @@ object InGameScene extends AnimationScene {
     // Updating of the game is now done in a concurrent thread from the GameRunner object
     // Main.currentGame.update(Time.elapsedTime)
 
-    resize()
+    resize(InGameScene.getWidth, InGameScene.getHeight)
     
     // Render the game
     Animate.advance()
@@ -355,14 +355,7 @@ object InGameScene extends AnimationScene {
   }
   
   // Function to resize all dynamic elements on resize
-  def resize() = {
-    val W = this.getWidth
-    val H = this.getHeight
-    this.resizeList.foreach(_.resize(W, H))
-  }
-  
-
-
+  def resize(W: Double, H: Double) = this.resizeList.foreach(_.resize(W, H))
 }
 
 

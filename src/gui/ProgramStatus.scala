@@ -37,6 +37,17 @@ object ProgramStatus {
   def start(s: Int = this.status) = {
     this.scenes(s).loadUp()
     this.scenes(s).start()
+    val W = this.scenes(s).getWidth
+    val H = this.scenes(s).getHeight
+  }
+  
+  /** Function to initially resize a scene.  */
+  def resize(s: Int) = {
+    val W = this.scene.getWidth
+    val H = this.scene.getHeight
+    Main.stage.setWidth(W)
+    Main.stage.setHeight(H)
+    this.scenes(s).resize(W, H)
   }
 
   /** Function to stop a scene, by default the current scene. */
