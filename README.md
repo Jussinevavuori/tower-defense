@@ -2,6 +2,7 @@
 ## Created by Jussi Nevavuori 2019
 
 Tower Defense is a game project created for an university coding course at Aalto University in 2019.
+(Programming Studio 2, First year Computer Science at Aalto University)
 This project got me a solid 5 / 5 from the course!
 Created using Scala and the ScalaFX and scala.xml libraries.
 
